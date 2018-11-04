@@ -5,11 +5,21 @@
 #ifndef YOURSQL_RM_H
 #define YOURSQL_RM_H
 
+#include <fileio/FileManager.h>
+#include <bufmanager/BufPageManager.h>
+#include "rm_rid.h"
+
 #define PAGE_INT_NUM 2048
 
 typedef int RC;
 typedef unsigned int* BufType;
+const int ALL_PAGES=100;//TODO: check
 
+class RM_Manager;
+class RM_FileHandle;
+class RM_FileScan;
+class RM_Record;
+class RID;
 
 class RM_Manager
 {
@@ -60,6 +70,19 @@ public:
     RC CloseScan    ();                                // Terminate file scan
 };
 
+class RID
+{
+    PageNum pageNum;
+    SlotNum slotNum;
+public:
+    RID        ();                        // Default constructor
+    ~RID       ();                        // Destructor
+    RID        (PageNum pageNum, SlotNum slotNum); // Construct RID from page and slot number
+    RC Set        (PageNum pageNum, SlotNum slotNum); // Set RID from page and slot number
+    RC GetPageNum (PageNum &pageNum) const;  // Return page number
+    RC GetSlotNum (SlotNum &slotNum) const;  // Return slot number
+};
+
 class RM_Record
 {
     char *pData;
@@ -72,19 +95,6 @@ public:
 
     RC SetData    (char *pData) const;   // Set pData to point to the record's contents
     RC SetRid     (RID rid) const;       // Set the record id
-};
-
-class RID
-{
-    PageNum pageNum;
-    SlotNum slotNum;
-public:
-    RID        ();                        // Default constructor
-    ~RID       ();                        // Destructor
-    RID        (PageNum pageNum, SlotNum slotNum); // Construct RID from page and slot number
-    RC Set        (PageNum pageNum, SlotNum slotNum); // Set RID from page and slot number
-    RC GetPageNum (PageNum &pageNum) const;  // Return page number
-    RC GetSlotNum (SlotNum &slotNum) const;  // Return slot number
 };
 
 #endif //YOURSQL_RM_H

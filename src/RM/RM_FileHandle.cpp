@@ -2,6 +2,7 @@
 // Created by 杨乐 on 2018/11/4.
 //
 
+#include <cstring>
 #include "rm.h"
 #include "rm_rid.h"
 #include "../PF/bufmanager/BufPageManager.h"
@@ -46,7 +47,7 @@ RC RM_FileHandle :: GetID          (int &id)
  */
 RC RM_FileHandle :: SetRmm         (RM_Manager *rmm)
 {
-    this.rmm = rmm;
+    this->rmm = rmm;
     return 0;
 }
 
@@ -75,7 +76,7 @@ RC RM_FileHandle :: GetRec         (const RID &rid, RM_Record &rec) const
     BufType b_copy;
     b_copy = (BufType)malloc(sizeof(int) * recordSize);
     memcpy(b_copy, b, sizeof(int) * recordSize); // copy the content of the record
-    rec.SetData(b_copy);
+    rec.SetData((char *)b_copy);
     rec.SetRid(rid);
 
     return 0;
@@ -163,7 +164,7 @@ RC RM_FileHandle :: UpdateRec      (const RM_Record &rec)
  * Write dirty page(s) to disk
  * TODO: ?
  */
-RC RM_FileHandle :: ForcePages     (PageNum pageNum = ALL_PAGES) const
+RC RM_FileHandle :: ForcePages     (PageNum pageNum) const
 {
 
 }
