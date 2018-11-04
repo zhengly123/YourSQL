@@ -9,8 +9,7 @@
 
 typedef int RC;
 typedef unsigned int* BufType;
-typedef int PageNum;
-typedef int SlotNum;
+
 
 class RM_Manager
 {

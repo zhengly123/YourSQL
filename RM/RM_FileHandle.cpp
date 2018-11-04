@@ -3,6 +3,7 @@
 //
 
 #include "rm.h"
+#include "rm_rid.h"
 #include "../PF/bufmanager/BufPageManager.h"
 #include "../PF/fileio/FileManager.h"
 
