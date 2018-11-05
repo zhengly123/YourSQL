@@ -3,11 +3,6 @@ project(YourSQL)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(src/PF)
-include_directories(src/PF/bufmanager)
-include_directories(src/PF/fileio)
-include_directories(src/PF/utils)
-include_directories(src/RM)
 
 add_executable(YourSQL
         src/PF/bufmanager/BufPageManager.h
@@ -22,9 +17,9 @@ add_executable(YourSQL
         src/PF/pf.h
         src/RM/RID.cpp
         src/RM/rm.h
+        src/RM/rm_internal.h
         src/RM/RM_FileHandle.cpp
         src/RM/RM_FileScan.cpp
-        src/RM/rm_internal.h
         src/RM/RM_Manager.cpp
         src/RM/RM_Record.cpp
-        src/RM/rm_rid.h)
+        src/testmain.cpp)

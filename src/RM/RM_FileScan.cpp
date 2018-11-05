@@ -2,11 +2,7 @@
 // Created by 杨乐 on 2018/11/4.
 //
 
-#include "rm.h"
-#include "rm_rid.h"
-#include "../PF/bufmanager/BufPageManager.h"
-#include "../PF/fileio/FileManager.h"
-
+#include "rm_internal.h"
 
 /*
  * Constructor
@@ -32,8 +28,7 @@ RC RM_FileScan :: OpenScan     (const RM_FileHandle &fileHandle,
                                 int           attrLength,
                                 int           attrOffset,
                                 CompOp        compOp,
-                                void          *value,
-                                ClientHint    pinHint = NO_HINT)
+                                void          *value)
 {
     return 0;
 }

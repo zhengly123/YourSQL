@@ -2,10 +2,7 @@
 // Created by 杨乐 on 2018/11/4.
 //
 
-#include "rm.h"
-#include "rm_rid.h"
-#include "../PF/bufmanager/BufPageManager.h"
-#include "../PF/fileio/FileManager.h"
+#include "rm_internal.h"
 
 /*
  * Default constructor
@@ -26,11 +23,7 @@ RID :: ~RID       ()
 /*
  * Construct RID from page and slot number
  */
-RID :: RID        (PageNum pageNum, SlotNum slotNum)
-{
-    this->pageNum = pageNum;
-    this->slotNum = slotNum;
-}
+
 
 /*
  * Set RID from page and slot number
@@ -39,6 +32,7 @@ RC RID :: Set        (PageNum pageNum, SlotNum slotNum)
 {
     this->pageNum = pageNum;
     this->slotNum = slotNum;
+    return 0;
 }
 
 /*

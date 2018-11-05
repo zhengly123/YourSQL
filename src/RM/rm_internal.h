@@ -5,4 +5,7 @@
 #ifndef YOURSQL_RM_INTERNAL_H
 #define YOURSQL_RM_INTERNAL_H
 
+#include <cstring>
+#include "rm.h"
+
 #endif //YOURSQL_RM_INTERNAL_H

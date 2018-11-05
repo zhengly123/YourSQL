@@ -2,11 +2,7 @@
 // Created by 杨乐 on 2018/11/4.
 //
 
-#include <cstring>
-#include "rm.h"
-#include "rm_rid.h"
-#include "../PF/bufmanager/BufPageManager.h"
-#include "../PF/fileio/FileManager.h"
+#include "rm_internal.h"
 
 /*
  * Constructor
@@ -25,11 +21,23 @@ RM_FileHandle :: ~RM_FileHandle ()
 }
 
 /*
- * Set file ID
+ * Set Info
  */
-RC RM_FileHandle :: SetID          (int id)
+RC RM_FileHandle :: Set            (int id,
+                   RM_Manager* rmm,
+                   FileManager* fm,
+                   BufPageManager* bpm,
+                   int recordSize,
+                   int recordPerpage)
 {
     this->fileID = id;
+    this->rmm = rmm;
+    this->fm = fm;
+    this->bpm = bpm;
+    this->recordSize = recordSize;
+    this->recordPerpage = recordPerpage;
+    this->recordShift = (recordSize - 1) / 8 + 1;
+
     return 0;
 }
 
@@ -43,40 +51,24 @@ RC RM_FileHandle :: GetID          (int &id)
 }
 
 /*
- * Set RM_Manager
- */
-RC RM_FileHandle :: SetRmm         (RM_Manager *rmm)
-{
-    this->rmm = rmm;
-    return 0;
-}
-
-/*
- * Set RecordSize
- */
-RC RM_FileHandle :: SetRecordSize  (int RecordSize)
-{
-    this->recordSize = recordSize;
-    return 0;
-}
-
-/*
  * Get a record
  */
 RC RM_FileHandle :: GetRec         (const RID &rid, RM_Record &rec) const
 {
-    int pageNum, slotNum;
-    rid.GetPageNum(pageNum);
-    rid.GetSlotNum(slotNum);
+    int pageID, slotID;
+
+    rid.GetPageNum(pageID);
+    rid.GetSlotNum(slotID);
 
     int index;
-    BufType b = rmm->bpm->getPage(this->fileID, pageNum, index);
-    rmm->bpm->access(index);
+    BufType b = bpm->getPage(fileID, pageID, index);
+    char* brec = (char*) b + recordShift + 4 + recordSize * slotID;
+    char* bcop = (char*) malloc(recordSize);
+    memcpy(bcop, brec, recordSize); // copy the info
 
-    BufType b_copy;
-    b_copy = (BufType)malloc(sizeof(int) * recordSize);
-    memcpy(b_copy, b, sizeof(int) * recordSize); // copy the content of the record
-    rec.SetData((char *)b_copy);
+    bpm->access(index);
+
+    rec.SetData(bcop);
     rec.SetRid(rid);
 
     return 0;
@@ -87,57 +79,98 @@ RC RM_FileHandle :: GetRec         (const RID &rid, RM_Record &rec) const
  */
 RC RM_FileHandle :: InsertRec      (const char *pData, RID &rid)
 {
-    int pageNum, slotNum;
+    // Get info from Page #0
+    int index0;
+    BufType b0 = bpm->getPage(fileID, 0, index0);
 
-    int index;
-    BufType b = rmm->bpm->getPage(this->fileID, 0, index);
+    int pageID = b0[3]; // first empty page
 
-    int totalpage = b[1]; // current page : totalpage - 1
-    int totalslot = b[totalpage]; // current slot : totalslot - 1
-
-    int maxslot = PAGE_INT_NUM / recordSize;
-
-    if (totalslot == maxslot) // exceed the maxslot
+    if(!pageID) // no empty page
     {
-        // Page
-        totalpage ++;   // increase a new page
-        b[1] ++;        // update the file
+        // new a page
+        b0[2] ++;
+        b0[3] = pageID = b0[2];
+        bpm->markDirty(index0); // modify the message in header
 
-        // Slot
-        totalslot = 0;      // new slot
-        b[totalpage] = 1;   // update the file
-
-        rmm->bpm->markDirty(index);
-
-    }
-    else
-    {
-        // Slot
-        b[totalpage] ++;    // update the file
-
-        rmm->bpm->markDirty(index);
+        int indexnew;
+        BufType bnew = bpm->allocPage(fileID, pageID, indexnew, false);
+        memset(bnew, 0, PAGE_SIZE); // refresh the page
+        bpm->markDirty(indexnew);
     }
 
-    BufType bty = rmm->bpm->getPage(this->fileID, totalpage - 1, index);
+    int indexk;
+    BufType bk = bpm->getPage(fileID, pageID, indexk);
 
-    pageNum = totalpage - 1;
-    slotNum = totalslot;
+    int emptyCnt = 0;
+    int emptySlot = 0;
+    char* bitm = (char*)bk;
 
-    rid.Set(pageNum, slotNum); // set the rid
+    for(int i = 0; i <= recordPerpage / 8; ++ i, ++ bitm)
+    {
+        char bitmask = *bitm;
+        for(int j = i * 8; j < i * 8 + 8 && j < recordPerpage; ++ j, bitmask >>= 1)
+            if(!(bitmask & 1)) if(emptyCnt ++ == 0) emptySlot = j;
+    }
 
-    memcpy(bty + slotNum * recordSize, pData, sizeof(int) * recordSize); // copy data from pData
+    // Update bitmap
+    bitm = (char*) bk + (emptySlot / 8);
+    (*bitm) |= 1 << (emptySlot % 8);
 
-    rmm->bpm->markDirty(index);
+    // copy the data
+    int slotID = emptySlot;
+    char* retAddr = (char*)bk + recordShift + 4 + recordSize * slotID;
+    memcpy(retAddr, pData, recordSize);
+
+    bpm->markDirty(indexk);
+
+    rid.Set(pageID, slotID);
+
+    if(emptyCnt == 1) // Filled
+    {
+        int nxtpage = *(int*)((char*)bk + recordShift);
+        bpm->access(indexk);
+
+        b0 = bpm->getPage(fileID, 0, index0);
+        b0[3] = nxtpage;
+        bpm->markDirty(index0);
+    }
 
     return 0;
 }
 
 /*
  * Delete a record
- * TODO: complete it
+ * TODO:
  */
 RC RM_FileHandle :: DeleteRec      (const RID &rid)
 {
+    int pageID, slotID;
+
+    rid.GetPageNum(pageID);
+    rid.GetSlotNum(slotID);
+
+    int indexk, index0;
+
+    BufType b0 = bpm->getPage(fileID, 0, index0);
+    int nxtpage = b0[3];
+    b0[3] = pageID;
+    bpm->markDirty(index0);
+
+    BufType bk = bpm->getPage(fileID, pageID, indexk);
+
+    // Update bitmap
+    char* bitm = (char*) bk + (slotID / 8);
+    if(((*bitm) >> (slotID % 8)) & 1)
+        (*bitm) -= 1 << (slotID % 8);
+    else {
+        // TODO: already deleted or the record doesnt exist
+    }
+
+    // Update next empty page
+    *(int*)((char*)bk + recordShift) = nxtpage;
+
+    bpm->markDirty(indexk);
+
     return 0;
 }
 
@@ -148,13 +181,17 @@ RC RM_FileHandle :: UpdateRec      (const RM_Record &rec)
 {
     char* pData;
     RID rid;
+    int pageID, slotID;
 
     rec.GetData(pData);
     rec.GetRid(rid);
+    rid.GetSlotNum(slotID);
+    rid.GetPageNum(pageID);
 
     int index;
-    BufType b = rmm->bpm->getPage(this->fileID, rid.GetPageNum(), index);
-    memcpy(b + rid.GetSlotNum() * recordSize, pData, sizeof(int) * recordSize); // copy data from pData
+    BufType b = rmm->bpm->getPage(this->fileID, pageID, index);
+    char* bm = (char*) b;
+    memcpy(bm + recordShift + 4 + recordSize * slotID, pData, recordSize); // copy data from pData
     rmm->bpm->markDirty(index);
 
     return 0;
@@ -166,7 +203,7 @@ RC RM_FileHandle :: UpdateRec      (const RM_Record &rec)
  */
 RC RM_FileHandle :: ForcePages     (PageNum pageNum) const
 {
-
+    return 0;
 }
 
 
