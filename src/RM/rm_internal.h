@@ -6,6 +6,9 @@
 #define YOURSQL_RM_INTERNAL_H
 
 #include <cstring>
+#include <iostream>
 #include "rm.h"
+
+const bool D = true;
 
 #endif //YOURSQL_RM_INTERNAL_H

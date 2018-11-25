@@ -8,7 +8,7 @@
 #ifndef PARSER_H_
 #define PARSER_H_
 
-#include "../bplustree/BPlusTree.h"
+//#include "../bplustree/BPlusTree.h"
 #include "pagedef.h"
 #include <cstring>
 using namespace std;
@@ -29,7 +29,7 @@ using namespace std;
 #define RANGE 1
 #define ISNULL 2
 #define NOTHING 3
-
+int tmp = 0;
 template<class Key>
 int keyu(uchar* a, uchar* b) {
 	Key c, d;

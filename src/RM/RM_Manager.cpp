@@ -39,12 +39,16 @@ int RM_Manager :: maxSlotnum(int recordSize)
  */
 RC RM_Manager :: CreateFile  (const char *fileName, int recordSize)
 {
+    if(D) cerr << "Create File : " << fileName << endl;
+
     // Creating new file
     this->fm->createFile(fileName);
+    if(D) cerr << "    Creating Success." << endl;
 
     // Open the file
     int fileID, index;
     this->fm->openFile(fileName, fileID);
+    if(D) cerr << "    Open Success, fileID = " << fileID << endl;
 
     // #0 : file header
     BufType b = this->bpm->allocPage(fileID, 0, index, false);
@@ -54,6 +58,8 @@ RC RM_Manager :: CreateFile  (const char *fileName, int recordSize)
     b[2] = 1; // #2 : total page num
     b[3] = 1; // #3 : current empty page
 
+    if(D) cerr << "    File Header (Page 0) Create Success" << endl;
+
     this->bpm->markDirty(index);
 
     // #1 : initial data page
@@ -62,6 +68,12 @@ RC RM_Manager :: CreateFile  (const char *fileName, int recordSize)
     memset(b, 0, PAGE_SIZE); // refresh the page
 
     this->bpm->markDirty(index);
+
+    if(D) cerr << "    File Page 1 Create Success" << endl;
+
+    this->fm->closeFile(fileID);
+
+    if(D) cerr << "    File Closed." << endl;
 
     return 0;
 }
@@ -81,13 +93,19 @@ RC RM_Manager :: DestroyFile (const char *fileName)
  */
 RC RM_Manager :: OpenFile    (const char *fileName, RM_FileHandle &fileHandle)
 {
+    if(D) cerr << "OpenFile : " <<  fileName << endl;
     int fileID;
     this->fm->openFile(fileName, fileID);
+
+    if(D) cerr << "    Open success : file ID = " << fileID << endl;
 
     int index, recordSize, recordPerpage;
     BufType b = this->bpm->getPage(fileID, 0, index);
     recordSize = b[0]; // Get Recordsize from Page#0, Line#0
     recordPerpage = b[1]; // Get recordPerpage from Page#0, Line#1
+
+    if(D) cerr << "   Record Size = " << recordSize <<
+               "; Record Perpage = " << recordPerpage << endl;
 
     // Set the necessary message to fileHandle
     fileHandle.Set(fileID, this, this->fm, this->bpm, recordSize, recordPerpage);

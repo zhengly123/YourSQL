@@ -8,6 +8,7 @@
 #include "../PF/bufmanager/BufPageManager.h"
 #include "../PF/fileio/FileManager.h"
 #include "../yoursql.h"
+#include "RM_Error.h"
 
 typedef int RC;
 typedef int PageNum;
@@ -24,6 +25,8 @@ public:
     RC Set        (PageNum pageNum, SlotNum slotNum); // Set RID from page and slot number
     RC GetPageNum (PageNum &pageNum) const;  // Return page number
     RC GetSlotNum (SlotNum &slotNum) const;  // Return slot number
+    PageNum Page() const {return pageNum;} // Return page number
+    SlotNum Slot() const {return slotNum;}  // Return slot number
 };
 
 class RM_Record
@@ -36,8 +39,8 @@ public:
     RC GetData    (char *&pData) const;   // Set pData to point to the record's contents
     RC GetRid     (RID &rid) const;       // Get the record id
 
-    RC SetData    (char *pData) const;   // Set pData to point to the record's contents
-    RC SetRid     (RID rid) const;       // Set the record id
+    RC SetData    (char *pData);   // Set pData to point to the record's contents
+    RC SetRid     (RID rid);       // Set the record id
 };
 
 class RM_Manager;
