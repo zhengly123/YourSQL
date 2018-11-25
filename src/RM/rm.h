@@ -9,7 +9,6 @@
 #include "../PF/fileio/FileManager.h"
 #include "../yoursql.h"
 
-typedef int RC;
 typedef int PageNum;
 typedef int SlotNum;
 
