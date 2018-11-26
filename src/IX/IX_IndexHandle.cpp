@@ -93,7 +93,7 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *pData, const RID &rid)
             assert(rc);
         }
     } else {// continue search
-        childC = node->firstGeaterIndex(pData);
+        childC = node->firstGreaterIndex(pData);
         pathChild[dep] = childC;
         rc = treeInsert(childC, dep + 1, pData, rid);
         return rc;
@@ -213,7 +213,7 @@ RC IX_IndexHandle::treeInsertUp(int c, int dep, void *pData, const RID &rid, Pag
 //            rc=node->insert(pData, rid);
 //            assert(rc==0);
 //        } else {
-//            childNum = node->firstGeaterIndex(pData);
+//            childNum = node->firstGreaterIndex(pData);
 //            node->chRIDs[childNum].GetPageNum(childPage);
 //            childNode = (BPlusTreeNode*)bpm->getPage(fileID, childPage,
 //                    bufferIndex);
@@ -281,6 +281,105 @@ RC IX_IndexHandle::copyKey(BPlusTreeNode *dst, int x1,
 
 RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
 {
+    int rc, c, bufferIndex, k;
+    BPlusTreeNode *node;
 
+    c = ixHeader.rootPage;
+    if (c<=0)
+        return IX_NO_INDEX_EXIST;
+
+    node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+    while (!node->isLeaf)
+    {
+        k = node->firstGreaterIndex(pData);
+        node->chRIDs[k].GetPageNum(c);
+        node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+    }
+    rc = node->remove(pData, rid);
+
+    return rc;
+}
+
+RC IX_IndexHandle::ForcePages()
+{
+    bpm->close();
     return 0;
 }
+
+RC IX_IndexHandle::getMinimalIndex(RID &rid) const
+{
+    int rc, c, bufferIndex;
+    BPlusTreeNode *node;
+
+    c = ixHeader.rootPage;
+    if (c<=0)
+        return IX_NO_INDEX_EXIST;
+
+    node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+    while (!node->isLeaf)
+    {
+        node->chRIDs[0].GetPageNum(c);
+        node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+    }
+    rid.Set(c,0);
+    return 0;
+}
+
+RC IX_IndexHandle::next(RID &iterator, RID &dataRID, void* key) const
+{
+
+    BPlusTreeNode *node;
+    int bufferIndex;
+
+    node = (BPlusTreeNode*)bpm->getPage(fileID, iterator.GetPageNum(),
+            bufferIndex);
+    do
+    {
+        if (iterator.GetSlotNum() + 1 < node->n)
+        {
+            iterator.SetSlotNum(iterator.GetSlotNum()+1);
+        } else {
+            iterator.Set(node->succ.GetPageNum(),0);
+        }
+        if (iterator.GetPageNum()<=0)
+        {
+            return IX_ITERATOR_TO_END;
+        }
+    } while(node->rmFlag[iterator.GetSlotNum()]);
+    dataRID = node->chRIDs[iterator.GetSlotNum()];
+    memcpy(key, node->getKey(iterator.GetSlotNum()), ixHeader.attrLength);
+    return 0;
+}
+
+bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp) const
+{
+    switch (compOp)
+    {
+        case LT_OP:
+            switch (ixHeader.attrType)
+            {
+                case INT:
+                    return *(int*)(a)<*(int*)(b);
+                case FLOAT:
+                    return *(float*)(a)<*(float*)(b);
+                case STRING:
+                    return strcmp((char *) (a), (char *) (b)) < 0;
+            }
+            assert(false);
+        case GT_OP:
+            return !cmp(a, b, LT_OP);
+        case EQ_OP:
+            return !cmp(a, b, LT_OP)&&!cmp(b, a, LT_OP);
+        case NE_OP:
+            return !cmp(a, b, EQ_OP);
+        case LE_OP:
+            return !cmp(a, b, GT_OP);
+        case GE_OP:
+            return !cmp(a, b, LT_OP);
+        case NO_OP:
+            return !cmp(a, b, EQ_OP);
+    }
+    assert(false);
+    return false;
+}
+

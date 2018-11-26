@@ -25,7 +25,6 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
         return IX_INVALID_INDEXNO;
     }
     string rankFileName = getFileNameWithIndex(fileName, indexNo);
-    //TODO: open file with pm and write head
     // Creating new file
     fm.createFile(fileName);
 
@@ -61,8 +60,15 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo, IX_IndexHandle &inde
 {
     int fileID;
     string rankFileName = getFileNameWithIndex(fileName, indexNo);
+    //TODO: file not exist test
     fm.openFile(rankFileName.data(), fileID);
 
+    // if index has been already opened
+    if (openedFile.count(make_pair(string(fileName), indexNo)))
+    {
+        return IX_INDEX_OPENED;
+    }
+    openedFile[make_pair(string(fileName), indexNo)]= fileID;
 
     // Set the necessary message to fileHandle
     indexHandle.open(fm, bpm, *this, fileID);
@@ -74,6 +80,7 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
 {
     int fileID;
     indexHandle.getFileID(fileID);
+    bpm.close();
     fm.closeFile(fileID);
     return 0;
 }
@@ -83,4 +90,18 @@ string IX_Manager::getFileNameWithIndex(const char* fileName, int indexNum)
     string indexFileName;
     std::ostringstream oss(indexFileName);
     oss<<fileName<<"."<<indexNum<<".i";
+}
+
+RC IX_Manager::DestroyIndex(const char *fileName, int indexNo)
+{
+//    int fileID = openedFile[make_pair(string(fileName), indexNo)];
+//    bpm.close();
+//    fm.closeFile(fileID);
+    if (openedFile.count(make_pair(string(fileName), indexNo)))
+    {
+        return IX_INDEX_OPENED;
+    }
+    //TODO: fm.DestoryFile
+    //pf system 中并没有提供这样的接口，需要新增加这个API
+    return 0;
 }

@@ -53,7 +53,7 @@ RC BPlusTreeNode::insert(void* key, const RID &value)
     }
     else
     {
-        int t=firstGeaterIndex(key);
+        int t= firstGreaterIndex(key);
 
         memmove(keys + (t + 1) * attrLength, keys + (t + 1) * attrLength, attrLength * (n - t));
         memcpy(keys + t * attrLength, key, attrLength);
@@ -70,10 +70,10 @@ bool BPlusTreeNode::overfull()
     return n == M+1;
 }
 
-inline int BPlusTreeNode::firstGeaterIndex(void *key)
+inline int BPlusTreeNode::firstGreaterIndex(void *key)
 {
     int t;
-    for (t=0;t<n&&less(key,keys+t*attrLength);++t);
+    for (t=0;t<n&&!less(keys+t*attrLength,key);++t);
     return t;
 }
 
@@ -85,4 +85,21 @@ void *BPlusTreeNode::getKey(int k)
 bool BPlusTreeNode::full()
 {
     return n == M;
+}
+
+RC BPlusTreeNode::remove(void* key,const RID &value)
+{
+    int k;
+    k = firstGreaterIndex(key);
+    assert(k>0);
+    //TODO: duplicate process
+    assert(equal(getKey(k-1),key));
+    assert(value==chRIDs[k-1]);
+    rmFlag[k - 1] = true;
+    return 0;
+}
+
+bool BPlusTreeNode::equal(void *a, void *b)
+{
+    return !less(a, b) && !less(b, a);
 }

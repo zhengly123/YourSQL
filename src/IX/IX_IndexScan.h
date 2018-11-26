@@ -20,6 +20,11 @@ public:
                       ClientHint  pinHint = NO_HINT);
     RC GetNextEntry  (RID &rid);                         // Get next matching entry
     RC CloseScan     ();                                 // Terminate index scan
+private:
+    const IX_IndexHandle *indexHandle;
+    RID iterator;
+    CompOp compOp;
+    char *targetValue[KEYSIZE];
 };
 
 

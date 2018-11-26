@@ -21,8 +21,13 @@ public:
     ~RID       ();                        // Destructor
     RID        (PageNum pageNum, SlotNum slotNum); // Construct RID from page and slot number
     RC Set        (PageNum pageNum, SlotNum slotNum); // Set RID from page and slot number
+    RC SetPageNum (PageNum pageNum); // Set RID from page and slot number
+    RC SetSlotNum (SlotNum slotNum); // Set RID from page and slot number
     RC GetPageNum (PageNum &pageNum) const;  // Return page number
     RC GetSlotNum (SlotNum &slotNum) const;  // Return slot number
+    PageNum GetPageNum () const;  // Return slot number
+    SlotNum GetSlotNum () const;  // Return slot number
+    bool operator ==(RID &b) const;
 };
 
 class RM_Record

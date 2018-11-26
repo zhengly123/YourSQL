@@ -8,6 +8,14 @@
 
 #include "../yoursql.h"
 #include "IX_PUBLIC.h"
+
+// M of B+ Tree
+const int M=5;
+// i.e. maximum length of String
+const int KEYSIZE=10;
+const int KEYSARRAYSIZE=(M-1)*KEYSIZE;
+
+class BPlusTreeNode;
 class IX_Manager;
 class IX_IndexHandle;
 class IX_IndexScan;

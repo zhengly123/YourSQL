@@ -7,6 +7,7 @@
 #define YOURSQL_IX_MANAGER_H
 
 #include <string>
+#include <map>
 #include "IX_PRIVATE.h"
 #include "IX_PUBLIC.h"
 #include "../RM/rm.h"
@@ -44,6 +45,7 @@ public:
 private:
     FileManager &fm;
     BufPageManager  &bpm;
+    map<pair<string, int>, int> openedFile;
 
     string getFileNameWithIndex(const char* fileName, int indexNum);
 };

@@ -7,11 +7,8 @@
 
 #include "../yoursql.h"
 #include "../RM/rm.h"
+#include "IX_PRIVATE.h"
 
-const int M=5;
-// i.e. maximum length of String
-const int KEYSIZE=10;
-const int KEYSARRAYSIZE=(M-1)*KEYSIZE;
 
 // This class should be trivially-copyable
 class BPlusTreeNode
@@ -23,19 +20,22 @@ public:
 //    void setValue(int value);
     AttrType attrType;
     int attrLength;
-    //TODO: change type of key to all three AttrType
+    // To support different attrType, char array is used to store keys
     char keys[KEYSARRAYSIZE];
+    bool rmFlag[M];
     RID chRIDs[M];
     bool isLeaf;
     int n;              // number of children
-    RID parent;
+    RID parent, succ;
 
     RC insert(void* key,const RID &value);
+    RC remove(void* key,const RID &value);
     bool less(void * a, void * b);
+    bool equal(void *a, void *b);
     bool full();
     bool overfull();
     void* getKey(int k);
-    int firstGeaterIndex(void *key);
+    int firstGreaterIndex(void *key);
 };
 
 

@@ -28,7 +28,13 @@ public:
              IX_Manager &ixManager,
              int fileID);
 
+    RC next(RID &iterator, RID &dataRID, void *key) const;
+
     void getFileID(int &fileID);
+
+    RC getMinimalIndex(RID &rid) const;
+
+    bool cmp(void *a, void *b, CompOp compOp) const;
 //    BufPageManager);
 
 private:
@@ -40,17 +46,17 @@ private:
     PageNum path[1000];
     int pathChild[1000];
 
+
     RC createNode(PageNum &pageNum, BPlusTreeNode &node);
     RC treeInsert(int c, int dep, void *pData, const RID &rid);
     // 需要处理pathChild的变化
     RC treeInsertUp(int c, int dep, void *pData, const RID &rid, PageNum newChild);
-    RC getMinimalIndex()
 
     /**
      * Do not change position of node in terms of page
      * @param node
      * @param ch
-     * @param subroot  allocated pageNum of the new subroot
+     * @param subroot allocated pageNum of the new subroot
      * @return
      */
 //    RC splitChild(BPlusTreeNode *node, int ch, PageNum &subroot);
