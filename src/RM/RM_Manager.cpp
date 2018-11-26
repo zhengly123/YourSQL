@@ -122,6 +122,7 @@ RC RM_Manager :: CloseFile   (RM_FileHandle &fileHandle)
 {
     int fileID;
     fileHandle.GetID(fileID);
+    this->bpm->close();
     this->fm->closeFile(fileID);
     return 0;
 }

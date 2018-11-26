@@ -9,7 +9,8 @@ int main(int argc, char *argv[])
 {
 
     //pf_test();
-    rm_test_basic1();
+    //rm_test_basic1();
+    rm_test_error(argc, argv);
 
     return 0;
 }

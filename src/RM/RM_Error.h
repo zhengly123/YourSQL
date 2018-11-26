@@ -20,7 +20,8 @@
 #define RM_FNOTOPEN        (START_RM_ERR - 6)
 #define RM_BAD_RID         (START_RM_ERR - 7)
 #define RM_EOF             (START_RM_ERR - 8)  // end of file
+#define RM_BAD_FILESCAN    (START_RM_ERR - 9)  // file scan error
 
-#define RM_LASTERROR RM_EOF
+#define RM_LASTERROR RM_BAD_FILESCAN
 
 #endif //YOURSQL_RM_ERROR_H

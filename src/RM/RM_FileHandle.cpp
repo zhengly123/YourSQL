@@ -42,6 +42,27 @@ RC RM_FileHandle :: Set            (int id,
 }
 
 /*
+ * Get Info
+ */
+
+RC RM_FileHandle :: Get (int &fileID,
+                     int &recordSize,
+                     int &recordPerpage,
+                     int &recordShift,
+                     FileManager *&fm,
+                     BufPageManager *&bpm) const
+{
+    fileID = this->fileID;
+    recordSize = this->recordSize;
+    recordPerpage = this->recordPerpage;
+    recordShift = this->recordShift;
+    fm = this->fm;
+    bpm = this->bpm;
+
+    return 0;
+}
+
+/*
  * Get file ID
  */
 RC RM_FileHandle :: GetID          (int &id)

@@ -63,15 +63,37 @@ public:
                        BufPageManager* bpm,
                        int recordSize,
                        int recordPerpage);              // Set Info
-    RC GetID          (int &id);                        // Get file ID
+    RC Get             (int &fileID,
+                       int &recordSize,
+                       int &recordPerpage,
+                       int &recordShift,
+                       FileManager *&fm,
+                       BufPageManager *&bpm) const;
+    RC GetID          (int &id);                  // Get file ID
     RC GetRec         (const RID &rid, RM_Record &rec) const; // Get a record
     RC InsertRec      (const char *pData, RID &rid);       // Insert a new record, return record id
     RC DeleteRec      (const RID &rid);                    // Delete a record
     RC UpdateRec      (const RM_Record &rec);              // Update a record
-    RC ForcePages     (PageNum pageNum) const; // Write dirty page(s) to disk
+    RC ForcePages     (PageNum pageNum) const; // Write dirty page(s) to dist
 };
 
 class RM_FileScan {
+    FileManager* fm;
+    BufPageManager* bpm;
+    const RM_FileHandle* handle;
+    int fileID;
+    int recordSize;
+    int recordPerpage;
+    int recordShift;
+    int totalpage;
+
+    AttrType attrType;
+    int attrLength;
+    int attrOffset;
+    CompOp compOp;
+    void* value;
+
+    RID currid;
 public:
     RM_FileScan  ();                                // Constructor
     ~RM_FileScan ();                                // Destructor

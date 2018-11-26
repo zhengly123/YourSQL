@@ -7,8 +7,9 @@
 
 #include <cstring>
 #include <iostream>
+#include <string.h>
 #include "rm.h"
 
-const bool D = true;
+const bool D = false;
 
 #endif //YOURSQL_RM_INTERNAL_H
