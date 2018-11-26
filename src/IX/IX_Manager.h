@@ -2,15 +2,19 @@
 // Created by eric on 18-11-26.
 //
 
+#pragma once
 #ifndef YOURSQL_IX_MANAGER_H
 #define YOURSQL_IX_MANAGER_H
 
-#include "../RM/rm.h"
+#include <string>
 #include "IX_PRIVATE.h"
+#include "IX_PUBLIC.h"
+#include "../RM/rm.h"
+using namespace std;
 
 class IX_Manager {
 public:
-    IX_Manager   (FileManager &pfm);              // Constructor
+    IX_Manager   (FileManager &pfm, BufPageManager &bpm);              // Constructor
     ~IX_Manager  ();                             // Destructor
     /**
      * 创建文件并返回。
@@ -38,7 +42,10 @@ public:
                      IX_IndexHandle &indexHandle);
     RC CloseIndex   (IX_IndexHandle &indexHandle);  // Close index
 private:
-    FileManager &fileManager;
+    FileManager &fm;
+    BufPageManager  &bpm;
+
+    string getFileNameWithIndex(const char* fileName, int indexNum);
 };
 
 #endif //YOURSQL_IX_MANAGER_H

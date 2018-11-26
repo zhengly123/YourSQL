@@ -2,11 +2,13 @@
 // Created by eric on 18-11-26.
 //
 
+
+#pragma once
 #ifndef YOURSQL_IX_INDEXSCAN_H
 #define YOURSQL_IX_INDEXSCAN_H
 
-#include "IX_IndexHandle.h"
 #include "../yoursql.h"
+#include "IX_PRIVATE.h"
 
 class IX_IndexScan {
 public:

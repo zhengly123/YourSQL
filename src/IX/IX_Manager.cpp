@@ -3,10 +3,12 @@
 //
 
 #include <sstream>
+#include <cstring>
+#include <cassert>
 #include "IX_Manager.h"
 
-IX_Manager::IX_Manager(FileManager &pfm)
-:fileManager(pfm)
+IX_Manager::IX_Manager(FileManager &pfm, BufPageManager &bpm)
+        : fm(pfm), bpm(bpm)
 {
 
 }
@@ -22,20 +24,63 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
     {
         return IX_INVALID_INDEXNO;
     }
-    string rankFileName;
-    std::ostringstream oss(rankFileName);
-    oss<<fileName<<"."<<indexNo<<".i";
+    string rankFileName = getFileNameWithIndex(fileName, indexNo);
     //TODO: open file with pm and write head
+    // Creating new file
+    fm.createFile(fileName);
+
+    // Open the file
+    int fileID, index;
+    assert(fm.openFile(rankFileName.data(), fileID));
+
+    // #0 : file header
+    BufType b = bpm.allocPage(fileID, 0, index, false);
+
+    IX_Header ixHeader;
+    ixHeader.pageNum=1;
+    ixHeader.pageSize=PAGE_SIZE;
+    ixHeader.rootPage=-1;
+    ixHeader.indexPairSize = attrLength + sizeof(RID);
+    ixHeader.attrType=attrType;
+    ixHeader.attrLength=attrLength;
+    memcpy(b, &ixHeader, sizeof(ixHeader));
+
+    bpm.markDirty(index);
+
+    // #1 : initial data page
+    b = bpm.allocPage(fileID, 1, index, false);
+
+    memset(b, 0, PAGE_SIZE); // refresh the page
+
+    bpm.markDirty(index);
 
     return 0;
 }
 
 RC IX_Manager::OpenIndex(const char *fileName, int indexNo, IX_IndexHandle &indexHandle)
 {
+    int fileID;
+    string rankFileName = getFileNameWithIndex(fileName, indexNo);
+    fm.openFile(rankFileName.data(), fileID);
+
+
+    // Set the necessary message to fileHandle
+    indexHandle.open(fm, bpm, *this, fileID);
+
     return 0;
 }
 
 RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
 {
+    int fileID;
+    indexHandle.getFileID(fileID);
+    fm.closeFile(fileID);
     return 0;
+}
+
+string IX_Manager::getFileNameWithIndex(const char* fileName, int indexNum)
+{
+    string indexFileName;
+    std::ostringstream oss(indexFileName);
+    oss<<fileName<<"."<<indexNum<<".i";
 }
