@@ -25,6 +25,7 @@ RM_Record :: ~RM_Record ()
  */
 RC RM_Record :: GetData    (char *&pData) const
 {
+    pData = this->pData;
     return 0;
 }
 
@@ -33,21 +34,24 @@ RC RM_Record :: GetData    (char *&pData) const
  */
 RC RM_Record :: GetRid     (RID &rid) const
 {
+    rid = this->rid;
     return 0;
 }
 /*
  * Set pData to point to the record's contents
  */
-RC RM_Record :: SetData    (char *pData) const
+RC RM_Record :: SetData    (char *pData)
 {
+    this->pData = pData;
     return 0;
 }
 
 /*
  *
  */
-RC RM_Record :: SetRid     (RID rid) const
+RC RM_Record :: SetRid     (RID rid)
 {
+    this->rid = rid;
     return 0;
 }
 

@@ -16,4 +16,7 @@ enum ClientHint {
     NO_HINT                                     // default value
 };
 
+#include "RM/rm.h"
+#include "PF/pf.h"
+
 #endif //YOURSQL_YOURSQL_H

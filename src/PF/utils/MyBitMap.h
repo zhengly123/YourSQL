@@ -15,10 +15,9 @@ using namespace std;
 #define MAX_INNER_NUM 67
 //#define MOD 61
 #define BIAS 5
+const int hmap[61] = {0,0,1,6,2,22,7,0,3,12,23,15,8,0,0,28,4,0,13,26,24,0,16,0,9,0,0,18,0,0,29,0,5,21,0,11,14,0,27,0,25,0,0,0,17,0,0,20,10,0,0,0,0,0,19,0,0,0,0,31,30};
 
-static unsigned char h[61];
 class MyBitMap {
-
 protected:
 //	static const int LEAF_BIT = 32;
 //	static const int MAX_LEVEL = 5;
@@ -138,7 +137,7 @@ protected:
 	}
 	int _findLeftOne(int level, int offset, int pos, int prevLevelCap) {
 		uint lb = lowbit(inner[offset + pos]);
-		int index = h[_hash(lb)];
+		int index = getIndex(lb);
 		/*if (level == 0) {
 			cout << "level0:" << index << " " << pos << endl;
 		}*/
@@ -163,14 +162,15 @@ public:
 		return i % 61;
 	}
 	static void initConst() {
+	    cerr << "initConst!" << endl;
 		for (int i = 0; i < 32; ++ i) {
 			unsigned int k = (1 << i);
-			h[_hash(k)] = i;
+            //hmap[_hash(k)] = i;
 		}
 	}
 	static int getIndex(uint k)
 	{
-		return h[_hash(k)];
+		return hmap[_hash(k)];
 	}
 	static uint lowbit(uint k) {
 		return (k & (-k));
@@ -204,7 +204,7 @@ public:
 		//cout << i << endl;
 		//cout << data[0] << endl;
 		uint lb = lowbit(getLeafData(i));
-		int index = h[_hash(lb)];
+		int index = getIndex(lb);
 		return (i << BIAS) + index;
 	}
 	MyBitMap(int cap, uint k) {

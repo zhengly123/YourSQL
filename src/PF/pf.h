@@ -5,6 +5,4 @@
 #ifndef YOURSQL_PF_H
 #define YOURSQL_PF_H
 
-
-
 #endif //YOURSQL_PF_H

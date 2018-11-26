@@ -8,6 +8,7 @@
 #include "../PF/bufmanager/BufPageManager.h"
 #include "../PF/fileio/FileManager.h"
 #include "../yoursql.h"
+#include "RM_Error.h"
 
 typedef int PageNum;
 typedef int SlotNum;
@@ -28,6 +29,8 @@ public:
     PageNum GetPageNum () const;  // Return slot number
     SlotNum GetSlotNum () const;  // Return slot number
     bool operator ==(RID &b) const;
+    PageNum Page() const {return pageNum;} // Return page number
+    SlotNum Slot() const {return slotNum;}  // Return slot number
 };
 
 class RM_Record
@@ -40,8 +43,8 @@ public:
     RC GetData    (char *&pData) const;   // Set pData to point to the record's contents
     RC GetRid     (RID &rid) const;       // Get the record id
 
-    RC SetData    (char *pData) const;   // Set pData to point to the record's contents
-    RC SetRid     (RID rid) const;       // Set the record id
+    RC SetData    (char *pData);   // Set pData to point to the record's contents
+    RC SetRid     (RID rid);       // Set the record id
 };
 
 class RM_Manager;
@@ -64,15 +67,37 @@ public:
                        BufPageManager* bpm,
                        int recordSize,
                        int recordPerpage);              // Set Info
-    RC GetID          (int &id);                        // Get file ID
+    RC Get             (int &fileID,
+                       int &recordSize,
+                       int &recordPerpage,
+                       int &recordShift,
+                       FileManager *&fm,
+                       BufPageManager *&bpm) const;
+    RC GetID          (int &id);                  // Get file ID
     RC GetRec         (const RID &rid, RM_Record &rec) const; // Get a record
     RC InsertRec      (const char *pData, RID &rid);       // Insert a new record, return record id
     RC DeleteRec      (const RID &rid);                    // Delete a record
     RC UpdateRec      (const RM_Record &rec);              // Update a record
-    RC ForcePages     (PageNum pageNum) const; // Write dirty page(s) to disk
+    RC ForcePages     (PageNum pageNum) const; // Write dirty page(s) to dist
 };
 
 class RM_FileScan {
+    FileManager* fm;
+    BufPageManager* bpm;
+    const RM_FileHandle* handle;
+    int fileID;
+    int recordSize;
+    int recordPerpage;
+    int recordShift;
+    int totalpage;
+
+    AttrType attrType;
+    int attrLength;
+    int attrOffset;
+    CompOp compOp;
+    void* value;
+
+    RID currid;
 public:
     RM_FileScan  ();                                // Constructor
     ~RM_FileScan ();                                // Destructor

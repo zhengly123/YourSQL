@@ -7,9 +7,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "../pf.h"
 #include "../utils/MyBitMap.h"
-#include "../utils/pagedef.h"
 //#include "../MyLinkList.h"
+#include "../fileio/FileManager.h"
+#include "../fileio/FileTable.h"
+#include "../utils/MyHashMap.h"
+#include "../utils/MyLinkList.h"
+#include "../utils/pagedef.h"
+
 using namespace std;
 class FileManager {
 private:
@@ -117,6 +123,7 @@ public:
 	bool openFile(const char* name, int& fileID) {
 		fileID = fm->findLeftOne();
 		fm->setBit(fileID, 0);
+		//cerr << "Openfile : " << fileID << endl;
 		_openFile(name, fileID);
 		return true;
 	}

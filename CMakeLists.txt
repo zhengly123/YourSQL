@@ -3,7 +3,6 @@ project(YourSQL)
 
 set(CMAKE_CXX_STANDARD 14)
 
-
 add_executable(YourSQL
         src/PF/bufmanager/BufPageManager.h
         src/PF/bufmanager/FindReplace.h
@@ -22,4 +21,9 @@ add_executable(YourSQL
         src/RM/RM_FileScan.cpp
         src/RM/RM_Manager.cpp
         src/RM/RM_Record.cpp
-        src/testmain.cpp src/IX/IX_Manager.cpp src/IX/IX_Manager.h src/IX/IX_IndexHandle.cpp src/IX/IX_IndexHandle.h src/IX/IX_IndexScan.cpp src/IX/IX_IndexScan.h src/IX/IX_PUBLIC.h src/IX/IX_PRIVATE.h src/IX/BPlusTreeNode.cpp src/IX/BPlusTreeNode.h)
+        src/testmain.cpp src/IX/IX_Manager.cpp src/IX/IX_Manager.h src/IX/IX_IndexHandle.cpp src/IX/IX_IndexHandle.h src/IX/IX_IndexScan.cpp src/IX/IX_IndexScan.h src/IX/IX_PUBLIC.h src/IX/IX_PRIVATE.h src/IX/BPlusTreeNode.cpp src/IX/BPlusTreeNode.h
+        src/RM_Test/rmtest.h
+        src/RM_Test/test_basic1.cpp
+        src/RM_Test/test_massive1.cpp
+        src/PF_Test/pftest.h
+        src/PF_Test/test.cpp src/RM_Test/test_error.cpp src/RM/RM_Error.cpp src/RM/RM_Error.h)
