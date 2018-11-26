@@ -12,7 +12,7 @@
 //}
 
 BPlusTreeNode::BPlusTreeNode(AttrType attrType, int attrLength,
-        bool isLeaf, int n)
+        bool isLeaf)
         : attrType(attrType), attrLength(attrLength), isLeaf(0), n(0)
 {
     memset(keys, 0, sizeof(keys));
@@ -65,9 +65,9 @@ RC BPlusTreeNode::insert(void* key, const RID &value)
     return 0;
 }
 
-bool BPlusTreeNode::full()
+bool BPlusTreeNode::overfull()
 {
-    return n == M;
+    return n == M+1;
 }
 
 inline int BPlusTreeNode::firstGeaterIndex(void *key)
@@ -75,4 +75,14 @@ inline int BPlusTreeNode::firstGeaterIndex(void *key)
     int t;
     for (t=0;t<n&&less(key,keys+t*attrLength);++t);
     return t;
+}
+
+void *BPlusTreeNode::getKey(int k)
+{
+    return keys+k*KEYSIZE;
+}
+
+bool BPlusTreeNode::full()
+{
+    return n == M;
 }
