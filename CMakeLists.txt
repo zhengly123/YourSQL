@@ -22,4 +22,4 @@ add_executable(YourSQL
         src/RM/RM_FileScan.cpp
         src/RM/RM_Manager.cpp
         src/RM/RM_Record.cpp
-        src/testmain.cpp src/IX/IX_Manager.cpp src/IX/IX_Manager.h src/IX/IX_IndexHandle.cpp src/IX/IX_IndexHandle.h src/IX/IX_IndexScan.cpp src/IX/IX_IndexScan.h src/IX/IX_PUBLIC.h src/IX/IX_PRIVATE.h)
+        src/testmain.cpp src/IX/IX_Manager.cpp src/IX/IX_Manager.h src/IX/IX_IndexHandle.cpp src/IX/IX_IndexHandle.h src/IX/IX_IndexScan.cpp src/IX/IX_IndexScan.h src/IX/IX_PUBLIC.h src/IX/IX_PRIVATE.h src/IX/BPlusTreeNode.cpp src/IX/BPlusTreeNode.h)

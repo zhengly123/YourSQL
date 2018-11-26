@@ -4,6 +4,7 @@
 
 #ifndef YOURSQL_YOURSQL_H
 #define YOURSQL_YOURSQL_H
+#include <cassert>
 
 using RC = int;
 

@@ -8,6 +8,7 @@
 
 #include "../RM/rm.h"
 #include "IX_PRIVATE.h"
+#include "BPlusTreeNode.h"
 
 class IX_IndexHandle {
 public:
@@ -37,6 +38,11 @@ private:
     IX_Header ixHeader;
     int fileID;
 
+    RC createNode(PageNum &pageNum, BPlusTreeNode &node);
+    RC treeInsert(int c, int p, void *pData, const RID &rid);
+
+    // Do not change position of node in terms of  page
+    RC splitChild(BPlusTreeNode *node, int ch);
 };
 
 #endif //YOURSQL_IX_INDEXHANDLE_H
