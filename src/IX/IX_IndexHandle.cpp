@@ -357,7 +357,7 @@ RC IX_IndexHandle::DeleteEntry(void *key, const RID &value)
         node->chRIDs[k-1].GetPageNum(c);
         nextNode = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
         bpm->markDirty(bufferIndex);
-        if (nextNode->isLeaf && cmp(node->getKey(k-1),key,NO_OP))
+        if (nextNode->isLeaf && cmp(node->getKey(k-1),key,NE_OP))
             return IX_NO_INDEX_EXIST;
         node=nextNode;
     }
@@ -458,7 +458,7 @@ bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp, AttrType attrType)
         case GE_OP:
             return !cmp(a, b, LT_OP, attrType);
         case NO_OP:
-            return !cmp(a, b, EQ_OP, attrType);
+            return true;
     }
     assert(false);
     return false;
@@ -477,7 +477,7 @@ RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node, void *key, const RID &v
                                                   nextBufferIndex);
         bpm->markDirty(nextBufferIndex);
         assert(nextNode->n);
-        if (cmp(nextNode->getKey(0),key,NO_OP))
+        if (cmp(nextNode->getKey(0),key,NE_OP))
             break;
         curNode=nextNode;
     }
