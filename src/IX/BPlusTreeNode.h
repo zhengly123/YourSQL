@@ -21,20 +21,28 @@ public:
     AttrType attrType;
     int attrLength;
     // To support different attrType, char array is used to store keys
-    char keys[KEYSARRAYSIZE];
-    bool rmFlag[M];
-    RID chRIDs[M];
+    char keys[KEYS_ARRAY_SIZE];
+    bool rmFlag[M+1];
+    RID chRIDs[M+1];
     bool isLeaf;
     int n;              // number of children
-    RID parent, succ;
+    RID parent;
+    // if this is a leaf node, than it should have successor
+    RID nextInList;
 
     RC insert(void* key,const RID &value);
+    RC insertFirstChild(const RID &value);
     RC remove(void* key,const RID &value);
-    bool less(void * a, void * b);
-    bool equal(void *a, void *b);
+//    bool less(void * a, void * b);
+//    bool equal(void *a, void *b);
     bool full();
     bool overfull();
     void* getKey(int k);
+    /**
+     *
+     * @param key
+     * @return The index of first key greater than given key.
+     */
     int firstGreaterIndex(void *key);
 };
 

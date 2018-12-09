@@ -85,3 +85,8 @@ RC RID::SetSlotNum(SlotNum slotNum)
 {
     this->slotNum=slotNum;
 }
+
+RID::RID(PageNum pageNum, SlotNum slotNum)
+:pageNum(pageNum),slotNum(slotNum)
+{
+}

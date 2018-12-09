@@ -12,12 +12,11 @@ RC IX_IndexHandle::open(FileManager &fm, BufPageManager &bpm,
     this->fm = &fm;
     this->bpm=&bpm;
     this->ixManager=&ixManager;
-    this->ixHeader=ixHeader;
     this->fileID = fileID;
     int index;
-    IX_Header ixHeader;
     BufType b = bpm.getPage(fileID, 0, index);
-    memcpy(&ixHeader, b, sizeof(ixHeader));
+    memcpy(&this->ixHeader, b, sizeof(this->ixHeader));
+    //TODO: index没有读出来
     bpm.access(index);
 
     // Whether create root?
@@ -35,30 +34,40 @@ void IX_IndexHandle::getFileID(int &fileID)
 }
 
 
-RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
+RC IX_IndexHandle::InsertEntry(void *key, const RID &value)
 {
     RC rc;
-    int &root=ixHeader.rootPage;
-    if (root<=0)// if there is no root node
+    int &rootPage=ixHeader.rootPage;
+    if (rootPage<=0)// if there is no rootPage node
     {
-        BPlusTreeNode node(ixHeader.attrType,ixHeader.attrLength,
-                           true);
-        node.insert(pData, rid);
-        rc = createNode(root, node);
-        assert(rc);
-        return 0;
+        BPlusTreeNode node(ixHeader.attrType, ixHeader.attrLength, false);
+        node.n=1;
+        node.chRIDs[0].Set(-999999999, -999999999);
+//        node.insert(key, value);
+        rc = createNode(rootPage, node);
+        assert(rc==0);
+//        return 0;
     }
-    else
-    {
-//        int bufferIndex;
-//        BPlusTreeNode *node;
-//        node = (BPlusTreeNode*)bpm->getPage(fileID, root, bufferIndex);
-//        if (node->full())// if root is full
-//            splitChild(node, -1, );
-        rc=treeInsert(root,0,pData,rid);
+//    else
+//    {
+        int bufferIndex, childK;
+        BPlusTreeNode *rootNode;
+
+        rc=treeInsert(rootPage,0,key,value);
+        rootNode = (BPlusTreeNode*)bpm->getPage(fileID, rootPage, bufferIndex);
+        bpm->markDirty(bufferIndex);
+        if (rootNode->overfull())
+        {
+            BPlusTreeNode newRootNode(ixHeader.attrType, ixHeader.attrLength, false);// new node
+            int newRootPageNum;
+            createNode(newRootPageNum, newRootNode);
+            newRootNode.insertFirstChild(RID(rootPage, 0));
+            splitChild(&newRootNode, rootNode, RID(0,0));
+            rootPage = newRootPageNum;
+        }
         return rc;
-    }
-    return 0;
+//    }
+//    return 0;
 }
 
 RC IX_IndexHandle::createNode(PageNum &pageNum, BPlusTreeNode &node)
@@ -74,121 +83,174 @@ RC IX_IndexHandle::createNode(PageNum &pageNum, BPlusTreeNode &node)
     return 0;
 }
 
-RC IX_IndexHandle::treeInsert(int c, int dep, void *pData, const RID &rid)
+RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
 {
     assert(c>0);
-    int rc, bufferIndex, childC;
+    int rc, bufferIndex, childK;
     BPlusTreeNode *node;
     node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
-    path[dep] = c;
+    bpm->markDirty(bufferIndex);
+//    path[dep] = c;
     if (node->isLeaf)
     {
-        if (node->full())
-            return IX_LEAF_SPLIT_UNIMPLETATED;
-        node->insert(pData,rid);
-        bpm->markDirty(bufferIndex);
-        if (node->overfull())
-        {
-            rc = split(dep);
-            assert(rc);
-        }
+        assert((rc=insertIntoLeaves(node,key,value))==0);
     } else {// continue search
-        childC = node->firstGreaterIndex(pData);
-        pathChild[dep] = childC;
-        rc = treeInsert(childC, dep + 1, pData, rid);
-        return rc;
+        childK = node->firstGreaterIndex(key);
+//        pathChild[dep] = childK;
+        int childPage=node->chRIDs[childK].GetPageNum();
+        int childBufferIndex;
+        BPlusTreeNode *childNode;
+
+        childNode = (BPlusTreeNode*)bpm->getPage(fileID, childPage, childBufferIndex);
+        if (childNode->isLeaf)
+        {
+            if (cmp(node->getKey(childK), key, EQ_OP) == false)
+            {
+                //create a leaf and insert the KV pair
+                int newPageNum;
+                BPlusTreeNode newLeafNode(ixHeader.attrType, ixHeader.attrLength, true);
+
+                // maintain the linked list
+                assert(childK>=1);// there is no deletion
+                int prepPage=node->chRIDs[childK].GetPageNum();
+                int prepBufferIndex;
+                BPlusTreeNode *prepNode = (BPlusTreeNode *) bpm->getPage(fileID,
+                        prepPage, prepBufferIndex);
+                newLeafNode.nextInList = prepNode->nextInList;
+
+                createNode(newPageNum, newLeafNode);
+                prepNode->nextInList = RID(newPageNum, 0);
+
+                assert((rc = node->insert(key, RID(newPageNum, 0)))==0);
+
+                childK = node->firstGreaterIndex(key);
+                childNode=&newLeafNode;
+            }
+            assert(cmp(node->getKey(childK - 1), key, EQ_OP) == 1);//DEBUG
+            // children index of last level nodes above leaves is different from others
+            childPage = node->chRIDs[childK - 1].GetPageNum();
+        }
+        assert((rc = treeInsert(childPage, dep + 1, key, value))==0);
+
+        // check the size of child and split
+        if (childNode->n>M)
+        {
+            splitChild(node, childNode, node->chRIDs[childK]);
+        }
     }
     return 0;
 }
 
-RC IX_IndexHandle::split(int depth)
+RC IX_IndexHandle::splitChild(BPlusTreeNode *parentNode, BPlusTreeNode *childNode, RID childRID)
 {
-    const int c=path[depth];
-    int rc, bufferIndex;
-    BPlusTreeNode *node;
-    node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
-    if (!node->overfull())
-        return 0;
-    assert(node->overfull());
+    int rc;
+    BPlusTreeNode newNode(ixHeader.attrType, ixHeader.attrLength, false);// new node
+    int newPageNum;
 
-    //TODO: 必须要区分是否是叶子节点，叶子节点新增一个插入项，非叶子节点转移一个。
-    // If full, spilt it
-    BPlusTreeNode y(ixHeader.attrType, ixHeader.attrLength, node->isLeaf);// new node
-    int yPageNum;
-
-    // copy right part[mid+1,M)]
+    assert(childNode->overfull());//DEBUG n=M+1
+    // copy right part[mid+1,M+1]
     int mid=M/2;
-    memcpy(y.keys, node->getKey(mid + 1), KEYSIZE * (M-mid-1));
-    memcpy(y.chRIDs, node->chRIDs+mid+1, KEYSIZE * (M-mid));
-    createNode(yPageNum, y);
-    y.n = M - mid;
-    if (pathChild[depth]>=mid)//node between depth ~ depth+1
-    {
-        path[depth]=yPageNum;
-        pathChild[depth] -= mid;
-    }
-//    yPageNum=ixHeader.pageNum++;
-//    fm->writePage(fileID, yPageNum, (unsigned int*)&y, 0);
+    newNode.n = childNode->n - mid - 1;
+    newNode.nextInList=childNode->nextInList;
+    memcpy(newNode.keys, childNode->getKey(mid + 1), KEY_SIZE * (newNode.n - 1));
+    memcpy(newNode.chRIDs, childNode->chRIDs + mid + 1, KEY_SIZE * (newNode.n));
+    createNode(newPageNum, newNode);
 
-    if (depth==0)// root split
-    {
-        BPlusTreeNode r(ixHeader.attrType, ixHeader.attrLength, false);// new root
-        char midKey[KEYSIZE];
-        memcpy(midKey, node->getKey(M / 2), KEYSIZE);
-        memset(node->getKey(M / 2), 0, KEYSIZE);
-        node->n--;
-        node->isLeaf=true;
-        for (int j = M / 2 + 1; j < M - 1; ++j)
-        {
-            // start index of y
-            int i = j - (M / 2 + 1);
-            copyKey(&y, i, node, j);
-//            y.chRIDs[i] = node->chRIDs[j];
-//            y.n++;
-            node->chRIDs[i].Set(0, 0);
-            node->n--;
-        }
-        for (int i = 0; i < M; ++i)
-        {
-            node->chRIDs[i].Set(0, 0);
-        }
-        PageNum pageNum;
-        createNode(pageNum, y);
-
-        memcpy(r.getKey(0), midKey, KEYSIZE);
-        r.chRIDs[0].Set(c, 0);
-        r.chRIDs[1].Set(pageNum, 0);
-
-        createNode(pageNum, r);
-        ixHeader.rootPage=pageNum;
-    } else {// non-root split
-        if (node->isLeaf)
-        {
-            //TODO
-            return IX_LEAF_SPLIT_UNIMPLETATED;
-        }
-        else
-        {
-            rc = treeInsertUp(path[depth - 1], depth, node->getKey(mid),
-                              node->chRIDs[mid],yPageNum);
-            assert(rc);
-            node->n = mid - 1;
-        }
-    }
-    return 0;
+    childNode->nextInList = RID(newPageNum, 0);
+    childNode->n = mid + 1;
+    // insert to parent node
+    assert(rc=parentNode->insert(childNode->getKey(mid), RID(newPageNum, 0)));
 }
 
-RC IX_IndexHandle::treeInsertUp(int c, int dep, void *pData, const RID &rid, PageNum newChild)
-{
-    int bufferIndex;
-    BPlusTreeNode *node;
-    node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
-    if (node->overfull())
-        split(dep-1);
-    assert(!node->overfull());
+//RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node,void *key, const RID &value)
+//RC IX_IndexHandle::split(int depth)
+//{
+//    const int c=path[depth];
+//    int rc, bufferIndex;
+//    BPlusTreeNode *node;
+//    node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+//    if (!node->overfull())
+//        return 0;
+//    assert(node->overfull());
+//
+//    //TODO: 必须要区分是否是叶子节点，叶子节点新增一个插入项，非叶子节点转移一个。
+//    // If full, spilt it
+//    BPlusTreeNode y(ixHeader.attrType, ixHeader.attrLength, node->isLeaf);// new node
+//    int yPageNum;
+//
+//    // copy right part[mid+1,M)]
+//    int mid=M/2;
+//    memcpy(y.keys, node->getKey(mid + 1), KEY_SIZE * (M-mid-1));
+//    memcpy(y.chRIDs, node->chRIDs+mid+1, KEY_SIZE * (M-mid));
+//    createNode(yPageNum, y);
+//    y.n = M - mid;
+//    if (pathChild[depth]>=mid)//node between depth ~ depth+1
+//    {
+//        path[depth]=yPageNum;
+//        pathChild[depth] -= mid;
+//    }
+////    yPageNum=ixHeader.pageNum++;
+////    fm->writePage(fileID, yPageNum, (unsigned int*)&y, 0);
+//
+//    if (depth==0)// root split
+//    {
+//        BPlusTreeNode r(ixHeader.attrType, ixHeader.attrLength, false);// new root
+//        char midKey[KEY_SIZE];
+//        memcpy(midKey, node->getKey(M / 2), KEY_SIZE);
+//        memset(node->getKey(M / 2), 0, KEY_SIZE);
+//        node->n--;
+//        node->isLeaf=true;
+//        for (int j = M / 2 + 1; j < M - 1; ++j)
+//        {
+//            // start index of y
+//            int i = j - (M / 2 + 1);
+//            copyKey(&y, i, node, j);
+////            y.chRIDs[i] = node->chRIDs[j];
+////            y.n++;
+//            node->chRIDs[i].Set(0, 0);
+//            node->n--;
+//        }
+//        for (int i = 0; i < M; ++i)
+//        {
+//            node->chRIDs[i].Set(0, 0);
+//        }
+//        PageNum pageNum;
+//        createNode(pageNum, y);
+//
+//        memcpy(r.getKey(0), midKey, KEY_SIZE);
+//        r.chRIDs[0].Set(c, 0);
+//        r.chRIDs[1].Set(pageNum, 0);
+//
+//        createNode(pageNum, r);
+//        ixHeader.rootPage=pageNum;
+//    } else {// non-root split
+//        if (node->isLeaf)
+//        {
+//            //TODO
+//            return IX_LEAF_SPLIT_UNIMPLETATED;
+//        }
+//        else
+//        {
+//            rc = treeInsertUp(path[depth - 1], depth, node->getKey(mid),
+//                              node->chRIDs[mid],yPageNum);
+//            assert(rc);
+//            node->n = mid - 1;
+//        }
+//    }
+//    return 0;
+//}
 
-    return 0;
-}
+//RC IX_IndexHandle::treeInsertUp(int c, int dep, void *pData, const RID &rid, PageNum newChild)
+//{
+//    int bufferIndex;
+//    BPlusTreeNode *node;
+//    node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+//    if (node->overfull())
+//        split(dep-1);
+//    assert(!node->overfull());
+//
+//    return 0;
+//}
 
 //RC IX_IndexHandle::treeInsert(int c, int p, void *pData, const RID &rid)
 //{
@@ -235,9 +297,9 @@ RC IX_IndexHandle::treeInsertUp(int c, int dep, void *pData, const RID &rid, Pag
 //            ixHeader.attrLength, true);
 //    if (ch == -1)//This can only append on the root node
 //    {
-//        char midKey[KEYSIZE];
-//        memcpy(midKey, node->getKey(M / 2), KEYSIZE);
-//        memset(node->getKey(M / 2), 0, KEYSIZE);
+//        char midKey[KEY_SIZE];
+//        memcpy(midKey, node->getKey(M / 2), KEY_SIZE);
+//        memset(node->getKey(M / 2), 0, KEY_SIZE);
 //        node->n--;
 //        node1 = new BPlusTreeNode(ixHeader.attrType, ixHeader.attrLength,
 //                                  false);
@@ -259,7 +321,7 @@ RC IX_IndexHandle::treeInsertUp(int c, int dep, void *pData, const RID &rid, Pag
 //        PageNum pageNum;
 //        createNode(pageNum, *node3);
 //
-//        memcpy(node1->getKey(0), midKey, KEYSIZE);
+//        memcpy(node1->getKey(0), midKey, KEY_SIZE);
 //        node1->chRIDs[0].Set(ch, 0);
 //        node1->chRIDs[1].Set(pageNum, 0);
 //
@@ -328,35 +390,40 @@ RC IX_IndexHandle::getMinimalIndex(RID &rid) const
 RC IX_IndexHandle::next(RID &iterator, RID &dataRID, void* key) const
 {
 
-    BPlusTreeNode *node;
-    int bufferIndex;
-
-    node = (BPlusTreeNode*)bpm->getPage(fileID, iterator.GetPageNum(),
-            bufferIndex);
-    do
-    {
-        if (iterator.GetSlotNum() + 1 < node->n)
-        {
-            iterator.SetSlotNum(iterator.GetSlotNum()+1);
-        } else {
-            iterator.Set(node->succ.GetPageNum(),0);
-        }
-        if (iterator.GetPageNum()<=0)
-        {
-            return IX_ITERATOR_TO_END;
-        }
-    } while(node->rmFlag[iterator.GetSlotNum()]);
-    dataRID = node->chRIDs[iterator.GetSlotNum()];
-    memcpy(key, node->getKey(iterator.GetSlotNum()), ixHeader.attrLength);
-    return 0;
+//    BPlusTreeNode *node;
+//    int bufferIndex;
+//
+//    node = (BPlusTreeNode*)bpm->getPage(fileID, iterator.GetPageNum(),
+//            bufferIndex);
+//    do
+//    {
+//        if (iterator.GetSlotNum() + 1 < node->n)
+//        {
+//            iterator.SetSlotNum(iterator.GetSlotNum()+1);
+//        } else {
+//            iterator.Set(node->succ.GetPageNum(),0);
+//        }
+//        if (iterator.GetPageNum()<=0)
+//        {
+//            return IX_ITERATOR_TO_END;
+//        }
+//    } while(node->rmFlag[iterator.GetSlotNum()]);
+//    dataRID = node->chRIDs[iterator.GetSlotNum()];
+//    memcpy(key, node->getKey(iterator.GetSlotNum()), ixHeader.attrLength);
+//    return 0;
 }
 
 bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp) const
 {
+    return IX_IndexHandle::cmp(a, b, compOp, ixHeader.attrType);
+}
+
+bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp, AttrType attrType)
+{
     switch (compOp)
     {
         case LT_OP:
-            switch (ixHeader.attrType)
+            switch (attrType)
             {
                 case INT:
                     return *(int*)(a)<*(int*)(b);
@@ -367,19 +434,79 @@ bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp) const
             }
             assert(false);
         case GT_OP:
-            return !cmp(a, b, LT_OP);
+            return !cmp(a, b, LT_OP, attrType);
         case EQ_OP:
-            return !cmp(a, b, LT_OP)&&!cmp(b, a, LT_OP);
+            return !cmp(a, b, LT_OP, attrType)&&!cmp(b, a, LT_OP, attrType);
         case NE_OP:
-            return !cmp(a, b, EQ_OP);
+            return !cmp(a, b, EQ_OP, attrType);
         case LE_OP:
-            return !cmp(a, b, GT_OP);
+            return !cmp(a, b, GT_OP, attrType);
         case GE_OP:
-            return !cmp(a, b, LT_OP);
+            return !cmp(a, b, LT_OP, attrType);
         case NO_OP:
-            return !cmp(a, b, EQ_OP);
+            return !cmp(a, b, EQ_OP, attrType);
     }
     assert(false);
     return false;
+}
+
+RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node, void *key, const RID &value)
+{
+    if (node->n<M)
+    {
+        node->insert(key,value);
+        return 0;
+    } else{
+        //TODO: UNLIMITED_DUPLICATE_KEY
+        return IX_UNLIMITED_DUPLICATE_KEY;
+    }
+}
+
+void IX_IndexHandle::printBPT()
+{
+    RC rc;
+    int &root=ixHeader.rootPage;
+    if (root<=0)// if there is no root node
+    {
+        printf("No root.");
+    }
+    else
+    {
+        printDFS(RID(root, 0), 1);
+    }
+}
+
+void IX_IndexHandle::printDFS(const RID rid, int intend)
+{
+    for (int i = 0; i < intend; ++i)
+        printf("  ");
+
+    int rc, bufferIndex, childK;
+    BPlusTreeNode *node = (BPlusTreeNode *) bpm->getPage(fileID, rid.GetPageNum(), bufferIndex);
+
+    printf("isleaf=%d||",node->isLeaf);
+    for (int i=0;i<node->n;++i)
+    {
+        if (node->isLeaf)
+            printf("(%d,%d;%d)",node->chRIDs[i].GetPageNum(),node->chRIDs[i].GetSlotNum(),
+                    node->keys[i]);
+        else
+            printf("(%d;%d)",node->chRIDs[i].GetPageNum(), node->keys[i]);
+    }
+    printf("(%d)\n",node->chRIDs[node->n].GetPageNum());
+    for (int i = 0; i < node->n - 1; ++i)
+    {
+        printDFS(node->chRIDs[i],intend+1);
+    }
+}
+
+IX_IndexHandle::IX_IndexHandle()
+{
+
+}
+
+IX_IndexHandle::~IX_IndexHandle()
+{
+
 }
 

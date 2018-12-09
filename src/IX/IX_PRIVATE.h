@@ -9,11 +9,14 @@
 #include "../yoursql.h"
 #include "IX_PUBLIC.h"
 
-// M of B+ Tree
+// M of B+ Tree. The maximum number of children which should be
+// the maximum number of keys + 1.
 const int M=5;
+const int MAX_NUM_KEY=M-1;
+const int MAX_NUM_CHILDREN=M;
 // i.e. maximum length of String
-const int KEYSIZE=10;
-const int KEYSARRAYSIZE=(M-1)*KEYSIZE;
+const int KEY_SIZE=10;
+const int KEYS_ARRAY_SIZE=(M+1)*KEY_SIZE;
 
 class BPlusTreeNode;
 class IX_Manager;

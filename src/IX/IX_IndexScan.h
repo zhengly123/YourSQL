@@ -24,7 +24,7 @@ private:
     const IX_IndexHandle *indexHandle;
     RID iterator;
     CompOp compOp;
-    char *targetValue[KEYSIZE];
+    char *targetValue[KEY_SIZE];
 };
 
 

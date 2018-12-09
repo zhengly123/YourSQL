@@ -41,7 +41,7 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
     int rc, start = rid.GetSlotNum() + 1;
     //TODO: get page and search
     RID dataRID;
-    char key[KEYSIZE];
+    char key[KEY_SIZE];
     indexHandle->next(iterator, dataRID, key);
     while (indexHandle->cmp(targetValue, key, compOp))
     {

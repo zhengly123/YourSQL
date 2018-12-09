@@ -13,54 +13,57 @@
 
 BPlusTreeNode::BPlusTreeNode(AttrType attrType, int attrLength,
         bool isLeaf)
-        : attrType(attrType), attrLength(attrLength), isLeaf(0), n(0)
+        : attrType(attrType), attrLength(attrLength), isLeaf(isLeaf), n(0)
 {
     memset(keys, 0, sizeof(keys));
     memset(chRIDs, 0, sizeof(chRIDs));
+    memset(rmFlag, 0, sizeof(rmFlag));
 }
 
-bool BPlusTreeNode::less(void *a, void *b)
-{
-    switch (attrType)
-    {
-        case INT:
-            return *(int*)(a)<*(int*)(b);
-        case FLOAT:
-            return *(float*)(a)<*(float*)(b);
-        case STRING:
-            return strcmp((char *) (a), (char *) (b)) < 0;
-    }
-    assert(false);
-}
+//bool BPlusTreeNode::less(void *a, void *b)
+//{
+//    switch (attrType)
+//    {
+//        case INT:
+//            return *(int*)(a)<*(int*)(b);
+//        case FLOAT:
+//            return *(float*)(a)<*(float*)(b);
+//        case STRING:
+//            return strcmp((char *) (a), (char *) (b)) < 0;
+//    }
+//    assert(false);
+//}
 
 RC BPlusTreeNode::insert(void* key, const RID &value)
 {
-    assert(n<M);
+    assert(n<=M);
     if (isLeaf)
     {
         if (n < M)
         {
-            memcpy(keys + (n - 1) * attrLength, key, (unsigned int) attrLength);
+            memcpy(keys + n * attrLength, key, (unsigned int) attrLength);
             chRIDs[n] = value;
             ++n;
             return 0;
         }
         else
         {
-            //TODO: split the node and insert
+            //TODO: append the block
             return IX_RID_OF_SAME_ATTR_EXCEED;
         }
     }
     else
     {
-        int t= firstGreaterIndex(key);
-
-        memmove(keys + (t + 1) * attrLength, keys + (t + 1) * attrLength, attrLength * (n - t));
-        memcpy(keys + t * attrLength, key, attrLength);
-        //Do not apply chRIDs with memcpy
-        for (int i = n - 1; i >= t; --i)
+        int t = firstGreaterIndex(key);
+        assert(t>=0);
+        // insert key to keys[t]
+        // move keys[t,n-1)
+        memmove(getKey(t+1), getKey(t), attrLength * (n - 1 - t));
+        memcpy(keys + (t) * attrLength, key, attrLength);
+        // move child[t+1,n)
+        for (int i = n - 1; i >= t + 1; --i)
             chRIDs[i + 1] = chRIDs[i];
-        chRIDs[t]=value;
+        chRIDs[t + 1] = value;
     }
     return 0;
 }
@@ -73,13 +76,14 @@ bool BPlusTreeNode::overfull()
 inline int BPlusTreeNode::firstGreaterIndex(void *key)
 {
     int t;
-    for (t=0;t<n&&!less(keys+t*attrLength,key);++t);
+    for (t = 0; t < n && !IX_IndexHandle::cmp(keys + t * attrLength, key,
+             EQ_OP, attrType); ++t);
     return t;
 }
 
 void *BPlusTreeNode::getKey(int k)
 {
-    return keys+k*KEYSIZE;
+    return keys+k*KEY_SIZE;
 }
 
 bool BPlusTreeNode::full()
@@ -89,17 +93,25 @@ bool BPlusTreeNode::full()
 
 RC BPlusTreeNode::remove(void* key,const RID &value)
 {
-    int k;
-    k = firstGreaterIndex(key);
-    assert(k>0);
-    //TODO: duplicate process
-    assert(equal(getKey(k-1),key));
-    assert(value==chRIDs[k-1]);
-    rmFlag[k - 1] = true;
+//    int k;
+//    k = firstGreaterIndex(key);
+//    assert(k>0);
+//    //TODO: duplicate process
+//    assert(IX_IndexHandle::cmp(getKey(k-1),key, EQ_OP, attrType));
+//    assert(value==chRIDs[k-1]);
+//    rmFlag[k - 1] = true;
+//    return 0;
+}
+
+RC BPlusTreeNode::insertFirstChild(const RID &value)
+{
+    assert(n==0);
+    chRIDs[0] = value;
+    n = 1;
     return 0;
 }
 
-bool BPlusTreeNode::equal(void *a, void *b)
-{
-    return !less(a, b) && !less(b, a);
-}
+//bool BPlusTreeNode::equal(void *a, void *b)
+//{
+//    return !less(a, b) && !less(b, a);
+//}

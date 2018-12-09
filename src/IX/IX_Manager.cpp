@@ -25,8 +25,8 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
         return IX_INVALID_INDEXNO;
     }
     string rankFileName = getFileNameWithIndex(fileName, indexNo);
-    // Creating new file
-    fm.createFile(fileName);
+    // Creating new rank file
+    fm.createFile(rankFileName.data());
 
     // Open the file
     int fileID, index;
@@ -52,6 +52,8 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
     memset(b, 0, PAGE_SIZE); // refresh the page
 
     bpm.markDirty(index);
+    bpm.close();
+    fm.closeFile(fileID);
 
     return 0;
 }
@@ -87,9 +89,9 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
 
 string IX_Manager::getFileNameWithIndex(const char* fileName, int indexNum)
 {
-    string indexFileName;
-    std::ostringstream oss(indexFileName);
+    std::ostringstream oss;
     oss<<fileName<<"."<<indexNum<<".i";
+    return oss.str();
 }
 
 RC IX_Manager::DestroyIndex(const char *fileName, int indexNo)

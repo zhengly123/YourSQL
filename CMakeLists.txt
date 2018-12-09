@@ -26,4 +26,8 @@ add_executable(YourSQL
         src/RM_Test/test_basic1.cpp
         src/RM_Test/test_massive1.cpp
         src/PF_Test/pftest.h
-        src/PF_Test/test.cpp src/RM_Test/test_error.cpp src/RM/RM_Error.cpp src/RM/RM_Error.h)
+        src/PF_Test/test.cpp src/RM_Test/test_error.cpp src/RM/RM_Error.cpp src/RM/RM_Error.h
+#        src/IX/struct.h src/IX/Tree.h
+#        src/IX/BPlusTree.cpp src/IX/BPlusTree.h
+        src/IX_Test/ixtest.h src/IX_Test/test.cpp
+        )
