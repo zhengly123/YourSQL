@@ -97,11 +97,15 @@ RC BPlusTreeNode::remove(void* key,const RID &value)
 //    int k;
 //    k = firstGreaterIndex(key);
 //    assert(k>0);
-//    //TODO: duplicate process
-//    assert(IX_IndexHandle::cmp(getKey(k-1),key, EQ_OP, attrType));
+    //TODO: duplicate process
+//  assert(IX_IndexHandle::cmp(getKey(k-1),key, EQ_OP, attrType));
 //    assert(value==chRIDs[k-1]);
-//    rmFlag[k - 1] = true;
-//    return 0;
+    for (int i=0;i<n;++i)
+    {
+        if (value==chRIDs[i])
+            rmFlag[i] = true;
+    }
+    return 0;
 }
 
 RC BPlusTreeNode::insertFirstChild(const RID &value)

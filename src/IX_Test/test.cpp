@@ -23,7 +23,7 @@ void ix_test()
     ixManager.CreateIndex("a", 1, AttrType::INT, 4);
     ixManager.OpenIndex("a",1,ixIndexHandle);
     ixIndexHandle.printBPT();
-    int a[1000]={0,1,2,7,8,9,0,3,4,5,6};
+    int a[1000]={0,1,1,7,8,7,0,3,4,5,6};
     for (int i=0;i<10;++i)
     {
         printf("===========insert %d===========\n", i);
@@ -32,6 +32,15 @@ void ix_test()
         ixIndexHandle.printBPT();
         ixIndexHandle.printLinearLeaves();
     }
+    for (int i=0;i<10;++i)
+    {
+        printf("===========delete %d===========\n", i);
+//        a[i] = i;
+        ixIndexHandle.DeleteEntry(a+i,RID(0,i));
+        ixIndexHandle.printBPT();
+        ixIndexHandle.printLinearLeaves();
+    }
+
 
 
     bpm->close();

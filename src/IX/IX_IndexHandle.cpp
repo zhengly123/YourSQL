@@ -352,7 +352,7 @@ RC IX_IndexHandle::copyKey(BPlusTreeNode *dst, int x1,
 RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
 {
     int rc, c, bufferIndex, k;
-    BPlusTreeNode *node;
+    BPlusTreeNode *node, *nextNode;
 
     c = ixHeader.rootPage;
     if (c<=0)
@@ -362,9 +362,15 @@ RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
     while (!node->isLeaf)
     {
         k = node->firstGreaterIndex(pData);
-        node->chRIDs[k].GetPageNum(c);
-        node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+        if (k==0)
+            return IX_NO_INDEX_EXIST;
+        node->chRIDs[k-1].GetPageNum(c);
+        nextNode = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+        if (nextNode->isLeaf && cmp(node->getKey(k-1),pData,NO_OP))
+            return IX_NO_INDEX_EXIST;
+        node=nextNode;
     }
+    // TODO: realize add extra block
     rc = node->remove(pData, rid);
 
     return rc;
@@ -536,6 +542,7 @@ void IX_IndexHandle::printLinearLeaves()
                        *((int *)node->getKey(i)));
         rid=node->nextInList;
     }
+    puts("");
 }
 
 RC IX_IndexHandle::getLeftestLeaf(RID &rid)
