@@ -13,18 +13,9 @@ RC IX_IndexHandle::open(FileManager &fm, BufPageManager &bpm,
     this->bpm=&bpm;
     this->ixManager=&ixManager;
     this->fileID = fileID;
-    int index;
-    BufType b = bpm.getPage(fileID, 0, index);
-    memcpy(&this->ixHeader, b, sizeof(this->ixHeader));
-    //TODO: index没有读出来
-    bpm.access(index);
-
-    // Whether create root?
-//    if (ixHeader.rootPage==-1)
-//    {
-//
-//    }
-
+    headBuffer = bpm.getPage(fileID, 0, headerBpmIndex);
+    memcpy(&this->ixHeader, headBuffer, sizeof(this->ixHeader));
+    bpm.access(headerBpmIndex);
     return 0;
 }
 
@@ -72,14 +63,10 @@ RC IX_IndexHandle::InsertEntry(void *key, const RID &value)
             rootPage = newRootPageNum;
         }
         return rc;
-//    }
-//    return 0;
 }
 
 RC IX_IndexHandle::createNode(PageNum &pageNum, BPlusTreeNode &node)
 {
-//    int bufferIndex;
-//    bpm->getPage(fileID,0,bufferIndex);
     RC rc;
     rc=fm->writePage(fileID,ixHeader.pageNum,
             reinterpret_cast<BufType>(&node),0);
@@ -109,6 +96,7 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
         BPlusTreeNode *childNode;
 
         childNode = (BPlusTreeNode*)bpm->getPage(fileID, childPage, childBufferIndex);
+        bpm->markDirty(bufferIndex);
         if (childNode->isLeaf)
         {
             if (cmp(node->getKey(childK), key, EQ_OP) == false)
@@ -122,6 +110,7 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
                 int prepBufferIndex;
                 BPlusTreeNode *prepNode = (BPlusTreeNode *) bpm->getPage(fileID,
                         prepPage, prepBufferIndex);
+                bpm->markDirty(prepBufferIndex);
                 newLeafNode.nextInList = prepNode->nextInList;
 
                 createNode(newPageNum, newLeafNode);
@@ -359,6 +348,7 @@ RC IX_IndexHandle::DeleteEntry(void *key, const RID &value)
         return IX_NO_INDEX_EXIST;
 
     node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+    bpm->markDirty(bufferIndex);
     while (!node->isLeaf)
     {
         k = node->firstGreaterIndex(key);
@@ -366,6 +356,7 @@ RC IX_IndexHandle::DeleteEntry(void *key, const RID &value)
             return IX_NO_INDEX_EXIST;
         node->chRIDs[k-1].GetPageNum(c);
         nextNode = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
+        bpm->markDirty(bufferIndex);
         if (nextNode->isLeaf && cmp(node->getKey(k-1),key,NO_OP))
             return IX_NO_INDEX_EXIST;
         node=nextNode;
@@ -374,17 +365,19 @@ RC IX_IndexHandle::DeleteEntry(void *key, const RID &value)
     while (node&&cmp(node->getKey(0),key,EQ_OP))
     {
         rc = node->remove(key, value);
-        bpm->markDirty(bufferIndex);
         int nextPageNum = node->nextInList.GetPageNum();
         if (!nextPageNum)
             break;
         node = (BPlusTreeNode *) bpm->getPage(fileID, nextPageNum, bufferIndex);
+        bpm->markDirty(bufferIndex);
     }
     return rc;
 }
 
 RC IX_IndexHandle::ForcePages()
 {
+    memcpy(headBuffer, &this->ixHeader, sizeof(this->ixHeader));
+    bpm->markDirty(headerBpmIndex);
     bpm->close();
     return 0;
 }
@@ -575,7 +568,11 @@ void IX_IndexHandle::printLinearLeaves()
 RC IX_IndexHandle::getLeftestLeaf(RID &rid)
 {
     int root=ixHeader.rootPage;
-    assert(root>0);
+    if (root<=0)// if there is no root node
+    {
+        printf("No root.\n");
+        return IX_EMPTY_TREE;
+    }
     rid= getLeftestLeafDFS(RID(root,0));
     return 0;
 }

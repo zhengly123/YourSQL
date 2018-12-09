@@ -13,16 +13,19 @@ void ix_test()
 
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
-    fm->createFile("testfile.txt"); //新建文件
-    fm->createFile("testfile2.txt");
-    int fileID, f2;
-    fm->openFile("testfile.txt", fileID); //打开文件，fileID是返回的文件id
-    fm->openFile("testfile2.txt", f2);
     IX_Manager ixManager(*fm,*bpm);
     IX_IndexHandle ixIndexHandle;
+
+    // Reload test
+//    ixManager.OpenIndex("a",1,ixIndexHandle);
+//    ixIndexHandle.printBPT();
+//    ixIndexHandle.printLinearLeaves();
+//    return;
+
     ixManager.CreateIndex("a", 1, AttrType::INT, 4);
     ixManager.OpenIndex("a",1,ixIndexHandle);
     ixIndexHandle.printBPT();
+    ixIndexHandle.printLinearLeaves();
     int a[1000]={0,1,1,7,8,7,0,3,4,5,6};
     for (int i=0;i<10;++i)
     {
@@ -72,6 +75,19 @@ void ix_test()
         printf("===========kv duplicate delete %d===========\n", i);
 //        a[i] = i;
         ixIndexHandle.DeleteEntry(a + 1, RID(0, 2));
+        ixIndexHandle.printBPT();
+        ixIndexHandle.printLinearLeaves();
+    }
+
+    ixIndexHandle.ForcePages();
+//    ixManager.CloseIndex(ixIndexHandle);
+//    bpm->close();
+//    fm->closeFile(file);
+    int b[1000]={0,1,1,7,8,7,0,3,4,5,6};
+    for (int i=0;i<10;++i)
+    {
+        printf("===========insert %d===========\n", i);
+        ixIndexHandle.InsertEntry(b+i,RID(0,i));
         ixIndexHandle.printBPT();
         ixIndexHandle.printLinearLeaves();
     }

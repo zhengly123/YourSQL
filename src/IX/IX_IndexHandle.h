@@ -46,7 +46,8 @@ private:
     BufPageManager *bpm;
     IX_Manager *ixManager;
     IX_Header ixHeader;
-    int fileID;
+    BufType headBuffer;
+    int fileID, headerBpmIndex;
     PageNum path[1000];
     int pathChild[1000];
 

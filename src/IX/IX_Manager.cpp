@@ -38,7 +38,7 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
     IX_Header ixHeader;
     ixHeader.pageNum=1;
     ixHeader.pageSize=PAGE_SIZE;
-    ixHeader.rootPage=-1;
+    ixHeader.rootPage=0;
     ixHeader.indexPairSize = attrLength + sizeof(RID);
     ixHeader.attrType=attrType;
     ixHeader.attrLength=attrLength;
