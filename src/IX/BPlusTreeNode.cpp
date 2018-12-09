@@ -57,13 +57,14 @@ RC BPlusTreeNode::insert(void* key, const RID &value)
         int t = firstGreaterIndex(key);
         assert(t>=0);
         // insert key to keys[t]
-        // move keys[t,n-1)
-        memmove(getKey(t+1), getKey(t), attrLength * (n - 1 - t));
-        memcpy(keys + (t) * attrLength, key, attrLength);
-        // move child[t+1,n)
-        for (int i = n - 1; i >= t + 1; --i)
+        // move keys[t,n)
+        memmove(getKey(t+1), getKey(t), attrLength * (n - t));
+        memcpy(keys + t * attrLength, key, attrLength);
+        // move child[t,n)
+        for (int i = n - 1; i >= t; --i)
             chRIDs[i + 1] = chRIDs[i];
-        chRIDs[t + 1] = value;
+        chRIDs[t] = value;
+        n++;
     }
     return 0;
 }
@@ -76,14 +77,14 @@ bool BPlusTreeNode::overfull()
 inline int BPlusTreeNode::firstGreaterIndex(void *key)
 {
     int t;
-    for (t = 0; t < n && !IX_IndexHandle::cmp(keys + t * attrLength, key,
-             EQ_OP, attrType); ++t);
+    for (t = 0; t < n && IX_IndexHandle::cmp(keys + t * attrLength, key,
+             LE_OP, attrType); ++t);
     return t;
 }
 
 void *BPlusTreeNode::getKey(int k)
 {
-    return keys+k*KEY_SIZE;
+    return keys + k * attrLength;
 }
 
 bool BPlusTreeNode::full()

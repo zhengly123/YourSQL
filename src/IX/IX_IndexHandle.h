@@ -29,6 +29,7 @@ public:
              int fileID);
 
     void printBPT();
+    void printLinearLeaves();
 
     RC next(RID &iterator, RID &dataRID, void *key) const;
 
@@ -84,17 +85,31 @@ private:
      * @return
      */
     RC insertIntoLeaves(BPlusTreeNode *node,void *key, const RID &value);
-    // 需要处理pathChild的变化
-//    RC treeInsertUp(int c, int dep, void *pData, const RID &rid, PageNum newChild);
 
-//    RC splitChild(BPlusTreeNode *node, int ch, PageNum &subroot);
-    // split should keep node pageNum the same
-//    RC split(int depth);
+    RC getLeftestLeaf(RID &rid);
+
+    RID getLeftestLeafDFS(RID rid);
 
 
     RC copyKey(BPlusTreeNode *dst, int x1, BPlusTreeNode *src, int x2);
 
     void printDFS(const RID rid, int intend);
+
+    void setMinimum(void *p, AttrType attrType)
+    {
+        switch (attrType)
+        {
+            case AttrType::INT :
+                *((int *)p)=INT32_MIN;
+                break;
+            case AttrType::FLOAT :
+                *((float *) p) = FLT_MIN;
+                break;
+            case AttrType::STRING :
+                *((char *) p) = 0;
+                break;
+        }
+    }
 };
 
 #endif //YOURSQL_IX_INDEXHANDLE_H

@@ -5,6 +5,9 @@
 #ifndef YOURSQL_YOURSQL_H
 #define YOURSQL_YOURSQL_H
 #include <cassert>
+#include <stdint.h>
+#include <climits>
+#include <float.h>
 
 using RC = int;
 
