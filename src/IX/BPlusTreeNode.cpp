@@ -48,7 +48,8 @@ RC BPlusTreeNode::insert(void* key, const RID &value)
         }
         else
         {
-            //TODO: append the block
+            // overfull should be process in IX_IndexHandle
+            assert(0);
             return IX_RID_OF_SAME_ATTR_EXCEED;
         }
     }

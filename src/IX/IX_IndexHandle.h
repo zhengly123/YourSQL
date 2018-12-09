@@ -15,7 +15,7 @@ public:
     IX_IndexHandle  ();                             // Constructor
     ~IX_IndexHandle ();                             // Destructor
     RC InsertEntry     (void *key, const RID &value);  // Insert new index entry
-    RC DeleteEntry     (void *pData, const RID &rid);  // Delete index entry
+    RC DeleteEntry     (void *key, const RID &value);  // Delete index entry
     RC ForcePages      ();                             // Copy index to disk
 
     IX_IndexHandle(FileManager &fm,

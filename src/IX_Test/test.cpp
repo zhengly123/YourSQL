@@ -27,7 +27,7 @@ void ix_test()
     for (int i=0;i<10;++i)
     {
         printf("===========insert %d===========\n", i);
-//        a[i] = i;
+        a[i] = i;
         ixIndexHandle.InsertEntry(a+i,RID(0,i));
         ixIndexHandle.printBPT();
         ixIndexHandle.printLinearLeaves();
@@ -35,13 +35,46 @@ void ix_test()
     for (int i=0;i<10;++i)
     {
         printf("===========delete %d===========\n", i);
-//        a[i] = i;
+        a[i] = i;
         ixIndexHandle.DeleteEntry(a+i,RID(0,i));
         ixIndexHandle.printBPT();
         ixIndexHandle.printLinearLeaves();
     }
 
+    a[1]=1;
+    for (int i=0;i<50;++i)
+    {
+        printf("===========duplicate insert %d===========\n", i);
+//        a[i] = i;
+        ixIndexHandle.InsertEntry(a + 1, RID(0, i));
+        ixIndexHandle.printBPT();
+        ixIndexHandle.printLinearLeaves();
+    }
+    for (int i=0;i<50;++i)
+    {
+        printf("===========duplicate delete %d===========\n", i);
+//        a[i] = i;
+        ixIndexHandle.DeleteEntry(a + 1, RID(0, i));
+        ixIndexHandle.printBPT();
+        ixIndexHandle.printLinearLeaves();
+    }
 
+    for (int i=0;i<50;++i)
+    {
+        printf("===========kv duplicate insert %d===========\n", i);
+//        a[i] = i;
+        ixIndexHandle.InsertEntry(a + 1, RID(0, 2));
+        ixIndexHandle.printBPT();
+        ixIndexHandle.printLinearLeaves();
+    }
+    for (int i=0;i<1;++i)
+    {
+        printf("===========kv duplicate delete %d===========\n", i);
+//        a[i] = i;
+        ixIndexHandle.DeleteEntry(a + 1, RID(0, 2));
+        ixIndexHandle.printBPT();
+        ixIndexHandle.printLinearLeaves();
+    }
 
     bpm->close();
     //程序结束前可以调用BufPageManager的某个函数将缓存中的内容写回

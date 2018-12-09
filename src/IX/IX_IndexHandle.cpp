@@ -349,7 +349,7 @@ RC IX_IndexHandle::copyKey(BPlusTreeNode *dst, int x1,
     return 0;
 }
 
-RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
+RC IX_IndexHandle::DeleteEntry(void *key, const RID &value)
 {
     int rc, c, bufferIndex, k;
     BPlusTreeNode *node, *nextNode;
@@ -361,18 +361,25 @@ RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
     node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
     while (!node->isLeaf)
     {
-        k = node->firstGreaterIndex(pData);
+        k = node->firstGreaterIndex(key);
         if (k==0)
             return IX_NO_INDEX_EXIST;
         node->chRIDs[k-1].GetPageNum(c);
         nextNode = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
-        if (nextNode->isLeaf && cmp(node->getKey(k-1),pData,NO_OP))
+        if (nextNode->isLeaf && cmp(node->getKey(k-1),key,NO_OP))
             return IX_NO_INDEX_EXIST;
         node=nextNode;
     }
-    // TODO: realize add extra block
-    rc = node->remove(pData, rid);
-
+    assert(cmp(node->getKey(0),key,EQ_OP));
+    while (node&&cmp(node->getKey(0),key,EQ_OP))
+    {
+        rc = node->remove(key, value);
+        bpm->markDirty(bufferIndex);
+        int nextPageNum = node->nextInList.GetPageNum();
+        if (!nextPageNum)
+            break;
+        node = (BPlusTreeNode *) bpm->getPage(fileID, nextPageNum, bufferIndex);
+    }
     return rc;
 }
 
@@ -466,14 +473,34 @@ bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp, AttrType attrType)
 
 RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node, void *key, const RID &value)
 {
-    if (node->n<=M)
+    BPlusTreeNode *curNode=node, *nextNode;
+    int nextBufferIndex;
+    // if leaf node is full, then use linked list to extend it
+    while (curNode->n==M)
     {
-        node->insert(key,value);
-        return 0;
-    } else{
-        //TODO: UNLIMITED_DUPLICATE_KEY
-        return IX_UNLIMITED_DUPLICATE_KEY;
+        if (curNode->nextInList.GetPageNum() == 0)
+            break;
+        nextNode = (BPlusTreeNode *) bpm->getPage(fileID, curNode->nextInList.GetPageNum(),
+                                                  nextBufferIndex);
+        bpm->markDirty(nextBufferIndex);
+        assert(nextNode->n);
+        if (cmp(nextNode->getKey(0),key,NO_OP))
+            break;
+        curNode=nextNode;
     }
+    assert(curNode->n<=M);
+    if (curNode->n==M)
+    {
+        BPlusTreeNode newNode(ixHeader.attrType, ixHeader.attrLength, true);// new node
+        int newPageNum;
+        newNode.nextInList=curNode->nextInList;
+        newNode.insert(key, value);
+        createNode(newPageNum, newNode);
+        curNode->nextInList = RID(newPageNum, 0);
+    }
+    else
+        curNode->insert(key, value);
+    return 0;
 }
 
 void IX_IndexHandle::printBPT()
