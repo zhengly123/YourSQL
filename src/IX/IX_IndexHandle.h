@@ -15,6 +15,12 @@ public:
     IX_IndexHandle  ();                             // Constructor
     ~IX_IndexHandle ();                             // Destructor
     RC InsertEntry     (void *key, const RID &value);  // Insert new index entry
+    /**
+     * Depending on your design, it may require some extra effort for scans to always return RIDs such that the corresponding attribute values are in increasing (actually nondecreasing) order. This property is not required in the project, however you may find it useful later on, e.g., if you decide to use index scans to produce a sorted relation. Note that one of the provided tests does exploit this property, but passing this test is not required.
+     * @param key
+     * @param value
+     * @return
+     */
     RC DeleteEntry     (void *key, const RID &value);  // Delete index entry
     RC ForcePages      ();                             // Copy index to disk
 
@@ -31,14 +37,22 @@ public:
     void printBPT();
     void printLinearLeaves();
 
-    RC next(RID &iterator, RID &dataRID, void *key) const;
+    RC nextValidEntry(RID &iterator, RID &dataRID, void *key) const;
 
     void getFileID(int &fileID);
+
+    /**
+     *
+     * @param rid
+     * @return RID of the leftest leaf. Only pageNum is valid, slotNum=0.
+     */
+    RC getLeftestLeaf(RID &rid) const;
 
     RC getMinimalIndex(RID &rid) const;
 
     bool cmp(void *a, void *b, CompOp compOp) const;
     static bool cmp(void *a, void *b, CompOp compOp, AttrType attrType);
+    int getAttrLength() const;
 //    BufPageManager);
 
 private:
@@ -87,9 +101,7 @@ private:
      */
     RC insertIntoLeaves(BPlusTreeNode *node,void *key, const RID &value);
 
-    RC getLeftestLeaf(RID &rid);
-
-    RID getLeftestLeafDFS(RID rid);
+    RID getLeftestLeafDFS(RID rid) const;
 
 
     RC copyKey(BPlusTreeNode *dst, int x1, BPlusTreeNode *src, int x2);

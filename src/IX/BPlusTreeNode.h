@@ -26,7 +26,7 @@ public:
     RID chRIDs[M+1];
     bool isLeaf;
     int n;              // number of children
-    RID parent;
+//    RID parent;
     // if this is a leaf node, than it should have successor
     RID nextInList;
 

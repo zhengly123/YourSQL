@@ -22,9 +22,9 @@ public:
     RC CloseScan     ();                                 // Terminate index scan
 private:
     const IX_IndexHandle *indexHandle;
-    RID iterator;
+    RID scanRID;
     CompOp compOp;
-    char *targetValue[KEY_SIZE];
+    char targetValue[KEY_SIZE];
 };
 
 

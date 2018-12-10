@@ -92,6 +92,18 @@ void ix_test()
         ixIndexHandle.printLinearLeaves();
     }
 
+    IX_IndexScan ixIndexScan;
+    ixIndexScan.OpenScan(ixIndexHandle, NE_OP, b + 7);
+    RID rid;
+    printf("===========scan===========\n");
+    ixIndexHandle.printLinearLeaves();
+    while (ixIndexScan.GetNextEntry(rid)!=IX_ITERATOR_TO_END)
+    {
+        printf("(%d,%d)->", rid.GetPageNum(), rid.GetSlotNum());
+        fflush(stdout);
+    }
+    puts("");
+
     bpm->close();
     //程序结束前可以调用BufPageManager的某个函数将缓存中的内容写回
     //具体的函数大家可以看看ppt或者程序的注释

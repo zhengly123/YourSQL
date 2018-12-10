@@ -401,30 +401,31 @@ RC IX_IndexHandle::getMinimalIndex(RID &rid) const
     return 0;
 }
 
-RC IX_IndexHandle::next(RID &iterator, RID &dataRID, void* key) const
+RC IX_IndexHandle::nextValidEntry(RID &scanRID, RID &dataRID, void *key) const
 {
+    BPlusTreeNode *node;
+    int bufferIndex;
 
-//    BPlusTreeNode *node;
-//    int bufferIndex;
-//
-//    node = (BPlusTreeNode*)bpm->getPage(fileID, iterator.GetPageNum(),
-//            bufferIndex);
-//    do
-//    {
-//        if (iterator.GetSlotNum() + 1 < node->n)
-//        {
-//            iterator.SetSlotNum(iterator.GetSlotNum()+1);
-//        } else {
-//            iterator.Set(node->succ.GetPageNum(),0);
-//        }
-//        if (iterator.GetPageNum()<=0)
-//        {
-//            return IX_ITERATOR_TO_END;
-//        }
-//    } while(node->rmFlag[iterator.GetSlotNum()]);
-//    dataRID = node->chRIDs[iterator.GetSlotNum()];
-//    memcpy(key, node->getKey(iterator.GetSlotNum()), ixHeader.attrLength);
-//    return 0;
+    node = (BPlusTreeNode*)bpm->getPage(fileID, scanRID.GetPageNum(),
+            bufferIndex);
+    do
+    {
+        if (scanRID.GetSlotNum() + 1 < node->n)
+        {
+            scanRID.SetSlotNum(scanRID.GetSlotNum()+1);
+        } else {
+            scanRID.Set(node->nextInList.GetPageNum(),0);
+            node = (BPlusTreeNode*)bpm->getPage(fileID, scanRID.GetPageNum(),
+                                                bufferIndex);
+        }
+        if (scanRID.GetPageNum()<=0)
+        {
+            return IX_ITERATOR_TO_END;
+        }
+    } while(node->rmFlag[scanRID.GetSlotNum()]);
+    dataRID = node->chRIDs[scanRID.GetSlotNum()];
+    memcpy(key, node->getKey(scanRID.GetSlotNum()), ixHeader.attrLength);
+    return 0;
 }
 
 bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp) const
@@ -519,7 +520,7 @@ void IX_IndexHandle::printDFS(const RID rid, int intend)
     int rc, bufferIndex, childK;
     BPlusTreeNode *node = (BPlusTreeNode *) bpm->getPage(fileID, rid.GetPageNum(), bufferIndex);
 
-    printf("isleaf=%d;rid=(%d,%d)||", node->isLeaf, rid.GetPageNum(), rid.GetSlotNum());
+    printf("isleaf=%d;next=%d;rid=(%d,%d)||", node->isLeaf, node->nextInList.GetPageNum(), rid.GetPageNum(), rid.GetSlotNum());
     for (int i=0;i<node->n;++i)
     {
         printf("(%d,%d;%d)",node->chRIDs[i].GetPageNum(),node->chRIDs[i].GetSlotNum(),
@@ -565,7 +566,7 @@ void IX_IndexHandle::printLinearLeaves()
     puts("");
 }
 
-RC IX_IndexHandle::getLeftestLeaf(RID &rid)
+RC IX_IndexHandle::getLeftestLeaf(RID &rid) const
 {
     int root=ixHeader.rootPage;
     if (root<=0)// if there is no root node
@@ -577,7 +578,7 @@ RC IX_IndexHandle::getLeftestLeaf(RID &rid)
     return 0;
 }
 
-RID IX_IndexHandle::getLeftestLeafDFS(RID rid)
+RID IX_IndexHandle::getLeftestLeafDFS(RID rid) const
 {
     int c=rid.GetPageNum();
     assert(c>0);
@@ -588,5 +589,10 @@ RID IX_IndexHandle::getLeftestLeafDFS(RID rid)
     if (node->isLeaf)
         return rid;
     return getLeftestLeafDFS(node->chRIDs[0]);
+}
+
+int IX_IndexHandle::getAttrLength() const
+{
+    return ixHeader.attrLength;
 }
 

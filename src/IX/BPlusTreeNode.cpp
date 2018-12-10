@@ -18,6 +18,7 @@ BPlusTreeNode::BPlusTreeNode(AttrType attrType, int attrLength,
     memset(keys, 0, sizeof(keys));
     memset(chRIDs, 0, sizeof(chRIDs));
     memset(rmFlag, 0, sizeof(rmFlag));
+    nextInList = RID(0, 0);
 }
 
 //bool BPlusTreeNode::less(void *a, void *b)
