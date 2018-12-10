@@ -5,8 +5,8 @@
 #include "PF_Test/pftest.h"
 #include "RM_Test/rmtest.h"
 #include "IX_Test/ixtest.h"
-#include "Parser/parser.h"
-#include "Parser/yacc.tab.cpp"
+#include "SM/SM_PUBLIC.h"
+#include "Parser/astree.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,12 +16,13 @@ int main(int argc, char *argv[])
     //rm_test_error(argc, argv);
     // ix_test();
 
-    yyparse();
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager);
 
-    AST *topl;
-    topl = &toplevel;
-
-    cerr << "Size = " << topl->stmt_list.size() << endl;
+    treeparser(smManager);
 
     return 0;
 }

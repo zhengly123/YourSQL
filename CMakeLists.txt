@@ -52,4 +52,5 @@ add_executable(YourSQL
         src/Parser/lex.yy.cpp
 #        src/Parser/yacc.tab.cpp
         src/Parser/yacc.tab.h
-        )
+        src/Parser/astree.cpp
+        src/Parser/astree.h)

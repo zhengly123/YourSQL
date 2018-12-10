@@ -177,7 +177,9 @@ extern "C"
     extern int yylex(void);
 }
 
-static AST toplevel;
+AST toplevel;
+
+
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -1690,7 +1692,7 @@ yyreturn:
 
 void yyerror(const char *s)
 {  
-    std::cerr << s << std::endl;
+    //std::cerr << s << std::endl;
 }  
 
 

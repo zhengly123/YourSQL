@@ -81,7 +81,7 @@ Stmt    : SHOW DATABASES
 
 void yyerror(const char *s)
 {  
-    std::cerr << s << std::endl;
+    //std::cerr << s << std::endl;
 }  
 
 
