@@ -19,6 +19,9 @@ enum ClientHint {
     NO_HINT                                     // default value
 };
 
+const int MAXNAME = 24;
+const int MAXATTRS = 40;
+
 #include "RM/rm.h"
 #include "PF/pf.h"
 
