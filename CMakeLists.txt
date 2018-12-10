@@ -21,13 +21,35 @@ add_executable(YourSQL
         src/RM/RM_FileScan.cpp
         src/RM/RM_Manager.cpp
         src/RM/RM_Record.cpp
-        src/testmain.cpp src/IX/IX_Manager.cpp src/IX/IX_Manager.h src/IX/IX_IndexHandle.cpp src/IX/IX_IndexHandle.h src/IX/IX_IndexScan.cpp src/IX/IX_IndexScan.h src/IX/IX_PUBLIC.h src/IX/IX_PRIVATE.h src/IX/BPlusTreeNode.cpp src/IX/BPlusTreeNode.h
+        src/testmain.cpp
+        src/IX/IX_Manager.cpp
+        src/IX/IX_Manager.h
+        src/IX/IX_IndexHandle.cpp
+        src/IX/IX_IndexHandle.h
+        src/IX/IX_IndexScan.cpp
+        src/IX/IX_IndexScan.h
+        src/IX/IX_PUBLIC.h
+        src/IX/IX_PRIVATE.h
+        src/IX/BPlusTreeNode.cpp
+        src/IX/BPlusTreeNode.h
         src/RM_Test/rmtest.h
         src/RM_Test/test_basic1.cpp
         src/RM_Test/test_massive1.cpp
         src/PF_Test/pftest.h
-        src/PF_Test/test.cpp src/RM_Test/test_error.cpp src/RM/RM_Error.cpp src/RM/RM_Error.h
+        src/PF_Test/test.cpp
+        src/RM_Test/test_error.cpp
+        src/RM/RM_Error.cpp
+        src/RM/RM_Error.h
 #        src/IX/struct.h src/IX/Tree.h
 #        src/IX/BPlusTree.cpp src/IX/BPlusTree.h
-        src/IX_Test/ixtest.h src/IX_Test/test.cpp
+        src/IX_Test/ixtest.h
+        src/IX_Test/test.cpp
+        src/SM/SM_PUBLIC.h
+        src/SM/SM_PRIVATE.h
+        src/SM/SM_Manager.cpp
+        src/SM/SM_Manager.h
+        src/Parser/parser.h
+        src/Parser/lex.yy.c
+        src/Parser/yacc.tab.c
+        src/Parser/yacc.tab.h
         )
