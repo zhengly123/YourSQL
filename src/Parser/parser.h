@@ -9,12 +9,12 @@
 struct istmt
 {
 	int stmt_type;
-	string db_name;
+	std::string db_name;
 };
 
 struct Type
-{  
-    string m_sId;  
+{
+	std::string m_sId;
     int m_nInt;  
     char m_cOp;
 

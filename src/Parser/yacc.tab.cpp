@@ -106,7 +106,7 @@
      LEQ = 295,
      GEQ = 296,
      LT = 297,
-     GTs = 298,
+     GT = 298,
      LB = 299,
      RB = 300,
      FH = 301,
@@ -154,7 +154,7 @@
 #define LEQ 295
 #define GEQ 296
 #define LT 297
-#define GTs 298
+#define GT 298
 #define LB 299
 #define RB 300
 #define FH 301
@@ -177,9 +177,7 @@ extern "C"
     extern int yylex(void);
 }
 
-AST toplevel;
-
-
+static AST toplevel;
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -514,7 +512,7 @@ static const char *const yytname[] =
   "SET", "DESC", "REFERENCES", "INDEX", "TABLE", "TABLES", "SHOW",
   "CREATE", "PRIMARY", "KEY", "NOT", "MYNULL", "VALUES", "DELETE", "FROM",
   "WHERE", "SELECT", "IS", "MINT", "VARCHAR", "AND", "DATE", "MFLOAT",
-  "FOREIGN", "ERROR", "EQ", "NEQ", "LEQ", "GEQ", "LT", "GTs", "LB", "RB",
+  "FOREIGN", "ERROR", "EQ", "NEQ", "LEQ", "GEQ", "LT", "GT", "LB", "RB",
   "FH", "DH", "$accept", "Program", "CommandList", "Stmt", 0
 };
 #endif
@@ -1413,7 +1411,7 @@ yyreduce:
         case 2:
 #line 38 "yacc.y"
     {
-            cout << "Matching Size = " << (yyvsp[(1) - (1)]).stmt_list.size() << endl;
+            std::cout << "Matching Size = " << (yyvsp[(1) - (1)]).stmt_list.size() << std::endl;
             toplevel.stmt_list = (yyvsp[(1) - (1)]).stmt_list;
         ;}
     break;
@@ -1692,7 +1690,7 @@ yyreturn:
 
 void yyerror(const char *s)
 {  
-    cerr<<s<<endl;
+    std::cerr << s << std::endl;
 }  
 
 

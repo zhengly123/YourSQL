@@ -49,7 +49,7 @@ add_executable(YourSQL
         src/SM/SM_Manager.cpp
         src/SM/SM_Manager.h
         src/Parser/parser.h
-        src/Parser/lex.yy.c
-        src/Parser/yacc.tab.c
+        src/Parser/lex.yy.cpp
+#        src/Parser/yacc.tab.cpp
         src/Parser/yacc.tab.h
         )

@@ -24,7 +24,7 @@ AST toplevel;
 %token CREATE PRIMARY KEY NOT MYNULL VALUES DELETE 
 %token FROM WHERE SELECT IS MINT VARCHAR AND DATE MFLOAT FOREIGN
 %token ERROR
-%token EQ NEQ LEQ GEQ LT GTs
+%token EQ NEQ LEQ GEQ LT GT
 %token LB RB FH DH
 
 /* %type Program
@@ -36,7 +36,7 @@ AST toplevel;
 
 Program : CommandList
         {
-            cout << "Matching Size = " << $1.stmt_list.size() << endl;
+            std::cout << "Matching Size = " << $1.stmt_list.size() << std::endl;
             toplevel.stmt_list = $1.stmt_list;
         }
 ;
@@ -81,7 +81,7 @@ Stmt    : SHOW DATABASES
 
 void yyerror(const char *s)
 {  
-    cerr<<s<<endl;
+    std::cerr << s << std::endl;
 }  
 
 

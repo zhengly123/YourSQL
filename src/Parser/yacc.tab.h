@@ -79,7 +79,7 @@
      LEQ = 295,
      GEQ = 296,
      LT = 297,
-     GTs = 298,
+     GT = 298,
      LB = 299,
      RB = 300,
      FH = 301,
@@ -127,7 +127,7 @@
 #define LEQ 295
 #define GEQ 296
 #define LT 297
-#define GTs 298
+#define GT 298
 #define LB 299
 #define RB 300
 #define FH 301
