@@ -5,6 +5,7 @@
 #ifndef YOURSQL_SM_MANAGER_H
 #define YOURSQL_SM_MANAGER_H
 
+#include <string>
 #include "../IX/IX_PRIVATE.h"
 #include "SM_PRIVATE.h"
 
@@ -65,6 +66,8 @@ private:
     char initialCwd[2049];
 
     RC getRelFromCatelogy();
+    //TODO: rel to file name should be down in file handler
+    std::string relToFileName(const char *relName);
 };
 
 #endif //YOURSQL_SM_MANAGER_H
