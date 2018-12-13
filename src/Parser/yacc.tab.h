@@ -39,99 +39,105 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     INTEGER = 258,
-     IDENTIFIER = 259,
-     OPERATOR = 260,
-     DATABASE = 261,
-     DATABASES = 262,
-     DROP = 263,
-     USE = 264,
-     INSERT = 265,
-     INTO = 266,
-     UPDATE = 267,
-     SET = 268,
-     DESC = 269,
-     REFERENCES = 270,
-     INDEX = 271,
-     TABLE = 272,
-     TABLES = 273,
-     SHOW = 274,
-     CREATE = 275,
-     PRIMARY = 276,
-     KEY = 277,
-     NOT = 278,
-     MYNULL = 279,
-     VALUES = 280,
-     DELETE = 281,
-     FROM = 282,
-     WHERE = 283,
-     SELECT = 284,
-     IS = 285,
-     MINT = 286,
-     VARCHAR = 287,
-     AND = 288,
-     DATE = 289,
-     MFLOAT = 290,
-     FOREIGN = 291,
-     ERROR = 292,
-     EQ = 293,
-     NEQ = 294,
-     LEQ = 295,
-     GEQ = 296,
-     LT = 297,
-     GT = 298,
-     LB = 299,
-     RB = 300,
-     FH = 301,
-     DH = 302
+     VALUE_INT = 258,
+     VALUE_STRING = 259,
+     IDENTIFIER = 260,
+     OPERATOR = 261,
+     DATABASE = 262,
+     DATABASES = 263,
+     DROP = 264,
+     USE = 265,
+     INSERT = 266,
+     INTO = 267,
+     UPDATE = 268,
+     SET = 269,
+     DESC = 270,
+     REFERENCES = 271,
+     INDEX = 272,
+     TABLE = 273,
+     TABLES = 274,
+     SHOW = 275,
+     CREATE = 276,
+     PRIMARY = 277,
+     KEY = 278,
+     NOT = 279,
+     MYNULL = 280,
+     VALUES = 281,
+     DELETE = 282,
+     FROM = 283,
+     WHERE = 284,
+     SELECT = 285,
+     IS = 286,
+     MINT = 287,
+     VARCHAR = 288,
+     AND = 289,
+     DATE = 290,
+     MFLOAT = 291,
+     FOREIGN = 292,
+     ERROR = 293,
+     EQ = 294,
+     NEQ = 295,
+     LEQ = 296,
+     GEQ = 297,
+     LT = 298,
+     GT = 299,
+     LB = 300,
+     RB = 301,
+     FH = 302,
+     DH = 303,
+     DOT = 304,
+     STAR = 305
    };
 #endif
 /* Tokens.  */
-#define INTEGER 258
-#define IDENTIFIER 259
-#define OPERATOR 260
-#define DATABASE 261
-#define DATABASES 262
-#define DROP 263
-#define USE 264
-#define INSERT 265
-#define INTO 266
-#define UPDATE 267
-#define SET 268
-#define DESC 269
-#define REFERENCES 270
-#define INDEX 271
-#define TABLE 272
-#define TABLES 273
-#define SHOW 274
-#define CREATE 275
-#define PRIMARY 276
-#define KEY 277
-#define NOT 278
-#define MYNULL 279
-#define VALUES 280
-#define DELETE 281
-#define FROM 282
-#define WHERE 283
-#define SELECT 284
-#define IS 285
-#define MINT 286
-#define VARCHAR 287
-#define AND 288
-#define DATE 289
-#define MFLOAT 290
-#define FOREIGN 291
-#define ERROR 292
-#define EQ 293
-#define NEQ 294
-#define LEQ 295
-#define GEQ 296
-#define LT 297
-#define GT 298
-#define LB 299
-#define RB 300
-#define FH 301
-#define DH 302
+#define VALUE_INT 258
+#define VALUE_STRING 259
+#define IDENTIFIER 260
+#define OPERATOR 261
+#define DATABASE 262
+#define DATABASES 263
+#define DROP 264
+#define USE 265
+#define INSERT 266
+#define INTO 267
+#define UPDATE 268
+#define SET 269
+#define DESC 270
+#define REFERENCES 271
+#define INDEX 272
+#define TABLE 273
+#define TABLES 274
+#define SHOW 275
+#define CREATE 276
+#define PRIMARY 277
+#define KEY 278
+#define NOT 279
+#define MYNULL 280
+#define VALUES 281
+#define DELETE 282
+#define FROM 283
+#define WHERE 284
+#define SELECT 285
+#define IS 286
+#define MINT 287
+#define VARCHAR 288
+#define AND 289
+#define DATE 290
+#define MFLOAT 291
+#define FOREIGN 292
+#define ERROR 293
+#define EQ 294
+#define NEQ 295
+#define LEQ 296
+#define GEQ 297
+#define LT 298
+#define GT 299
+#define LB 300
+#define RB 301
+#define FH 302
+#define DH 303
+#define DOT 304
+#define STAR 305
 
 
 

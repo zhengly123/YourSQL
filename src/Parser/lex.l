@@ -19,8 +19,9 @@ extern "C"
 nondigit    ([_A-Za-z])  
 digit       ([0-9])
 integer     ({digit}+)  
-identifier  ({nondigit}({nondigit}|{digit})*)  
-blank_chars ([ \f\r\t\v]+)
+identifier  ({nondigit}({nondigit}|{digit})*)
+string		('({nondigit}|{digit})*')
+blank_chars ([ \f\r\t\v\n]+)
 
 /* 2 . Regular */
 
@@ -58,8 +59,9 @@ blank_chars ([ \f\r\t\v]+)
 "FLOAT"			{return MFLOAT;}
 "FOREIGN"		{return FOREIGN;}
 
-{identifier}    {yylval.m_sId=yytext;return IDENTIFIER;}  
-{integer}		{yylval.m_nInt=atoi(yytext);return INTEGER;}  
+{identifier}    {yylval.ident = yytext; return IDENTIFIER;}
+{integer}		{yylval.value_int = atoi(yytext);return VALUE_INT;}
+{string}		{yylval.value_string = yytext; return VALUE_STRING;}
 {blank_chars}   {}
 
 "="				{return EQ;}
@@ -72,6 +74,8 @@ blank_chars ([ \f\r\t\v]+)
 ")"				{return RB;}
 ";"				{return FH;}
 ","				{return DH;}
+"."				{return DOT;}
+"*"				{return STAR;}
 .       		{}
 
 %% 
