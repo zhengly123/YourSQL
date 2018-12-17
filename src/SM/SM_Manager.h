@@ -67,7 +67,10 @@ private:
 
     RC getRelFromCatelogy();
     //TODO: rel to file name should be down in file handler
-    std::string relToFileName(const char *relName);
+    std::string relToFileName(const char *relName)
+    {
+        return std::__cxx11::string(relName)+std::string(".rel");
+    }
 };
 
 #endif //YOURSQL_SM_MANAGER_H
