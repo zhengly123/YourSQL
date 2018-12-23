@@ -10,14 +10,17 @@
 #include "SM_PRIVATE.h"
 
 struct AttrInfo {
-    char     *attrName;           // Attribute name
+    char     attrName[MAXNAME+1]; // Attribute name
     AttrType attrType;            // Type of attribute
     int      attrLength;          // Length of attribute
     int      offset;
     char     relName[MAXNAME+1];
+    int      flag;
+    int      indexNum;
 };
 
 // Used by Printer class
+// 在redbase, this is used for test. It's trifling in our work.
 struct DataAttrInfo {
     char     relName[MAXNAME+1];  // Relation name
     char     attrName[MAXNAME+1]; // Attribute name
@@ -39,9 +42,10 @@ class SM_Manager {
 public:
     SM_Manager  (IX_Manager &ixm, RM_Manager &rmm);  // Constructor
     ~SM_Manager ();                                  // Destructor
-    RC createDb    (const char *dbName);
+    RC CreateDb(const char *dbName);
     RC OpenDb      (const char *dbName);                // Open database
     RC CloseDb     ();                                  // Close database
+    RC DestroyDb(const char *dbName);                // Delete database
     RC CreateTable (const char *relName,                // Create relation
                     int        attrCount,
                     AttrInfo   *attributes);
@@ -63,6 +67,7 @@ private:
     RM_Manager *rmm;
     RM_FileHandle relcatHandler,attrcatHandler;
     bool isOpen;
+    std::string currentDbName;
     char initialCwd[2049];
 
     RC getRelFromCatelogy();

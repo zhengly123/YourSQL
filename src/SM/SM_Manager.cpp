@@ -5,6 +5,8 @@
 #include <cstring>
 #include <string>
 #include <set>
+#include <cstddef>
+#include <sys/stat.h>//to check if a folder exists
 #include "SM_Manager.h"
 const char* RELCAT="relcat";
 const char* ATTRCAT="attrcat";
@@ -31,12 +33,17 @@ RC SM_Manager :: OpenDb      (const char *dbName)
     }
 
     assert(getcwd(initialCwd, 2048));
-    assert(chdir(dbName));
+    const basic_string<char, char_traits<char>, allocator<char>> &absolutePath =
+            string(initialCwd) + string("/") + string(dbName);
+    rc = chdir(absolutePath.data());
+//    printf("err:%d\n", errno);
+    assert(rc==0);
 
     assert((rc=rmm->OpenFile(RELCAT,relcatHandler))==0);
     assert((rc=rmm->OpenFile(ATTRCAT,attrcatHandler))==0);
 
     isOpen=true;
+    currentDbName=std::string(dbName);
     return 0;
 }
 
@@ -76,24 +83,54 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
     relationMeta.tupleLength=relSize;
     // check empty part of relation name
     for (int i = strlen(relName); i < MAXNAME + 1; ++i)
-        assert(relationMeta.relName[i] == 0);
+        relationMeta.relName[i] = 0;
 
     RID rid;
     rc = relcatHandler.InsertRec(reinterpret_cast<char *>(&relationMeta), rid);
+//    relcatHandler.ForcePages(rid.Page());
     assert(rc==0);
     for (int i = 0; i < attrCount; ++i)
     {
         assert((rc = attrcatHandler.InsertRec((char *) (attributes + i), rid)) == 0);
     }
-    rc = rmm->CreateFile(relName, relationMeta.tupleLength);
+    rc = rmm->CreateFile(relToFileName(relName).data(), relationMeta.tupleLength);
     assert(rc==0);
+//    rmm->CloseFile(relcatHandler);
+//    rmm->CloseFile(attrcatHandler);
+
     return 0;
 }
 
-// Destroy relation
+/**
+ * Destroy relation
+ * @param relName
+ * @return
+ * @todo 没有删除对应的index
+ */
 RC SM_Manager :: DropTable   (const char *relName)
 {
-
+    RC rc;
+    if (strlen(relName)>MAXNAME)
+        return SM_NAME_TOO_LONG;
+    RM_FileScan relScan;
+    RM_Record relRecord;
+    bool hit=false;
+    relScan.OpenScan(relcatHandler,AttrType::STRING,MAXNAME+1,
+            offsetof(RelationMeta,relName), CompOp::EQ_OP, (void *)relName);
+    while (relScan.GetNextRec(relRecord)!=RM_EOF)
+    {
+        hit=true;
+        RID rid;
+        relRecord.GetRid(rid);
+        rc=relcatHandler.DeleteRec(rid);
+        assert(rc==0);
+        rc=rmm->DestroyFile(relToFileName(relName).data());
+        assert(rc==0);
+        break;
+    }
+    if (!hit)
+        return SM_NONEXIST_RELATION;
+    return 0;
 }
 
 // Create index
@@ -128,21 +165,26 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
     hit=false;
     while (attrScan.GetNextRec(attrRecord) != RM_EOF)
     {
-        relRecord.GetData(pData);
+        attrRecord.GetData(pData);
 
+        // scan中保证了relName一致，以下判断attrName一致
         if (strcmp(((AttrInfo *) pData)->attrName, attrName) == 0)
         {
-            char *tempData;
-            attrRecord.GetData(tempData);
-            attrInfo=(AttrInfo*)tempData;
+            // set record index
+//            char *tempData;
+//            attrRecord.GetData(tempData);
+            attrInfo=(AttrInfo*)pData;
             rc = ixm->CreateIndex(relName, indexNum = relationMeta->indexCount++,
                                   attrInfo->attrType, attrInfo->attrLength);
+            attrInfo->indexNum=indexNum;
+            attrcatHandler.UpdateRec(attrRecord);
+
             if (rc)
             {
                 cerr << "Create index error: " << rc << endl;
             }
             assert(rc==0);
-            relcatHandler.UpdateRec(relRecord);
+//            relcatHandler.UpdateRec(relRecord);
             hit = true;
             break;
         }
@@ -176,7 +218,53 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
 // Destroy index
 RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
 {
+    RM_FileScan attrScan;
+    RM_Record attrRecord;
+    RC rc;
+    bool hit = false;
 
+//    relationScan.OpenScan(attrcatHandler, )
+    attrScan.OpenScan(attrcatHandler, AttrType::STRING, strlen(relName) + 1, 0,
+                      CompOp::EQ_OP, (void *)(relName));
+
+    // search the attribution and modify indexNum
+    AttrInfo* attrInfo;
+    char *pData;
+    int indexNum;
+    hit=false;
+    while (attrScan.GetNextRec(attrRecord) != RM_EOF)
+    {
+        attrRecord.GetData(pData);
+
+        // scan中保证了relName一致，以下判断attrName一致
+        if (strcmp(((AttrInfo *) pData)->attrName, attrName) == 0)
+        {
+            // set record index
+//            char *tempData;
+//            attrRecord.GetData(tempData);
+            attrInfo=(AttrInfo*)pData;
+//            rc = ixm->CreateIndex(relName, indexNum = relationMeta->indexCount++,
+//                                  attrInfo->attrType, attrInfo->attrLength);
+            indexNum = attrInfo->indexNum;
+            rc = ixm->DestroyIndex(relName, indexNum);
+            if (rc)
+            {
+                cerr << "Destory index error: " << rc << endl;
+            }
+            assert(rc==0);
+
+            attrInfo->indexNum=0;
+            attrcatHandler.UpdateRec(attrRecord);
+
+            // No indexNum pool is maintained, so there is no reduction
+
+            hit = true;
+            break;
+        }
+    }
+    attrScan.CloseScan();
+    if (!hit)
+        return SM_NONEXIST_RELATION;
 }
 
 // Load utility
@@ -209,15 +297,60 @@ RC SM_Manager :: Set         (const char *paramName, const char *value)
 
 }
 
-RC SM_Manager::createDb(const char *dbName)
+RC SM_Manager::CreateDb(const char *dbName)
 {
+    if (isOpen)
+    {
+        fprintf(stderr, "Close the database before creation\n");
+        return SM_DB_NOT_CLOSE;
+    }
     if (mkdir(dbName,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH))
         return SM_SYSCALL_ERROR;
     RC rc;
-    rc = rmm->CreateFile(RELCAT, sizeof(RelationMeta));
+//    assert(getcwd(initialCwd, 2048));
+//    const basic_string<char, char_traits<char>, allocator<char>> &absolutePath =
+//            string(initialCwd) + string("/") + string(dbName);
+//    rc = chdir(absolutePath.data());
+//
+    rc = rmm->CreateFile((string(dbName) + string("/") + string(RELCAT)).data(),
+                         sizeof(RelationMeta));
     assert(rc==0);
-    rc = rmm->CreateFile(ATTRCAT, sizeof(AttrInfo));
+    rc = rmm->CreateFile((string(dbName) + string("/") + string(ATTRCAT)).data(),
+            sizeof(AttrInfo));
     assert(rc==0);
+    return 0;
+}
+
+/**
+ *
+ * @param dbName
+ * @return
+ * @todo find a approciate way to delete dirctory
+ */
+RC SM_Manager::DestroyDb(const char *dbName)
+{
+    if (isOpen)
+    {
+        fprintf(stderr,"Close the database before destroy\n");
+        return SM_DB_NOT_CLOSE;
+    }
+    if (strchr(dbName,'/')!=NULL)
+    {
+        fprintf(stderr,"Illegal db name\n");
+        return SM_ILLEGAL_NAME;
+    }
+    if (strchr(dbName, '.')!=NULL)
+    {
+        fprintf(stderr,"Illegal db name\n");
+        return SM_ILLEGAL_NAME;
+    }
+    struct stat sb;
+    if (!(stat(dbName, &sb) == 0 && S_ISDIR(sb.st_mode)))
+    {
+        fprintf(stderr,"Database does not exist\n");
+        return SM_DB_NOT_CLOSE;
+    }
+    system((std::string("rm -r ") + std::string(dbName)).data());
     return 0;
 }
 
