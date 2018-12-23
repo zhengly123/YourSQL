@@ -5,6 +5,8 @@
 #ifndef YOURSQL_SM_PUBLIC_H
 #define YOURSQL_SM_PUBLIC_H
 
+
+
 #include "SM_Manager.h"
 
 #endif //YOURSQL_SM_PUBLIC_H

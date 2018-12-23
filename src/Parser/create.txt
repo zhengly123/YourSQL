@@ -1,0 +1,6 @@
+create table tb1 (col1 int);
+create table tb2 (col2 varchar not null);
+create table tb3 (col3 int 5 not null);
+create table tb4 (col4 varchar 4);
+create table tb5 (col5 date, col6 float, primary key (col5));
+create table tb6 (col7 float, col8 int not null, col9 varchar);

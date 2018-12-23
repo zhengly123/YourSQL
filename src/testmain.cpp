@@ -21,8 +21,10 @@ int main(int argc, char *argv[])
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
     SM_Manager smManager(ixManager, rmManager);
+    QL_Manager qlManager(smManager, ixManager, rmManager);
 
-    treeparser(smManager);
+    std::cerr << "Before Test." << std::endl;
+    treeparser(smManager, qlManager);
 
     return 0;
 }

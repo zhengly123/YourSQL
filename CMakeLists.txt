@@ -53,4 +53,8 @@ add_executable(YourSQL
 #        src/Parser/yacc.tab.cpp
         src/Parser/yacc.tab.h
         src/Parser/astree.cpp
-        src/Parser/astree.h)
+        src/Parser/astree.h
+        src/QL/QL_PRIVATE.h
+        src/QL/QL_PUBLIC.h
+        src/QL/QL_Manager.h
+        src/QL/QL_Manager.cpp)

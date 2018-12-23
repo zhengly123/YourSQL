@@ -7,12 +7,6 @@
 
 #include "../IX/IX_PRIVATE.h"
 
-struct AttrInfo {
-    char     *attrName;           // Attribute name
-    AttrType attrType;            // Type of attribute
-    int      attrLength;          // Length of attribute
-};
-
 class SM_Manager {
 public:
     SM_Manager  (IX_Manager &ixm, RM_Manager &rmm);  // Constructor

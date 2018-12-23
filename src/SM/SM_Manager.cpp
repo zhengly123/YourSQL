@@ -30,7 +30,16 @@ RC SM_Manager :: CloseDb     ()
 // Create relation
 RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attributes)
 {
-
+    std::cerr << "create table : " << relName << std::endl;
+    for(int i = 0; i < attrCount; ++ i)
+    {
+        std::cerr << "  attr " << i << std::endl;
+        std::cerr << "      attrName : " << attributes[i].attrName << std::endl;
+        std::cerr << "      relName : " << attributes[i].relName << std::endl;
+        std::cerr << "      attrType : " << attributes[i].attrType << std::endl;
+        std::cerr << "      attrLength : " << attributes[i].attrLength << std::endl;
+        std::cerr << "      flag : " << attributes[i].flag << std::endl;
+    }
 }
 
 // Destroy relation
