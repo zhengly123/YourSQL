@@ -31,7 +31,7 @@ struct DataAttrInfo {
 };
 
 struct RelationMeta{
-    char relName[MAXNAME];//	relation name
+    char relName[MAXNAME+1];//	relation name
     int tupleLength;//	tuple length in bytes
     int attrCount;//	number of attributes
     int indexCount;//	number of indexed attributes

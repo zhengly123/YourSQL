@@ -51,11 +51,13 @@ add_executable(YourSQL
         src/SM/SM_PRIVATE.h
         src/SM/SM_Manager.cpp
         src/SM/SM_Manager.h
-        src/Parser/parser.h
+#        src/Parser/parser.h
 #        src/Parser/lex.yy.cpp
 #        src/Parser/yacc.tab.cpp
 #        src/Parser/yacc.tab.h
-        src/gtestcase/IX1.cpp)
+        src/gtestcase/IX1.cpp src/gtestcase/SM1.cpp
+        src/gtestcase/RM1.cpp
+        )
 
 #set(LIBRARIES test)
 set(LIBRARIES

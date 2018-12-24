@@ -144,8 +144,8 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
     RelationMeta *relationMeta=nullptr;
     relationScan.OpenScan(relcatHandler, AttrType::STRING, strlen(relName) + 1, 0,
                           CompOp::EQ_OP, (void *)relName);
-    attrScan.OpenScan(attrcatHandler, AttrType::STRING, strlen(relName) + 1, 0,
-                      CompOp::EQ_OP, (void *)(relName));
+    attrScan.OpenScan(attrcatHandler, AttrType::STRING, strlen(attrName) + 1, 0,
+                      CompOp::EQ_OP, (void *)(attrName));
     while (relationScan.GetNextRec(relRecord) != RM_EOF)
     {
         char *tempData;
@@ -203,7 +203,7 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
     fileScan.OpenScan(tableHandle, attrInfo->attrType, attrInfo->attrLength,
                       attrInfo->offset, NO_OP, nullptr);
     // iterate entry and insert into indexHandler
-    while (attrScan.GetNextRec(entryRecord))
+    while (attrScan.GetNextRec(entryRecord) != RM_EOF)
     {
         char *tempData;
         RID rid;
@@ -212,7 +212,9 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
         ixIndexHandle.InsertEntry(tempData + attrInfo->offset, rid);
     }
     ixIndexHandle.ForcePages();
+    ixm->CloseIndex(ixIndexHandle);
     fileScan.CloseScan();
+    return 0;
 }
 
 // Destroy index
@@ -224,8 +226,9 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
     bool hit = false;
 
 //    relationScan.OpenScan(attrcatHandler, )
-    attrScan.OpenScan(attrcatHandler, AttrType::STRING, strlen(relName) + 1, 0,
-                      CompOp::EQ_OP, (void *)(relName));
+    attrScan.OpenScan(attrcatHandler, AttrType::STRING, strlen(relName) + 1,
+                      offsetof(AttrInfo, relName),
+                      CompOp::EQ_OP, (void *) (relName));
 
     // search the attribution and modify indexNum
     AttrInfo* attrInfo;
@@ -265,6 +268,7 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
     attrScan.CloseScan();
     if (!hit)
         return SM_NONEXIST_RELATION;
+    return 0;
 }
 
 // Load utility

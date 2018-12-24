@@ -48,7 +48,7 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
     rc = indexHandle->nextValidEntry(scanRID, dataRID, key);
     if (rc == IX_ITERATOR_TO_END)
     {
-        puts("IndexScan WARNING");
+//        puts("IndexScan WARNING");
         return rc;
     }
     assert(rc==0);
@@ -59,12 +59,12 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
         assert(rc >= 0);
         if (rc == IX_ITERATOR_TO_END)
         {
-            puts("IndexScan WARNING");
+//            puts("IndexScan WARNING");
             return rc;
         }
         assert(rc==0);
     }
     rid=dataRID;
-    printf("scanRID:%d,%d\n", scanRID.GetPageNum(), scanRID.GetSlotNum());
+//    printf("scanRID:%d,%d\n", scanRID.GetPageNum(), scanRID.GetSlotNum());
     return 0;
 }
