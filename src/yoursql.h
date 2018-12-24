@@ -11,8 +11,10 @@
 #include <float.h>
 
 using RC = int;
+const int MAXNAME = 24;
+const int MAXATTRS = 40;
 
-enum AttrType {INT, FLOAT, STRING};
+enum AttrType {INT, FLOAT, STRING, VARCHR, NULLTYPE, ERRTYPE};
 enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP};
 
 // Pin Strategy Hint
@@ -27,6 +29,7 @@ struct AttrInfo {
     int      offset;
     char     relName[MAXNAME+1];
     int      flag;
+    int      indexNum;
 };
 
 struct RelAttr {
@@ -49,8 +52,7 @@ struct Condition {
   Value   rhsValue;     // right-hand side value if bRhsIsAttr = FALSE
 };
 
-const int MAXNAME = 24;
-const int MAXATTRS = 40;
+
 
 #include "RM/rm.h"
 #include "PF/pf.h"

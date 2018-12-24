@@ -60,7 +60,7 @@ add_executable(YourSQL
         src/QL/QL_PRIVATE.h
         src/QL/QL_PUBLIC.h
         src/QL/QL_Manager.h
-        src/QL/QL_Manager.cpp src/RM_Test/test_scan.cpp)
+        src/QL/QL_Manager.cpp src/RM_Test/test_scan.cpp
 #        src/Parser/yacc.tab.h
         src/gtestcase/IX1.cpp src/gtestcase/SM1.cpp
         src/gtestcase/RM1.cpp

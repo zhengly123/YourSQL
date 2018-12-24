@@ -9,15 +9,7 @@
 #include "../IX/IX_PRIVATE.h"
 #include "SM_PRIVATE.h"
 
-struct AttrInfo {
-    char     attrName[MAXNAME+1]; // Attribute name
-    AttrType attrType;            // Type of attribute
-    int      attrLength;          // Length of attribute
-    int      offset;
-    char     relName[MAXNAME+1];
-    int      flag;
-    int      indexNum;
-};
+
 
 // Used by Printer class
 // 在redbase, this is used for test. It's trifling in our work.
@@ -74,7 +66,7 @@ private:
     //TODO: rel to file name should be down in file handler
     std::string relToFileName(const char *relName)
     {
-        return std::__cxx11::string(relName)+std::string(".rel");
+        return std::string(relName)+std::string(".rel");
     }
 };
 
