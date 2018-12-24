@@ -95,7 +95,7 @@ class RM_FileScan {
     int attrLength;
     int attrOffset;
     CompOp compOp;
-    void* value;
+    const void* value;
 
     RID currid;
 public:
@@ -106,7 +106,7 @@ public:
                      int           attrLength,
                      int           attrOffset,
                      CompOp        compOp,
-                     void          *value);
+                     const void    *value);
     RC GetNextRec   (RM_Record &rec);                  // Get next matching record
     RC CloseScan    ();                                // Terminate file scan
 };

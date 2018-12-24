@@ -6,11 +6,13 @@
 #define YOURSQL_SM_MANAGER_H
 
 #include <string>
-#include "../IX/IX_PRIVATE.h"
 #include "SM_PRIVATE.h"
+#include "../IX/IX_PRIVATE.h"
+#include "../Printer/Printer.h"
 
 
 
+class Printer;
 // Used by Printer class
 // 在redbase, this is used for test. It's trifling in our work.
 struct DataAttrInfo {
@@ -46,6 +48,7 @@ public:
                     const char *attrName);
     RC DropIndex   (const char *relName,                // Destroy index
                     const char *attrName);
+    RC PrintTables ();
     RC Load        (const char *relName,                // Load utility
                     const char *fileName);
     RC Help        ();                                  // Help for database
@@ -54,6 +57,8 @@ public:
     RC Set         (const char *paramName,              // Set system parameter
                     const char *value);
 
+    vector<RelationMeta> TestReturnTables();
+    vector<AttrInfo> TestReturnAttrs();
 private:
     IX_Manager *ixm;
     RM_Manager *rmm;
@@ -61,11 +66,13 @@ private:
     bool isOpen;
     std::string currentDbName;
     char initialCwd[2049];
+    Printer *printer;
 
     RC getRelFromCatelogy();
     //TODO: rel to file name should be down in file handler
     std::string relToFileName(const char *relName)
     {
+//        cout<<
         return std::string(relName)+std::string(".rel");
     }
 };

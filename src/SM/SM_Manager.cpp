@@ -8,18 +8,19 @@
 #include <cstddef>
 #include <sys/stat.h>//to check if a folder exists
 #include "SM_Manager.h"
+#include "../Printer/StdoutPrinter.h"
 const char* RELCAT="relcat";
 const char* ATTRCAT="attrcat";
 
 SM_Manager::SM_Manager(IX_Manager &ixm, RM_Manager &rmm)
-        : ixm(&ixm), rmm(&rmm)
+        : ixm(&ixm), rmm(&rmm), isOpen(false), currentDbName()
 {
-
+    printer = new StdoutPrinter();
 }
 
 SM_Manager :: ~SM_Manager ()
 {
-
+    printer->flush();
 }
 
 // Open database
@@ -174,10 +175,11 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
 //            char *tempData;
 //            attrRecord.GetData(tempData);
             attrInfo=(AttrInfo*)pData;
-            rc = ixm->CreateIndex(relName, indexNum = relationMeta->indexCount++,
+            rc = ixm->CreateIndex(relName, indexNum = ++relationMeta->indexCount,
                                   attrInfo->attrType, attrInfo->attrLength);
             attrInfo->indexNum=indexNum;
             attrcatHandler.UpdateRec(attrRecord);
+            relcatHandler.UpdateRec(relRecord);
 
             if (rc)
             {
@@ -220,8 +222,8 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
 // Destroy index
 RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
 {
-    RM_FileScan attrScan;
-    RM_Record attrRecord;
+    RM_FileScan attrScan, relScan;
+    RM_Record attrRecord, relRecord;
     RC rc;
     bool hit = false;
 
@@ -259,6 +261,21 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
             attrInfo->indexNum=0;
             attrcatHandler.UpdateRec(attrRecord);
 
+            // No indexNum pool is maintained, so there is no reduction
+            // update rel
+//            relScan.OpenScan(relcatHandler,AttrType::STRING,strlen(relName)+1,
+//                    offsetof(RelationMeta,relName), EQ_OP, relName);
+//            bool hit=false;
+//            while (relScan.GetNextRec(relRecord)!=RM_EOF)
+//            {
+//                hit=true;
+//                break;
+//            }
+//            assert(hit);
+//            char *relData;
+//            relRecord.GetData(relData);
+//            ((RelationMeta*)relData)->indexCount--;
+//            relcatHandler.UpdateRec(relRecord);
             // No indexNum pool is maintained, so there is no reduction
 
             hit = true;
@@ -358,3 +375,56 @@ RC SM_Manager::DestroyDb(const char *dbName)
     return 0;
 }
 
+RC SM_Manager::PrintTables()
+{
+    RM_FileScan relScan;
+    RM_Record relRecord;
+    RC rc;
+    bool hit=false;
+    relScan.OpenScan(relcatHandler,AttrType::STRING,MAXNAME+1,
+                     offsetof(RelationMeta,relName), CompOp::NO_OP, nullptr);
+    while (relScan.GetNextRec(relRecord) != RM_EOF)
+    {
+        char *relationMetaData;
+        relRecord.GetData(relationMetaData);
+        printer->PrintTables((RelationMeta *) relationMetaData, 1);
+    }
+    return 0;
+}
+
+vector<RelationMeta> SM_Manager::TestReturnTables()
+{
+    RM_FileScan relScan;
+    RM_Record relRecord;
+    RC rc;
+    vector<RelationMeta> ret;
+    bool hit=false;
+    relScan.OpenScan(relcatHandler,AttrType::STRING,MAXNAME+1,
+                     offsetof(RelationMeta,relName), CompOp::NO_OP, nullptr);
+    while (relScan.GetNextRec(relRecord) != RM_EOF)
+    {
+        char *relationMetaData;
+        relRecord.GetData(relationMetaData);
+//        printer->PrintTables((RelationMeta *) relationMetaData, 1);
+        ret.push_back(*(RelationMeta *) relationMetaData);
+    }
+    return ret;
+}
+
+vector<AttrInfo> SM_Manager::TestReturnAttrs()
+{
+    RM_FileScan attrScan;
+    RM_Record attrRecord;
+    RC rc;
+    vector<AttrInfo> ret;
+    bool hit=false;
+    attrScan.OpenScan(attrcatHandler,AttrType::STRING,MAXNAME+1,
+                     offsetof(AttrInfo,attrName), CompOp::NO_OP, nullptr);
+    while (attrScan.GetNextRec(attrRecord) != RM_EOF)
+    {
+        char *attrData;
+        attrRecord.GetData(attrData);
+        ret.push_back(*(AttrInfo *) attrData);
+    }
+    return ret;
+}

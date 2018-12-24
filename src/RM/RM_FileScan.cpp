@@ -28,7 +28,7 @@ RC RM_FileScan :: OpenScan     (const RM_FileHandle &fileHandle,
                                 int           attrLength,
                                 int           attrOffset,
                                 CompOp        compOp,
-                                void          *value)
+                                const void    *value)
 {
     // get info from filehandle
     fileHandle.Get(fileID, recordSize, recordPerpage, recordShift, fm, bpm);

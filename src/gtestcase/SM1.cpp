@@ -61,6 +61,7 @@ TEST_F(SM, CreateTable)
     // never use a short and normal name as test directory
     char dbName[]="testDbapboa";
     char attrName[]="attr1";
+    char relName[]="rel1";
     ASSERT_EQ(0, sm.CreateDb(dbName));
     ASSERT_EQ(0, sm.OpenDb(dbName));
     AttrInfo attrInfo[5];
@@ -68,10 +69,50 @@ TEST_F(SM, CreateTable)
     attrInfo->attrType=AttrType::INT;
     strcpy(attrInfo->attrName, attrName);
     attrInfo->flag=0;
-    ASSERT_EQ(0, sm.CreateTable("rel1",1,attrInfo));
+    ASSERT_EQ(0, sm.CreateTable(relName,1,attrInfo));
+//    testing::internal::CaptureStdout();
+    ASSERT_EQ(0, sm.PrintTables());
+    auto tables=sm.TestReturnTables();
+    EXPECT_EQ(1, tables.size());
+    EXPECT_STREQ(relName,tables[0].relName);
+    EXPECT_EQ(1,tables[0].attrCount);
+    EXPECT_EQ(0,tables[0].indexCount);
+
+    auto attrs=sm.TestReturnAttrs();
+    EXPECT_EQ(1, attrs.size());
+    EXPECT_STREQ(attrName, attrs[0].attrName);
+    EXPECT_STREQ(relName, attrs[0].relName);
+    EXPECT_EQ(0, attrs[0].indexNum);
+
     ASSERT_EQ(0, sm.CreateIndex("rel1", "attr1"));
+    tables=sm.TestReturnTables();
+    EXPECT_EQ(1, tables.size());
+    EXPECT_STREQ(relName,tables[0].relName);
+    EXPECT_EQ(1,tables[0].attrCount);
+    EXPECT_EQ(1,tables[0].indexCount)<<"Have created an index.";
+
+    attrs=sm.TestReturnAttrs();
+    EXPECT_EQ(1, attrs.size());
+    EXPECT_STREQ(attrName, attrs[0].attrName);
+    EXPECT_STREQ(relName, attrs[0].relName);
+    EXPECT_EQ(1, attrs[0].indexNum);
+
     ASSERT_EQ(0, sm.DropIndex("rel1", "attr1"));
+    tables=sm.TestReturnTables();
+    EXPECT_EQ(1, tables.size());
+    EXPECT_STREQ(relName,tables[0].relName);
+    EXPECT_EQ(1,tables[0].attrCount);
+    EXPECT_EQ(1,tables[0].indexCount)<<"Destroy an index. But cnt should be monotonous.";
+
+    attrs=sm.TestReturnAttrs();
+    EXPECT_EQ(1, attrs.size());
+    EXPECT_STREQ(attrName, attrs[0].attrName);
+    EXPECT_STREQ(relName, attrs[0].relName);
+    EXPECT_EQ(0, attrs[0].indexNum)<<"Destroy an index should change the indexNum.";
+
     ASSERT_EQ(0, sm.DropTable("rel1"));
+    tables=sm.TestReturnTables();
+    EXPECT_EQ(0, tables.size());
 }
 
 //TEST_F(SM, InsertData)

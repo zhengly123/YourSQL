@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
     //rm_test_error(argc, argv);
     // ix_test();
 
-    /*
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
@@ -26,9 +25,8 @@ int main(int argc, char *argv[])
 
     std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
-     */
 
-    test_scan();
+//    test_scan();
 
     return 0;
 }

@@ -59,7 +59,7 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
         case CREATE_DB :
             //std::cerr << "[Stmt] open database" << std::endl;
             //std::cerr << "       [dbName]" << st.dbName << std::endl;
-            // TODO: smm.createDb(st.dbName.c_str());
+            smm.CreateDb(st.dbName.c_str());
             break;
 
         case DROP_DB :
@@ -73,7 +73,8 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             //std::cerr << "       [dbName]" << st.dbName << std::endl;
             if (st.dbName != currentDB)
             {
-                smm.CloseDb(); // close current db
+                if (!currentDB.empty())
+                    smm.CloseDb(); // close current db
                 currentDB = st.dbName;
                 smm.OpenDb(currentDB.c_str());
             }
