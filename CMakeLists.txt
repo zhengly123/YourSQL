@@ -57,4 +57,4 @@ add_executable(YourSQL
         src/QL/QL_PRIVATE.h
         src/QL/QL_PUBLIC.h
         src/QL/QL_Manager.h
-        src/QL/QL_Manager.cpp)
+        src/QL/QL_Manager.cpp src/RM_Test/test_scan.cpp)

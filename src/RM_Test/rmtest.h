@@ -14,6 +14,8 @@
 void rm_test_basic1();
 void rm_test_massive1();
 int rm_test_error(int argc, char *argv[]);
+void test_scan();
+
 
 // TODO: massive record delete;
 // TODO: two handlers;
