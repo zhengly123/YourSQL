@@ -7,8 +7,7 @@ add_subdirectory(./googletest)
 include_directories(./googletest/include)
 link_directories(./googltest)
 
-
-add_executable(YourSQL
+SET(SOURCE
         src/PF/bufmanager/BufPageManager.h
         src/PF/bufmanager/FindReplace.h
         src/PF/fileio/FileManager.h
@@ -26,7 +25,6 @@ add_executable(YourSQL
         src/RM/RM_FileScan.cpp
         src/RM/RM_Manager.cpp
         src/RM/RM_Record.cpp
-#        src/testmain.cpp
         src/IX/IX_Manager.cpp
         src/IX/IX_Manager.h
         src/IX/IX_IndexHandle.cpp
@@ -53,23 +51,40 @@ add_executable(YourSQL
         src/SM/SM_Manager.h
         src/Parser/parser.h
         src/Parser/lex.yy.cpp
-#        src/Parser/yacc.tab.cpp
         src/Parser/yacc.tab.h
         src/Parser/astree.cpp
         src/Parser/astree.h
         src/QL/QL_PRIVATE.h
         src/QL/QL_PUBLIC.h
         src/QL/QL_Manager.h
-        src/QL/QL_Manager.cpp src/RM_Test/test_scan.cpp
+        src/QL/QL_Manager.cpp
+        src/Printer/Printer.cpp src/Printer/Printer.h src/Printer/StdoutPrinter.cpp src/Printer/StdoutPrinter.h)
+
+
+SET(GTEST 1)
+
+IF(GTEST)
+    SET(SOURCE ${SOURCE}
+               src/gtestcase/IX1.cpp src/gtestcase/SM1.cpp
+               src/gtestcase/RM1.cpp
+       )
+    set(LIBRARIES gtest_main)
+else()
+    SET(SOURCE ${SOURCE}
+            src/RM_Test/test_scan.cpp
+            src/testmain.cpp
+            )
+endif()
+
+add_executable(YourSQL
+#        src/Parser/yacc.tab.cpp
 #        src/Parser/yacc.tab.h
-        src/gtestcase/IX1.cpp src/gtestcase/SM1.cpp
-        src/gtestcase/RM1.cpp
-        )
+        ${SOURCE})
 
 #set(LIBRARIES test)
-set(LIBRARIES
+set(LIBRARIES ${LIBRARIES}
 #        gtest
-        gtest_main
+#        gtest_main
         pthread)
 
 
