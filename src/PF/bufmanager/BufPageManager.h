@@ -147,6 +147,33 @@ public:
 			writeBack(i);
 		}
 	}
+	/* 新增加的函数，为了实现写回一个文件。
+	 * @函数名writeBack
+	 * @参数index:缓存页面数组中的下标，用来表示一个缓存页面
+	 * 功能:将index代表的缓存页面归还给缓存管理器，在归还前，缓存页面中的数据需要根据脏页标记决定是否写到对应的文件页面中
+	 */
+	void writeBack(int index, int fileId) {
+		int f, p;
+		hash->getKeys(index, f, p);
+		if (f!=fileId)
+		    return;
+		if (dirty[index]) {
+			hash->getKeys(index, f, p);
+			fileManager->writePage(f, p, addr[index], 0);
+			dirty[index] = false;
+		}
+		replace->free(index);
+		hash->remove(index);
+	}
+	/**
+	 * 新增加的函数，为了实现写回一个文件。
+	 * @param fileId
+	 */
+	void close(int fileId) {
+		for (int i = 0; i < CAP; ++ i) {
+			writeBack(i, fileId);
+		}
+	}
 	/*
 	 * @函数名getKey
 	 * @参数index:缓存页面数组中的下标，用来指定一个缓存页面

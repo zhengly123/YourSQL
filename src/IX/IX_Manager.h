@@ -29,7 +29,7 @@ public:
                      int        indexNo,
                      AttrType   attrType,
                      int        attrLength);
-    RC DestroyIndex (const char *fileName,          // Destroy index
+    RC DestroyIndex (const char *relName,          // Destroy index
                      int        indexNo);
     /**
      * 打开一个索引文件，返回对应的idl(valid).

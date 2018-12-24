@@ -7,12 +7,14 @@
 #include "IX_IndexHandle.h"
 
 RC IX_IndexHandle::open(FileManager &fm, BufPageManager &bpm,
-                        IX_Manager &ixManager, int fileID)
+                        IX_Manager &ixManager, int fileID, const char *fileName, int indexNo)
 {
     this->fm = &fm;
     this->bpm=&bpm;
     this->ixManager=&ixManager;
     this->fileID = fileID;
+    this->fileName = string(fileName);
+    this->indexNo = indexNo;
     headBuffer = bpm.getPage(fileID, 0, headerBpmIndex);
     memcpy(&this->ixHeader, headBuffer, sizeof(this->ixHeader));
     bpm.access(headerBpmIndex);
@@ -378,7 +380,7 @@ RC IX_IndexHandle::ForcePages()
 {
     memcpy(headBuffer, &this->ixHeader, sizeof(this->ixHeader));
     bpm->markDirty(headerBpmIndex);
-    bpm->close();
+    bpm->close(fileID);
     return 0;
 }
 

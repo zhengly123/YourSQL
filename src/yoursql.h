@@ -12,9 +12,7 @@
 
 using RC = int;
 
-const int MAXNAME = 24;
-
-enum AttrType {INT, FLOAT, STRING, VARCHR, ERRTYPE, NULLTYPE};
+enum AttrType {INT, FLOAT, STRING};
 enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP};
 
 // Pin Strategy Hint
@@ -32,17 +30,17 @@ struct AttrInfo {
 };
 
 struct RelAttr {
-  char *relName;     // relation name (may be NULL) 
-  char *attrName;    // attribute name              
+  char *relName;     // relation name (may be NULL)
+  char *attrName;    // attribute name
 };
 
 struct Value {
-  AttrType type;     // type of value               
-  void     *data;    // value                       
+  AttrType type;     // type of value
+  void     *data;    // value
 };
 
 struct Condition {
-  RelAttr lhsAttr;      // left-hand side attribute                     
+  RelAttr lhsAttr;      // left-hand side attribute
   CompOp  op;           // comparison operator
   int 	  flag;			// 0 if normal; 1 if is null; 2 if is not null
   int     bRhsIsAttr;   // TRUE if right-hand side is an attribute
@@ -50,6 +48,9 @@ struct Condition {
   RelAttr rhsAttr;      // right-hand side attribute if bRhsIsAttr = TRUE
   Value   rhsValue;     // right-hand side value if bRhsIsAttr = FALSE
 };
+
+const int MAXNAME = 24;
+const int MAXATTRS = 40;
 
 #include "RM/rm.h"
 #include "PF/pf.h"

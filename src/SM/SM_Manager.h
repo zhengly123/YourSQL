@@ -5,14 +5,47 @@
 #ifndef YOURSQL_SM_MANAGER_H
 #define YOURSQL_SM_MANAGER_H
 
+#include <string>
 #include "../IX/IX_PRIVATE.h"
+#include "SM_PRIVATE.h"
+
+struct AttrInfo {
+    char     attrName[MAXNAME+1]; // Attribute name
+    AttrType attrType;            // Type of attribute
+    int      attrLength;          // Length of attribute
+    int      offset;
+    char     relName[MAXNAME+1];
+    int      flag;
+    int      indexNum;
+};
+
+// Used by Printer class
+// 在redbase, this is used for test. It's trifling in our work.
+struct DataAttrInfo {
+    char     relName[MAXNAME+1];  // Relation name
+    char     attrName[MAXNAME+1]; // Attribute name
+    int      offset;              // Offset of attribute
+    AttrType attrType;            // Type of attribute
+    int      attrLength;          // Length of attribute
+    int      indexNo;             // Attribute index number
+};
+
+struct RelationMeta{
+    char relName[MAXNAME+1];//	relation name
+    int tupleLength;//	tuple length in bytes
+    int attrCount;//	number of attributes
+    int indexCount;//	number of indexed attributes
+};
+
 
 class SM_Manager {
 public:
     SM_Manager  (IX_Manager &ixm, RM_Manager &rmm);  // Constructor
     ~SM_Manager ();                                  // Destructor
+    RC CreateDb(const char *dbName);
     RC OpenDb      (const char *dbName);                // Open database
     RC CloseDb     ();                                  // Close database
+    RC DestroyDb(const char *dbName);                // Delete database
     RC CreateTable (const char *relName,                // Create relation
                     int        attrCount,
                     AttrInfo   *attributes);
@@ -28,6 +61,21 @@ public:
     RC Print       (const char *relName);               // Print relation
     RC Set         (const char *paramName,              // Set system parameter
                     const char *value);
+
+private:
+    IX_Manager *ixm;
+    RM_Manager *rmm;
+    RM_FileHandle relcatHandler,attrcatHandler;
+    bool isOpen;
+    std::string currentDbName;
+    char initialCwd[2049];
+
+    RC getRelFromCatelogy();
+    //TODO: rel to file name should be down in file handler
+    std::string relToFileName(const char *relName)
+    {
+        return std::__cxx11::string(relName)+std::string(".rel");
+    }
 };
 
 #endif //YOURSQL_SM_MANAGER_H

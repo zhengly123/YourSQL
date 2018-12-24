@@ -52,7 +52,7 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
     memset(b, 0, PAGE_SIZE); // refresh the page
 
     bpm.markDirty(index);
-    bpm.close();
+    bpm.close(fileID);
     fm.closeFile(fileID);
 
     return 0;
@@ -73,7 +73,7 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo, IX_IndexHandle &inde
     openedFile[make_pair(string(fileName), indexNo)]= fileID;
 
     // Set the necessary message to fileHandle
-    indexHandle.open(fm, bpm, *this, fileID);
+    indexHandle.open(fm, bpm, *this, fileID, fileName, indexNo);
 
     return 0;
 }
@@ -82,7 +82,8 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
 {
     int fileID;
     indexHandle.getFileID(fileID);
-    bpm.close();
+    openedFile.erase(make_pair(indexHandle.getFileName(), indexHandle.getIndexNo()));
+    bpm.close(fileID);
     fm.closeFile(fileID);
     return 0;
 }
@@ -94,16 +95,26 @@ string IX_Manager::getFileNameWithIndex(const char* fileName, int indexNum)
     return oss.str();
 }
 
-RC IX_Manager::DestroyIndex(const char *fileName, int indexNo)
+/**
+ * index file is named as "relName.indexNo"
+ * @param relName
+ * @param indexNo
+ * @return
+ */
+RC IX_Manager::DestroyIndex(const char *relName, int indexNo)
 {
-//    int fileID = openedFile[make_pair(string(fileName), indexNo)];
+//    int fileID = openedFile[make_pair(string(relName), indexNo)];
 //    bpm.close();
 //    fm.closeFile(fileID);
-    if (openedFile.count(make_pair(string(fileName), indexNo)))
+    if (openedFile.count(make_pair(string(relName), indexNo)))
     {
         return IX_INDEX_OPENED;
     }
-    //TODO: fm.DestoryFile
-    //pf system 中并没有提供这样的接口，需要新增加这个API
+    //pf system 中并没有提供这样的接口，需要新增加这个API来删除文件
+    // following codes delete the file directly
+    RC rc;
+    string rankFileName = getFileNameWithIndex(relName, indexNo);
+    rc=remove(rankFileName.data());
+    assert(rc==0);
     return 0;
 }

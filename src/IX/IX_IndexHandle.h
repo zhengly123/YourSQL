@@ -32,7 +32,8 @@ public:
     RC open (FileManager &fm,
              BufPageManager &bpm,
              IX_Manager &ixManager,
-             int fileID);
+             int fileID,
+             const char *fileName, int indexNo);
 
     void printBPT();
     void printLinearLeaves();
@@ -54,6 +55,8 @@ public:
     static bool cmp(void *a, void *b, CompOp compOp, AttrType attrType);
     int getAttrLength() const;
 //    BufPageManager);
+    string getFileName(){ return fileName;}
+    int getIndexNo(){return indexNo;}
 
 private:
     FileManager *fm;
@@ -64,6 +67,9 @@ private:
     int fileID, headerBpmIndex;
     PageNum path[1000];
     int pathChild[1000];
+
+    string fileName;
+    int indexNo;
 
 
     /**

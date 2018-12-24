@@ -3,6 +3,11 @@ project(YourSQL)
 
 set(CMAKE_CXX_STANDARD 14)
 
+add_subdirectory(./googletest)
+include_directories(./googletest/include)
+link_directories(./googltest)
+
+
 add_executable(YourSQL
         src/PF/bufmanager/BufPageManager.h
         src/PF/bufmanager/FindReplace.h
@@ -21,7 +26,7 @@ add_executable(YourSQL
         src/RM/RM_FileScan.cpp
         src/RM/RM_Manager.cpp
         src/RM/RM_Record.cpp
-        src/testmain.cpp
+#        src/testmain.cpp
         src/IX/IX_Manager.cpp
         src/IX/IX_Manager.h
         src/IX/IX_IndexHandle.cpp
@@ -40,8 +45,6 @@ add_executable(YourSQL
         src/RM_Test/test_error.cpp
         src/RM/RM_Error.cpp
         src/RM/RM_Error.h
-#        src/IX/struct.h src/IX/Tree.h
-#        src/IX/BPlusTree.cpp src/IX/BPlusTree.h
         src/IX_Test/ixtest.h
         src/IX_Test/test.cpp
         src/SM/SM_PUBLIC.h
@@ -58,3 +61,16 @@ add_executable(YourSQL
         src/QL/QL_PUBLIC.h
         src/QL/QL_Manager.h
         src/QL/QL_Manager.cpp src/RM_Test/test_scan.cpp)
+#        src/Parser/yacc.tab.h
+        src/gtestcase/IX1.cpp src/gtestcase/SM1.cpp
+        src/gtestcase/RM1.cpp
+        )
+
+#set(LIBRARIES test)
+set(LIBRARIES
+#        gtest
+        gtest_main
+        pthread)
+
+
+target_link_libraries(YourSQL ${LIBRARIES})
