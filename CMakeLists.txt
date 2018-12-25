@@ -58,7 +58,10 @@ SET(SOURCE
         src/QL/QL_PUBLIC.h
         src/QL/QL_Manager.h
         src/QL/QL_Manager.cpp
-        src/Printer/Printer.cpp src/Printer/Printer.h src/Printer/StdoutPrinter.cpp src/Printer/StdoutPrinter.h)
+        src/Printer/Printer.cpp
+        src/Printer/Printer.h
+        src/Printer/StdoutPrinter.cpp
+        src/Printer/StdoutPrinter.h)
 
 
 SET(GTEST 1)

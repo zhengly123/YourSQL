@@ -87,6 +87,7 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
             return SM_SAME_NAME_ATTR;
         nameSet.insert(string(attributes[i].attrName));
         attributes[i].offset = relSize;
+        attributes[i].indexNum = 0;
         memset(&attributes[i].relName, 0, MAXNAME+1);//make sure the vacant part is zero
         strcpy(attributes[i].relName, relName);
         relSize += attributes[i].attrLength;
@@ -352,6 +353,7 @@ RC SM_Manager::CreateDb(const char *dbName)
     rc = rmm->CreateFile((string(dbName) + string("/") + string(ATTRCAT)).data(),
             sizeof(AttrInfo));
     assert(rc==0);
+
     return 0;
 }
 

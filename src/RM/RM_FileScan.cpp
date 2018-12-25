@@ -77,11 +77,16 @@ RC RM_FileScan :: GetNextRec   (RM_Record &rec)
 
     while(found == 0)
     {
+        bpm->access(index);
+
         if(pageID > totalpage) return RM_EOF;
 
         if(slotID == recordPerpage)
         {
             pageID ++;
+
+            if(pageID > totalpage) return RM_EOF;
+
             slotID = 0;
             currid.Set(pageID, slotID);
 

@@ -68,7 +68,7 @@ RC RM_Manager :: CreateFile  (const char *fileName, int recordSize)
     memset(b, 0, PAGE_SIZE); // refresh the page
 
     this->bpm->markDirty(index);
-    this->bpm->writeBack(fileID);
+    this->bpm->close(fileID);
 
     if(D) cerr << "    File Page 1 Create Success" << endl;
 

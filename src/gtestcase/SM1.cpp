@@ -221,7 +221,7 @@ protected:
 
 TEST_F(SM_Parser, InsertData)
 {
-    freopen("../src/gtest/SM_Parser1.in","r",stdin);
+    freopen("../src/gtestcase/dbstmt_test.txt","r",stdin);
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
