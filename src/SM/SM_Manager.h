@@ -72,7 +72,6 @@ private:
     //TODO: rel to file name should be down in file handler
     std::string relToFileName(const char *relName)
     {
-//        cout<<
         return std::string(relName)+std::string(".rel");
     }
 };

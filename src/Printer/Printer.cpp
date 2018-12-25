@@ -122,3 +122,10 @@ void Printer::PrintTables(const RelationMeta *data, int tupleCnt)
     }
 
 }
+
+//template<typename T>
+//Printer &Printer::operator<<(const T b)
+//{
+//    iss<<b;
+//    return *this;
+//}

@@ -65,6 +65,19 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
     RC rc;
     if (strlen(relName)>MAXNAME)
         return SM_NAME_TOO_LONG;
+
+    RM_FileScan relScan;
+    RM_Record relRecord;
+    relScan.OpenScan(relcatHandler, AttrType::STRING, strlen(relName) + 1,
+                     offsetof(RelationMeta, relName), CompOp::EQ_OP, relName);
+    if (relScan.GetNextRec(relRecord)!=RM_EOF)
+    {
+        printer->getSS()<<"Same name database exists\n";
+        relScan.CloseScan();
+        return SM_TABLE_EXIST;
+    }
+    relScan.CloseScan();
+
     int relSize=0;
     std::set<std::string> nameSet;
     RelationMeta relationMeta={};

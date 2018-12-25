@@ -26,7 +26,14 @@ public:
     void Print(const char *const data[], int tupleCnt);
     void PrintTables(const RelationMeta *data, int tupleCnt);
     void PrintFooter();
-//    Printer operator <<();
+
+//    template <typename T>
+//    Printer& operator <<(const T b);
+//    Printer& operator <<(T b);
+    stringstream& getSS(){
+        return iss;
+    }
+
     virtual void flush() = 0;
     virtual void syncFlush();
 

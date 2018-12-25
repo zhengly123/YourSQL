@@ -54,6 +54,7 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
         case SHOW_DB :
             //std::cerr << "[Stmt] show databases" << std::endl;
             // TODO: smm.showDatabases();
+//            smm.PrintTables();
             break;
 
         case CREATE_DB :
@@ -65,7 +66,7 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
         case DROP_DB :
             //std::cerr << "[Stmt] drop database" << std::endl;
             //std::cerr << "       [dbName]" << st.dbName << std::endl;
-            // TODO: smm.dropDb();
+            smm.DestroyDb(st.dbName.c_str());
             break;
 
         case USE_DB :
@@ -81,8 +82,8 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case SHOW_TABLE :
+            smm.PrintTables();
             //std::cerr << "[Stmt] show tables" << std::endl;
-            // TODO: smm.showTb();
             break;
 
         case CREATE_TABLE :
