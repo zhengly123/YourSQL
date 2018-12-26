@@ -1,0 +1,4 @@
+use testDbapboa;
+show tables;
+drop table z4;
+

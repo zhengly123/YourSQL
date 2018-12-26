@@ -1,0 +1,4 @@
+create database testDbapboa;
+use testDbapboa;
+create table z1 (col1 int, col2 int);
+show tables;
