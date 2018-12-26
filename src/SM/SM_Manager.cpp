@@ -74,17 +74,11 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
     if (strlen(relName)>MAXNAME)
         return SM_NAME_TOO_LONG;
 
-    RM_FileScan relScan;
-    RM_Record relRecord;
-    relScan.OpenScan(relcatHandler, AttrType::STRING, strlen(relName) + 1,
-                     offsetof(RelationMeta, relName), CompOp::EQ_OP, relName);
-    if (relScan.GetNextRec(relRecord)!=RM_EOF)
+    if (relExist(std::string(relName)))
     {
         printer->getSS()<<"Same name database exists\n";
-        relScan.CloseScan();
         return SM_TABLE_EXIST;
     }
-    relScan.CloseScan();
 
     int relSize=0;
     std::set<std::string> nameSet;
@@ -259,7 +253,7 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
     AttrInfo* attrInfo;
     char *pData;
     int indexNum;
-    hit=false;
+    hit = false;
     while (attrScan.GetNextRec(attrRecord) != RM_EOF)
     {
         attrRecord.GetData(pData);
@@ -459,4 +453,65 @@ vector<AttrInfo> SM_Manager::TestReturnAttrs()
 void SM_Manager::flush()
 {
     printer->flush();
+}
+
+RC SM_Manager::relExist(std::string relName)
+{
+    assert(isOpen);
+    RM_FileScan relScan;
+    RM_Record relRecord;
+    relScan.OpenScan(relcatHandler, AttrType::STRING, relName.length() + 1,
+                     offsetof(RelationMeta, relName), CompOp::EQ_OP, relName.c_str());
+    if (relScan.GetNextRec(relRecord)!=RM_EOF)
+    {
+        relScan.CloseScan();
+        return 1;
+    }
+    relScan.CloseScan();
+    return 0;
+}
+
+RC SM_Manager::relExist(vector<std::string> relNames)
+{
+    assert(isOpen);
+    for (auto relName : relNames)
+    {
+        if (relExist(relName)==0)
+            return 0;
+    }
+    return 1;
+}
+
+RC SM_Manager::attrExist(RelAttrType attrName)
+{
+    assert(isOpen);
+    RM_FileScan attrScan;
+    RM_Record attrRecord;
+    char * pData;
+    attrScan.OpenScan(attrcatHandler, AttrType::STRING, attrName.first.length() + 1,
+                      offsetof(AttrInfo, relName),
+                      CompOp::EQ_OP, (void *) (attrName.first.c_str()));
+    while (attrScan.GetNextRec(attrRecord) != RM_EOF)
+    {
+        attrRecord.GetData(pData);
+        // scan中保证了relName一致，以下判断attrName一致
+        if (strcmp(((AttrInfo *) pData)->attrName, attrName.second.c_str()) == 0)
+        {
+            attrScan.CloseScan();
+            return 1;
+        }
+    }
+    attrScan.CloseScan();
+    return 0;
+}
+
+RC SM_Manager::attrExist(vector<RelAttrType> attrNames)
+{
+    assert(isOpen);
+    for (auto attrName:attrNames)
+    {
+        if (!attrExist(attrName))
+            return 0;
+    }
+    return 1;
 }

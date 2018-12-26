@@ -6,6 +6,7 @@
 #define YOURSQL_SM_MANAGER_H
 
 #include <string>
+#include <vector>
 #include "SM_PRIVATE.h"
 #include "../IX/IX_PRIVATE.h"
 #include "../Printer/Printer.h"
@@ -56,6 +57,38 @@ public:
     RC Print       (const char *relName);               // Print relation
     RC Set         (const char *paramName,              // Set system parameter
                     const char *value);
+
+    /**
+     * Check whether a relation exist.
+     * @param relName
+     * @return 0 means relation does not exist, 1 means it exists.
+     */
+    RC relExist(std::string relName);
+
+    /**
+     * Check whether relations exist.
+     * @param relNames
+     * @return 0 means not all of relations exist, 1 means all of them exists.
+     */
+    RC relExist(vector<std::string> relNames);
+
+    /**
+     * Check whether attr exist.
+     * @param attrName
+     * @return 0 means attr does not exist,  1 means it exists.
+     */
+    RC attrExist(RelAttrType attrName);
+
+    /**
+     * Check whether attr exist.
+     * @param attrNames
+     * @return 0 means not all of attr exist,  1 means all of them exists.
+     */
+    RC attrExist(vector<RelAttrType> attrNames);
+    AttrInfo attrGet(RelAttrType attrName);
+    vector<AttrInfo> attrGet(vector<RelAttrType> attrNames);
+
+
     void flush();
 
     vector<RelationMeta> TestReturnTables();

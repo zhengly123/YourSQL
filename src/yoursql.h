@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <climits>
 #include <float.h>
+#include <utility>
+#include <string>
 
 using RC = int;
 const int MAXNAME = 24;
@@ -32,6 +34,7 @@ struct AttrInfo {
     int      indexNum;
 };
 
+using RelAttrType = std::pair<std::string, std::string>;
 struct RelAttr {
   char *relName;     // relation name (may be NULL)
   char *attrName;    // attribute name

@@ -6,8 +6,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <gtest/gtest.h>
+#include <vector>
 #include "../SM/SM_PRIVATE.h"
 #include "../Parser/astree.h"
+using namespace std;
 
 class SM : public ::testing::Test {
 protected:
@@ -19,10 +21,12 @@ protected:
         system("rm -r asdfasfeawef");
 
         ASSERT_EQ(initialCwd, getcwd(initialCwd, 2048));
+        clearParser();
     }
 
     void TearDown () override{
         ASSERT_EQ(0, chdir(initialCwd));
+        clearParser();
     }
 };
 
@@ -105,7 +109,8 @@ TEST_F(SM, CreateTable)
     EXPECT_EQ(1, tables.size());
     EXPECT_STREQ(relName,tables[0].relName);
     EXPECT_EQ(1,tables[0].attrCount);
-    EXPECT_EQ(1,tables[0].indexCount)<<"Destroy an index. But cnt should be monotonous.";
+    EXPECT_EQ(1,tables[0].indexCount)<<"Destroy an index. But cnt should "
+                                       "be monotonous.";
 
     attrs=sm.TestReturnAttrs();
     EXPECT_EQ(1, attrs.size());
@@ -116,6 +121,50 @@ TEST_F(SM, CreateTable)
     ASSERT_EQ(0, sm.DropTable("rel1"));
     tables=sm.TestReturnTables();
     EXPECT_EQ(0, tables.size());
+}
+
+TEST_F(SM, Exist)
+{
+    FileManager fm;
+    BufPageManager bpm(&fm);
+    RM_Manager rmm(&fm, &bpm);
+    IX_Manager ixm(fm,bpm);
+    SM_Manager sm(ixm,rmm);
+    // never use a short and normal name as test directory
+    char dbName[]="testDbapboa";
+    char attrName[]="attr1";
+    char relName[]="rel1";
+    string relNameString = relName;
+    string attrNameString = attrName;
+    vector<string> relV, relVMore;
+    relV.push_back(relNameString);
+    relVMore.push_back(relNameString);
+    relVMore.push_back("aa123");
+    vector<RelAttrType> attrV, attrVMore, attrVNull;
+    attrV.push_back(make_pair(relNameString, attrNameString));
+    attrVMore.push_back(make_pair(relNameString, attrNameString));
+    attrVMore.push_back(make_pair(relNameString, "zj43"));
+
+    ASSERT_EQ(0, sm.CreateDb(dbName));
+    ASSERT_EQ(0, sm.OpenDb(dbName));
+    AttrInfo attrInfo[5];
+    attrInfo->attrLength=4;
+    attrInfo->attrType=AttrType::INT;
+    strcpy(attrInfo->attrName, attrName);
+    attrInfo->flag=0;
+    ASSERT_EQ(0, sm.CreateTable(relName,1,attrInfo));
+    ASSERT_EQ(0, sm.PrintTables());
+    EXPECT_EQ(1, sm.relExist(relNameString));
+    EXPECT_EQ(1, sm.relExist(relV));
+    EXPECT_EQ(0, sm.relExist(relVMore));
+    EXPECT_EQ(1, sm.attrExist(make_pair(relNameString, attrNameString)));
+    EXPECT_EQ(1, sm.attrExist(attrV));
+    EXPECT_EQ(0, sm.attrExist(attrVMore));
+    EXPECT_EQ(1, sm.attrExist(attrVNull));
+
+    ASSERT_EQ(0, sm.DropTable("rel1"));
+    EXPECT_EQ(0, sm.relExist(relNameString));
+    EXPECT_EQ(0, sm.relExist(relV));
 }
 
 TEST_F(SM, PersistentCreateTable)
@@ -184,7 +233,8 @@ TEST_F(SM, PersistentCreateTable)
     EXPECT_EQ(1, tables.size());
     EXPECT_STREQ(relName,tables[0].relName);
     EXPECT_EQ(1,tables[0].attrCount);
-    EXPECT_EQ(1,tables[0].indexCount)<<"Destroy an index. But cnt should be monotonous.";
+    EXPECT_EQ(1,tables[0].indexCount)<<"Destroy an index. But cnt should "
+                                       "be monotonous.";
 
     attrs=sm.TestReturnAttrs();
     EXPECT_EQ(1, attrs.size());
@@ -217,6 +267,7 @@ protected:
 
     void TearDown() override{
         ASSERT_EQ(0, chdir(initialCwd));
+        clearParser();
 //        fflush(stdin);
 //        fclose(stdin);
 //        stdin = fdopen(saveStdin, "r");
@@ -273,23 +324,40 @@ TEST_F(SM_Parser, CreateTalbes_large_persistent)
     freopen("../src/gtestcase/SM_Parser3_1.in","r",stdin);
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
-    RM_Manager rmManager(fm, bpm);
-    IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager);
-    QL_Manager qlManager(smManager, ixManager, rmManager);
 
-    std::cerr << "Before Test." << std::endl;
-    treeparser(smManager, qlManager);
+    {
+        RM_Manager rmManager(fm, bpm);
+        IX_Manager ixManager(*fm, *bpm);
+        SM_Manager smManager(ixManager, rmManager);
+        QL_Manager qlManager(smManager, ixManager, rmManager);
+        std::cerr << "Before Test." << std::endl;
+        treeparser(smManager, qlManager);
     clearParser();
     smManager.CloseDb();
     smManager.flush();
-    freopen("../src/gtestcase/SM_Parser3_2.in","r",stdin);
-    treeparser(smManager, qlManager);
-    smManager.flush();
-    smManager.CloseDb();
-    freopen("../src/gtestcase/SM_Parser3_3.in","r",stdin);
-    treeparser(smManager, qlManager);
-    smManager.flush();
-    smManager.CloseDb();
+        bpm->close();
+    }
+    {
+        RM_Manager rmManager(fm, bpm);
+        IX_Manager ixManager(*fm, *bpm);
+        SM_Manager smManager(ixManager, rmManager);
+        QL_Manager qlManager(smManager, ixManager, rmManager);
+        freopen("../src/gtestcase/SM_Parser3_2.in", "r", stdin);
+        treeparser(smManager, qlManager);
+        smManager.flush();
+        smManager.CloseDb();
+        bpm->close();
+    }
+    {
+        RM_Manager rmManager(fm, bpm);
+        IX_Manager ixManager(*fm, *bpm);
+        SM_Manager smManager(ixManager, rmManager);
+        QL_Manager qlManager(smManager, ixManager, rmManager);
+        freopen("../src/gtestcase/SM_Parser3_3.in", "r", stdin);
+        treeparser(smManager, qlManager);
+        smManager.flush();
+        smManager.CloseDb();
+        bpm->close();
+    }
     std::cerr << "Test Finished." << std::endl;
 }
