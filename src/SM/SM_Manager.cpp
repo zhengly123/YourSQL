@@ -21,6 +21,8 @@ SM_Manager::SM_Manager(IX_Manager &ixm, RM_Manager &rmm)
 SM_Manager :: ~SM_Manager ()
 {
     printer->flush();
+    if (isOpen)
+        CloseDb();
 }
 
 // Open database
@@ -40,8 +42,10 @@ RC SM_Manager :: OpenDb      (const char *dbName)
 //    printf("err:%d\n", errno);
     assert(rc==0);
 
-    assert((rc=rmm->OpenFile(RELCAT,relcatHandler))==0);
-    assert((rc=rmm->OpenFile(ATTRCAT,attrcatHandler))==0);
+    rc=rmm->OpenFile(RELCAT,relcatHandler);
+    assert(rc==0);
+    rc=rmm->OpenFile(ATTRCAT,attrcatHandler);
+    assert(rc==0);
 
     isOpen=true;
     currentDbName=std::string(dbName);
@@ -51,11 +55,15 @@ RC SM_Manager :: OpenDb      (const char *dbName)
 // Close database
 RC SM_Manager :: CloseDb     ()
 {
-    rmm->CloseFile(relcatHandler);
-    rmm->CloseFile(attrcatHandler);
-    isOpen = false;
-    assert(chdir(initialCwd)==0);
-
+    if (isOpen)
+    {
+        rmm->CloseFile(relcatHandler);
+        rmm->CloseFile(attrcatHandler);
+        isOpen = false;
+        assert(chdir(initialCwd)==0);
+    } else{
+        printer->getSS() << "No database is opened.\n";
+    }
     return 0;
 }
 
@@ -106,7 +114,8 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
     assert(rc==0);
     for (int i = 0; i < attrCount; ++i)
     {
-        assert((rc = attrcatHandler.InsertRec((char *) (attributes + i), rid)) == 0);
+        rc = attrcatHandler.InsertRec((char *) (attributes + i), rid);
+        assert(rc == 0);
     }
     rc = rmm->CreateFile(relToFileName(relName).data(), relationMeta.tupleLength);
     assert(rc==0);
@@ -370,12 +379,12 @@ RC SM_Manager::DestroyDb(const char *dbName)
         fprintf(stderr,"Close the database before destroy\n");
         return SM_DB_NOT_CLOSE;
     }
-    if (strchr(dbName,'/')!=NULL)
+    if (strchr(dbName,'/')!=nullptr)
     {
         fprintf(stderr,"Illegal db name\n");
         return SM_ILLEGAL_NAME;
     }
-    if (strchr(dbName, '.')!=NULL)
+    if (strchr(dbName, '.')!=nullptr)
     {
         fprintf(stderr,"Illegal db name\n");
         return SM_ILLEGAL_NAME;
@@ -442,4 +451,9 @@ vector<AttrInfo> SM_Manager::TestReturnAttrs()
         ret.push_back(*(AttrInfo *) attrData);
     }
     return ret;
+}
+
+void SM_Manager::flush()
+{
+    printer->flush();
 }

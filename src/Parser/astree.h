@@ -38,4 +38,6 @@ void selectorparser(isel sl, struct RelAttr * rel);
 void tableparser(std::list<std::string> table);
 AttrType typeparser(itype ty);
 
+void clearParser();
+
 #endif //YOURSQL_ASTREE_H

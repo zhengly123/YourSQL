@@ -479,3 +479,8 @@ void tableparser(std::list<std::string> table)
     for(std::list<std::string>::iterator it = table.begin(); it != table.end(); ++ it)
         std::cerr << *it << ", ";
 }
+
+void clearParser()
+{
+    currentDB = "";
+}

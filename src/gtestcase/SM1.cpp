@@ -12,7 +12,7 @@
 class SM : public ::testing::Test {
 protected:
     char initialCwd[2049];
-    virtual void SetUp() {
+    void SetUp () override{
         char dbName[]="testDbapboa";
         char dbName2[]="asdfasfeawef";
         system("rm -r testDbapboa");
@@ -21,7 +21,7 @@ protected:
         ASSERT_EQ(initialCwd, getcwd(initialCwd, 2048));
     }
 
-    virtual void TearDown() {
+    void TearDown () override{
         ASSERT_EQ(0, chdir(initialCwd));
     }
 };
@@ -201,25 +201,29 @@ class SM_Parser : public ::testing::Test {
 protected:
     char initialCwd[2049];
     int saveStdin;
-    virtual void SetUp() {
+    SM_Parser()
+    {
+//        saveStdin=dup(STDIN_FILENO);
+    }
+
+    void SetUp() override{
         char dbName[]="testDbapboa";
         char dbName2[]="asdfasfeawef";
         system("rm -r testDbapboa");
         system("rm -r asdfasfeawef");
-        saveStdin=dup(STDIN_FILENO);
 
         ASSERT_EQ(initialCwd, getcwd(initialCwd, 2048));
     }
 
-    virtual void TearDown() {
+    void TearDown() override{
         ASSERT_EQ(0, chdir(initialCwd));
-        fflush(stdin);
-        fclose(stdin);
-        stdin = fdopen(saveStdin, "r");
+//        fflush(stdin);
+//        fclose(stdin);
+//        stdin = fdopen(saveStdin, "r");
     }
 };
 
-TEST_F(SM_Parser, InsertData)
+TEST_F(SM_Parser, CreateDB)
 {
     freopen("../src/gtestcase/dbstmt_test.txt","r",stdin);
     FileManager* fm = new FileManager();
@@ -231,5 +235,61 @@ TEST_F(SM_Parser, InsertData)
 
     std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
+    std::cerr << "Test Finished." << std::endl;
 }
 
+TEST_F(SM_Parser, CreateTalbes)
+{
+    freopen("../src/gtestcase/SM_Parser1.in","r",stdin);
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager);
+    QL_Manager qlManager(smManager, ixManager, rmManager);
+
+    std::cerr << "Before Test." << std::endl;
+    treeparser(smManager, qlManager);
+    std::cerr << "Test Finished." << std::endl;
+}
+
+TEST_F(SM_Parser, CreateTalbes_large)
+{
+    freopen("../src/gtestcase/SM_Parser2.in","r",stdin);
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager);
+    QL_Manager qlManager(smManager, ixManager, rmManager);
+
+    std::cerr << "Before Test." << std::endl;
+    treeparser(smManager, qlManager);
+    std::cerr << "Test Finished." << std::endl;
+}
+
+TEST_F(SM_Parser, CreateTalbes_large_persistent)
+{
+    freopen("../src/gtestcase/SM_Parser3_1.in","r",stdin);
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager);
+    QL_Manager qlManager(smManager, ixManager, rmManager);
+
+    std::cerr << "Before Test." << std::endl;
+    treeparser(smManager, qlManager);
+    clearParser();
+    smManager.CloseDb();
+    smManager.flush();
+    freopen("../src/gtestcase/SM_Parser3_2.in","r",stdin);
+    treeparser(smManager, qlManager);
+    smManager.flush();
+    smManager.CloseDb();
+    freopen("../src/gtestcase/SM_Parser3_3.in","r",stdin);
+    treeparser(smManager, qlManager);
+    smManager.flush();
+    smManager.CloseDb();
+    std::cerr << "Test Finished." << std::endl;
+}

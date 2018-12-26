@@ -56,6 +56,7 @@ public:
     RC Print       (const char *relName);               // Print relation
     RC Set         (const char *paramName,              // Set system parameter
                     const char *value);
+    void flush();
 
     vector<RelationMeta> TestReturnTables();
     vector<AttrInfo> TestReturnAttrs();
