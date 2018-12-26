@@ -7,3 +7,4 @@ create table z4 (col1 int, col2 int);
 create table z5 (col1 int, col2 int);
 create table z6 (col1 int, col2 int);
 show tables;
+exit;

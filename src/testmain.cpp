@@ -42,8 +42,16 @@ int main(int argc, char *argv[])
     QL_Manager qlManager(smManager, ixManager, rmManager);
 
     std::cerr << "Before Test." << std::endl;
-    treeparser(smManager, qlManager);
 
+    int cnt = 0;
+    for(;;)
+    {
+        printf("------ Inst Test #%d ------\n", ++cnt);
+        if(treeparser(smManager, qlManager, 0)){
+            printf("------ Inst Test End ------\n");
+            break;
+        }
+    }
 
     return 0;
 }

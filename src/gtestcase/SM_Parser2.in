@@ -31,3 +31,4 @@ drop table z6;
 show tables;
 drop table z4;
 show tables;
+exit;

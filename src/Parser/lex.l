@@ -21,7 +21,9 @@ digit       ([0-9])
 integer     ({digit}+)  
 identifier  ({nondigit}({nondigit}|{digit})*)
 string		('({nondigit}|{digit})*')
+linend      ([\n\r])
 blank_chars ([ \f\r\t\v\n]+)
+
 
 /* 2 . Regular */
 
@@ -58,6 +60,7 @@ blank_chars ([ \f\r\t\v\n]+)
 "DATE"			{return DATE;}
 "FLOAT"			{return MFLOAT;}
 "FOREIGN"		{return FOREIGN;}
+"EXIT"          {return QEXIT;}
 
 {identifier}    {yylval.ident = yytext; return IDENTIFIER;}
 {integer}		{yylval.value_int = atoi(yytext);return VALUE_INT;}
@@ -72,7 +75,7 @@ blank_chars ([ \f\r\t\v\n]+)
 ">"				{return GT;}
 "("				{return LB;}
 ")"				{return RB;}
-";"				{return FH;}
+";"				{yyterminate(); return FH;}
 ","				{return DH;}
 "."				{return DOT;}
 "*"				{return STAR;}

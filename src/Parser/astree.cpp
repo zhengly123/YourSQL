@@ -12,32 +12,56 @@ void tester(int ident, std::string str)
     std::cerr << str << std::endl;
 }
 
-void treeparser(SM_Manager &smm, QL_Manager &qlm)
+// flush = 0, single inst (test mode)
+// flush = 1, multiple inst (terminal mode)
+
+int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush)
 {
-    yyparse();
-
     ASType *topl;
-    topl = &toplevel;
+    exitFlag = 0;
 
-    // field list check
-    // fieldlistparser(topl->field_list);
+    do
+    {
+        if(flush) std :: cerr << ">$ ";
 
-    // value list check
-    // valuelistsparser(topl->value_lists);
+        parserError = 0;
 
-    // set clause list check
-    // setclauselistparser(topl->setcl_list);
+        yyparse();
 
-    // selector check
-    // selectorparser(topl->sel);
+        if(parserError)
+        {
+            std::cerr << "Syntax Error." << std::endl;
+            continue;
+        }
 
-    // where clause check
-    // wherelistparser(topl->where_list)
+        topl = &toplevel;
 
-    std::cerr << "Before Parse ... " << endl;
+        // field list check
+        // fieldlistparser(topl->field_list);
 
-    for(std::list<istmt>::iterator it = topl->stmt_list.begin(); it != topl->stmt_list.end(); ++ it)
-        stmtparser(smm, qlm, *it);
+        // value list check
+        // valuelistsparser(topl->value_lists);
+
+        // set clause list check
+        // setclauselistparser(topl->setcl_list);
+
+        // selector check
+        // selectorparser(topl->sel);
+
+        // where clause check
+        // wherelistparser(topl->where_list)
+
+        // std::cerr << "Before Parse ... " << endl;
+
+        for(std::list<istmt>::iterator it = topl->stmt_list.begin(); it != topl->stmt_list.end(); ++ it)
+            stmtparser(smm, qlm, *it);
+
+        if(exitFlag) return 1;
+
+    }while(flush);
+
+    return 0;
+
 }
 
 void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
@@ -212,6 +236,11 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             //std::cerr << "       [colName]" << st.colName << std::endl;
 
             smm.DropIndex(st.tbName.c_str(), st.colName.c_str());
+            break;
+
+        case EXIT_ST :
+
+            exitFlag = 1;
             break;
 
         default :

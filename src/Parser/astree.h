@@ -13,11 +13,12 @@
 #include <iostream>
 
 static std::string currentDB;
+static int exitFlag;
 
 void tester(int ident, std::string);
 
 void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st);
-void treeparser(SM_Manager &smm, QL_Manager &qlm);
+int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush=1);
 void fieldparser(ifield fd, struct AttrInfo * atrv);
 void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt);
 

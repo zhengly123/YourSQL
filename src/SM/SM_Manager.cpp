@@ -401,18 +401,21 @@ RC SM_Manager::DestroyDb(const char *dbName)
 
 RC SM_Manager::PrintTables()
 {
+    cerr << "Show Tables: " << endl;
     RM_FileScan relScan;
     RM_Record relRecord;
     RC rc;
     bool hit=false;
     relScan.OpenScan(relcatHandler,AttrType::STRING,MAXNAME+1,
                      offsetof(RelationMeta,relName), CompOp::NO_OP, nullptr);
+    //printer->Print("Show Tables :\n");
     while (relScan.GetNextRec(relRecord) != RM_EOF)
     {
         char *relationMetaData;
         relRecord.GetData(relationMetaData);
         printer->PrintTables((RelationMeta *) relationMetaData, 1);
     }
+    printer->flush();
     return 0;
 }
 

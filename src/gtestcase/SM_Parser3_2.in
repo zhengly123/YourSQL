@@ -5,3 +5,4 @@ drop table z2;
 drop table z3;
 drop table z5;
 drop table z6;
+exit;

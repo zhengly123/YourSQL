@@ -3,3 +3,4 @@ create database db1;
 use db1;
 drop database db1;
 show tables;
+exit;

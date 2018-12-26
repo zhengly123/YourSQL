@@ -10,6 +10,7 @@ extern "C"
     extern int yylex(void);
 }
 
+int parserError;
 ASType toplevel;
 
 %}  
@@ -27,6 +28,7 @@ ASType toplevel;
 %token ERROR
 %token EQ NEQ LEQ GEQ LT GT
 %token LB RB FH DH DOT STAR
+%token QEXIT
 
 /* %type Program
 %type Stmt */
@@ -64,7 +66,7 @@ CommandList :  /* empty */
         {
             $$.clear();
         }
-        | CommandList Stmt FH
+        | CommandList Stmt
         {
             $$ = $1;
             $$.push_back($2);
@@ -147,6 +149,10 @@ Stmt    : SHOW DATABASES
             $$.id = DROP_IDX;
             $$.tbName = $3;
             $$.colName = $5;
+        }
+        | QEXIT
+        {
+            $$.id = EXIT_ST;
         }
 ;
 
@@ -401,7 +407,8 @@ ColumnList: IDENTIFIER
 %%  
 
 void yyerror(const char *s)
-{  
+{
+    parserError = 1;
     //std::cerr << s << std::endl;
 }  
 

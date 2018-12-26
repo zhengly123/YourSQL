@@ -86,7 +86,8 @@
      FH = 302,
      DH = 303,
      DOT = 304,
-     STAR = 305
+     STAR = 305,
+     QEXIT = 306
    };
 #endif
 /* Tokens.  */
@@ -138,6 +139,7 @@
 #define DH 303
 #define DOT 304
 #define STAR 305
+#define QEXIT 306
 
 
 
