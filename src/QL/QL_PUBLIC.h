@@ -7,4 +7,11 @@
 
 #include "QL_Manager.h"
 
+const int QL_RELNOTEXIST = 1;
+const int QL_INVALIDSIZE = QL_RELNOTEXIST + 1;
+const int QL_TYPEUNMATCHED = QL_INVALIDSIZE + 1;
+const int QL_ATTRNOTNULL = QL_TYPEUNMATCHED + 1;
+const int QL_STRTOOLONG = QL_ATTRNOTNULL + 1;
+const int QL_DUPLICATE = QL_STRTOOLONG + 1;
+
 #endif //YOURSQL_QL_PUBLIC_H

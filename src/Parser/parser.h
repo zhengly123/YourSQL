@@ -124,8 +124,10 @@ const int SELECT_ST = UPDATE_ST + 1;
 const int CREATE_IDX = SELECT_ST + 1;
 const int DROP_IDX = CREATE_IDX + 1;
 const int EXIT_ST = DROP_IDX + 1;
+const int CLOSE_ST = EXIT_ST + 1;
+const int SHOW_TABLE_ID = CLOSE_ST + 1;
 
-const int INT_TYPE = EXIT_ST + 1;
+const int INT_TYPE = SHOW_TABLE_ID + 1;
 const int INT_CONST_TYPE = INT_TYPE + 1;
 const int VARCHAR_TYPE = INT_CONST_TYPE + 1;
 const int VARCHAR_CONST_TYPE = VARCHAR_TYPE + 1;

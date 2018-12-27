@@ -76,7 +76,7 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
 
     if (relExist(std::string(relName)))
     {
-        printer->getSS()<<"Same name database exists\n";
+        printer->getSS()<<"Same name relation exists\n";
         return SM_TABLE_EXIST;
     }
 
@@ -97,7 +97,9 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
     relationMeta.attrCount=attrCount;
     relationMeta.indexCount=0;
     strcpy(relationMeta.relName,relName);
-    relationMeta.tupleLength=relSize;
+    // attrCount : IF NULL FLAG
+    // TODO: in fact, it should be ceil(attrcount / 8)
+    relationMeta.tupleLength=relSize+attrCount;
     // check empty part of relation name
     for (int i = strlen(relName); i < MAXNAME + 1; ++i)
         relationMeta.relName[i] = 0;
@@ -482,6 +484,32 @@ RC SM_Manager::relExist(vector<std::string> relNames)
     return 1;
 }
 
+RC SM_Manager::relGet(std::string relName, struct RelationMeta *relmeta)
+{
+    assert(isOpen);
+    RM_FileScan relScan;
+    RM_Record relRecord;
+    char *data;
+
+    relScan.OpenScan(relcatHandler,
+                     AttrType::STRING,
+                     relName.length() + 1,
+                     offsetof(RelationMeta, relName),
+                     CompOp::EQ_OP,
+                     relName.c_str());
+
+    if (relScan.GetNextRec(relRecord) != RM_EOF)
+    {
+        relRecord.GetData(data);
+        memcpy(relmeta, data, sizeof (RelationMeta));
+        relScan.CloseScan();
+        return 0;
+    }
+
+    relScan.CloseScan();
+    return 1;
+}
+
 RC SM_Manager::attrExist(RelAttrType attrName)
 {
     assert(isOpen);
@@ -497,6 +525,7 @@ RC SM_Manager::attrExist(RelAttrType attrName)
         // scan中保证了relName一致，以下判断attrName一致
         if (strcmp(((AttrInfo *) pData)->attrName, attrName.second.c_str()) == 0)
         {
+
             attrScan.CloseScan();
             return 1;
         }
@@ -514,4 +543,56 @@ RC SM_Manager::attrExist(vector<RelAttrType> attrNames)
             return 0;
     }
     return 1;
+}
+
+RC SM_Manager::attrGet(RelAttrType attrName, AttrInfo* attrInfo)
+{
+    assert(isOpen);
+    RM_FileScan attrScan;
+    RM_Record attrRecord;
+    char * pData;
+    attrScan.OpenScan(attrcatHandler, AttrType::STRING, attrName.first.length() + 1,
+                      offsetof(AttrInfo, relName),
+                      CompOp::EQ_OP, (void *) (attrName.first.c_str()));
+    while (attrScan.GetNextRec(attrRecord) != RM_EOF)
+    {
+        attrRecord.GetData(pData);
+        // scan中保证了relName一致，以下判断attrName一致
+        if (strcmp(((AttrInfo *) pData)->attrName, attrName.second.c_str()) == 0)
+        {
+            memcpy(attrInfo, pData, sizeof(AttrInfo));
+            attrScan.CloseScan();
+            return 0;
+        }
+    }
+    attrScan.CloseScan();
+    return 1;
+}
+
+vector<AttrInfo> SM_Manager::attrGet(std::string relName)
+{
+    assert(isOpen);
+
+    vector<AttrInfo> attributes;
+    RM_FileScan attrScan;
+    RM_Record attrRecord;
+    AttrInfo attr;
+    char * pData;
+
+    attrScan.OpenScan(attrcatHandler,
+                      AttrType::STRING,
+                      MAXNAME+1,
+                      offsetof(AttrInfo, relName),
+                      CompOp::EQ_OP,
+                      (void *) (relName.c_str()));
+
+    while (attrScan.GetNextRec(attrRecord) != RM_EOF)
+    {
+        attrRecord.GetData(pData);
+        memcpy(&attr, pData, sizeof(AttrInfo));
+        attributes.push_back(attr);
+    }
+
+    attrScan.CloseScan();
+    return attributes;
 }

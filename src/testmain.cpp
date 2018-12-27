@@ -7,32 +7,10 @@
 #include "IX_Test/ixtest.h"
 #include "SM/SM_PUBLIC.h"
 #include "Parser/astree.h"
+#include "QL/QL_PUBLIC.h"
 
 int main(int argc, char *argv[])
 {
-
-//    FileManager fm;
-//    BufPageManager bpm(&fm);
-//    RM_Manager rmm(&fm, &bpm);
-//    IX_Manager ixm(fm,bpm);
-//    SM_Manager sm(ixm,rmm);
-//    // never use a short and normal name as test directory
-//    char dbName[]="testDbapboa";
-//    char attrName[]="attr1";
-//    char relName[]="rel1";
-//    sm.CreateDb(dbName);
-//    sm.OpenDb(dbName);
-//    AttrInfo attrInfo[5];
-//    attrInfo->attrLength=4;
-//    attrInfo->attrType=AttrType::INT;
-//    strcpy(attrInfo->attrName, attrName);
-//    attrInfo->flag=0;
-//    sm.CreateTable(relName,1,attrInfo);
-////    testing::internal::CaptureStdout();
-//    sm.PrintTables();
-//    auto tables=sm.TestReturnTables();
-//    printf("Size = %d\n", tables.size());
-//    sm.CloseDb();
 
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
@@ -41,9 +19,11 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager);
     QL_Manager qlManager(smManager, ixManager, rmManager);
 
-    std::cerr << "Before Test." << std::endl;
+    // std::cerr << "Before Test." << std::endl;
 
     int cnt = 0;
+
+    /*
     for(;;)
     {
         printf("------ Inst Test #%d ------\n", ++cnt);
@@ -51,6 +31,27 @@ int main(int argc, char *argv[])
             printf("------ Inst Test End ------\n");
             break;
         }
+    }
+     */
+
+    // freopen("./insert_test/ins_typemismatch.txt","r",stdin);
+
+    for(;;)
+    {
+        int rc = treeparser(smManager, qlManager, 0);
+        switch(rc)
+        {
+            case PARSEREXIT : cerr << "> Exit." << endl; break;
+            case QL_RELNOTEXIST : cerr << "> Rel not exist." << endl; break;
+            case QL_INVALIDSIZE : cerr << "> Invalid size." << endl; break;
+            case QL_TYPEUNMATCHED : cerr << "> Type mismatched." << endl; break;
+            case QL_ATTRNOTNULL : cerr << "> Attr should not be null." << endl; break;
+            case QL_STRTOOLONG : cerr << "> String too long." << endl; break;
+            case QL_DUPLICATE : cerr << "> Insert Duplicated." << endl; break;
+            case 0 : /*cerr << "> Normal." << endl;*/  break;
+            default: cerr << "> Unrecognized Error." << endl; break;
+        }
+        if(rc == PARSEREXIT) break;
     }
 
     return 0;

@@ -28,7 +28,7 @@ ASType toplevel;
 %token ERROR
 %token EQ NEQ LEQ GEQ LT GT
 %token LB RB FH DH DOT STAR
-%token QEXIT
+%token QEXIT QCLOSE
 
 /* %type Program
 %type Stmt */
@@ -153,6 +153,15 @@ Stmt    : SHOW DATABASES
         | QEXIT
         {
             $$.id = EXIT_ST;
+        }
+        | QCLOSE
+        {
+            $$.id = CLOSE_ST;
+        }
+        | SHOW TABLE IDENTIFIER
+        {
+            $$.id = SHOW_TABLE_ID;
+            $$.tbName = $3;
         }
 ;
 

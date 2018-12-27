@@ -1,0 +1,9 @@
+create database db1;
+use db1;
+create table tb1 (col1 int, col2 varchar);
+insert into tb1 values (1,'Merry'),(2,null),(null,'Xmas');
+show table tb1;
+drop table tb1;
+close;
+drop database db1;
+exit; 

@@ -25,12 +25,7 @@ struct DataAttrInfo {
     int      indexNo;             // Attribute index number
 };
 
-struct RelationMeta{
-    char relName[MAXNAME+1];//	relation name
-    int tupleLength;//	tuple length in bytes
-    int attrCount;//	number of attributes
-    int indexCount;//	number of indexed attributes
-};
+
 
 
 class SM_Manager {
@@ -73,6 +68,14 @@ public:
     RC relExist(vector<std::string> relNames);
 
     /**
+     * Get the meta data of a relation
+     * @param relName
+     * @param relmeta
+     * @return 0 means relation exist, 1 means it does not exist
+     */
+    RC relGet(std::string relName, struct RelationMeta *relmeta);
+
+    /**
      * Check whether attr exist.
      * @param attrName
      * @return 0 means attr does not exist,  1 means it exists.
@@ -85,9 +88,18 @@ public:
      * @return 0 means not all of attr exist,  1 means all of them exists.
      */
     RC attrExist(vector<RelAttrType> attrNames);
-    AttrInfo attrGet(RelAttrType attrName);
-    vector<AttrInfo> attrGet(vector<RelAttrType> attrNames);
 
+    /**
+     * Get an attribute from a relation.
+     * @param attrName
+     * @param attrInfo
+     * @return 0 means normal, 1 means the attr does not exist
+     */
+    RC attrGet(RelAttrType attrName, AttrInfo* attrInfo);
+
+    vector<AttrInfo> attrGet(std::string relName);
+
+    vector<AttrInfo> attrGet(vector<RelAttrType> attrNames);
 
     void flush();
 

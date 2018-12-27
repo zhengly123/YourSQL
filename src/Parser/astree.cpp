@@ -54,9 +54,12 @@ int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush)
         // std::cerr << "Before Parse ... " << endl;
 
         for(std::list<istmt>::iterator it = topl->stmt_list.begin(); it != topl->stmt_list.end(); ++ it)
-            stmtparser(smm, qlm, *it);
+        {
+            int rc = stmtparser(smm, qlm, *it);
+            if(rc) return rc;
+        }
 
-        if(exitFlag) return 1;
+        if(exitFlag) return PARSEREXIT;
 
     }while(flush);
 
@@ -64,7 +67,7 @@ int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush)
 
 }
 
-void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
+int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 {
     int len, cnt, lens, lenw, lensc, lenwr;
     AttrInfo * atrv;
@@ -72,6 +75,7 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
     int lend;
     Condition * condi, * conds, *condw, *condwr;
     RelAttr *selist;
+    int rc;
 
     switch (st.id) {
 
@@ -152,8 +156,9 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 len = (*it).size();
                 vali = new Value[len];
                 valuelistparser(*it, vali);
-                qlm.Insert(st.tbName.c_str(), len, vali);
+                int rc = qlm.Insert(st.tbName.c_str(), len, vali);
                 delete[] vali;
+                if(rc) return rc;
             }
 
             break;
@@ -243,9 +248,23 @@ void stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             exitFlag = 1;
             break;
 
+        case CLOSE_ST :
+
+            smm.CloseDb();
+            currentDB = "";
+            break;
+
+        case SHOW_TABLE_ID :
+
+            rc = qlm.showRelation(st.tbName.c_str());
+            if(rc) return rc;
+            break;
+
         default :
             break;
     }
+
+    return 0;
 }
 
 AttrType typeparser(itype ty)
@@ -254,7 +273,7 @@ AttrType typeparser(itype ty)
     {
         case INT_TYPE : return INT;
         //case INT_CONST_TYPE : return "int (" + std::to_string(ty.value_int) + ")";
-        case VARCHAR_TYPE : return VARCHR;
+        case VARCHAR_TYPE : return STRING;
         //case VARCHAR_CONST_TYPE : return "varchar (" + std::to_string(ty.value_int) + ")";
         //case DATE_TYPE : return "date";
         case FLOAT_TYPE : return FLOAT;
@@ -302,6 +321,17 @@ void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
 
 }
 
+int typelength(AttrType ty)
+{
+    switch (ty)
+    {
+        case INT: return 4;
+        case FLOAT: return 4;
+        case STRING: return MAXNAME+1;
+        default: return 4;
+    }
+}
+
 void fieldparser(ifield fd, struct AttrInfo * atrv)
 {
     switch (fd.id)
@@ -313,7 +343,7 @@ void fieldparser(ifield fd, struct AttrInfo * atrv)
             strcpy(atrv->attrName, fd.colName.c_str());
             atrv->flag = 0;
             atrv->attrType = typeparser(fd.type);
-            atrv->attrLength = 4;
+            atrv->attrLength = typelength(atrv->attrType);
             break;
 
             case NOTNULL_COL_FIELD :
@@ -323,7 +353,7 @@ void fieldparser(ifield fd, struct AttrInfo * atrv)
             strcpy(atrv->attrName, fd.colName.c_str());
             atrv->flag = 1;
             atrv->attrType = typeparser(fd.type);
-            atrv->attrLength = 4;
+            atrv->attrLength = typelength(atrv->attrType);
             break;
 
         case PRIMARY_FIELD :
@@ -365,6 +395,7 @@ void valueparser(ivalue value, Value * val)
 
         case VALUE_STRING_ID :
             val->type = STRING;
+            val->data = new char[value.value_string.length()+1];
             strcpy((char*) val->data, value.value_string.c_str());
             break;
 

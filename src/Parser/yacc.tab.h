@@ -87,7 +87,8 @@
      DH = 303,
      DOT = 304,
      STAR = 305,
-     QEXIT = 306
+     QEXIT = 306,
+     QCLOSE = 307
    };
 #endif
 /* Tokens.  */
@@ -140,6 +141,7 @@
 #define DOT 304
 #define STAR 305
 #define QEXIT 306
+#define QCLOSE 307
 
 
 

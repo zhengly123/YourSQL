@@ -61,6 +61,7 @@ blank_chars ([ \f\r\t\v\n]+)
 "FLOAT"			{return MFLOAT;}
 "FOREIGN"		{return FOREIGN;}
 "EXIT"          {return QEXIT;}
+"CLOSE"         {return QCLOSE;}
 
 {identifier}    {yylval.ident = yytext; return IDENTIFIER;}
 {integer}		{yylval.value_int = atoi(yytext);return VALUE_INT;}

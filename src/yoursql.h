@@ -15,6 +15,7 @@
 using RC = int;
 const int MAXNAME = 24;
 const int MAXATTRS = 40;
+const int PARSEREXIT = -1;
 
 enum AttrType {INT, FLOAT, STRING, VARCHR, NULLTYPE, ERRTYPE};
 enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP};
@@ -30,7 +31,7 @@ struct AttrInfo {
     int      attrLength;          // Length of attribute
     int      offset;
     char     relName[MAXNAME+1];
-    int      flag;
+    int      flag;                // 1 : not null; 2 : primary key; 3 : not null & primary key
     int      indexNum;
 };
 
@@ -55,7 +56,12 @@ struct Condition {
   Value   rhsValue;     // right-hand side value if bRhsIsAttr = FALSE
 };
 
-
+struct RelationMeta{
+    char relName[MAXNAME+1];//	relation name
+    int tupleLength;//	tuple length in bytes
+    int attrCount;//	number of attributes
+    int indexCount;//	number of indexed attributes
+};
 
 #include "RM/rm.h"
 #include "PF/pf.h"

@@ -1,0 +1,8 @@
+create database db1;
+use db1;
+create table tb2 (col1 int, col2 int not null);
+insert into tb2 values (2,null);
+drop table tb2;
+close;
+drop database db1;
+exit;
