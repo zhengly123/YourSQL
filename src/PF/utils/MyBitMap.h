@@ -162,7 +162,7 @@ public:
 		return i % 61;
 	}
 	static void initConst() {
-	    cerr << "initConst!" << endl;
+	    // cerr << "initConst!" << endl;
 		for (int i = 0; i < 32; ++ i) {
 			unsigned int k = (1 << i);
             //hmap[_hash(k)] = i;

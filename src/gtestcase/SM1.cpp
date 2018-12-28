@@ -284,9 +284,9 @@ TEST_F(SM_Parser, CreateDB)
     SM_Manager smManager(ixManager, rmManager);
     QL_Manager qlManager(smManager, ixManager, rmManager);
 
-    std::cerr << "Before Test." << std::endl;
+    //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
-    std::cerr << "Test Finished." << std::endl;
+    //std::cerr << "Test Finished." << std::endl;
 }
 
 TEST_F(SM_Parser, CreateTalbes)
@@ -299,9 +299,9 @@ TEST_F(SM_Parser, CreateTalbes)
     SM_Manager smManager(ixManager, rmManager);
     QL_Manager qlManager(smManager, ixManager, rmManager);
 
-    std::cerr << "Before Test." << std::endl;
+    //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
-    std::cerr << "Test Finished." << std::endl;
+    //std::cerr << "Test Finished." << std::endl;
 }
 
 TEST_F(SM_Parser, CreateTalbes_large)
@@ -314,13 +314,14 @@ TEST_F(SM_Parser, CreateTalbes_large)
     SM_Manager smManager(ixManager, rmManager);
     QL_Manager qlManager(smManager, ixManager, rmManager);
 
-    std::cerr << "Before Test." << std::endl;
+    //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
-    std::cerr << "Test Finished." << std::endl;
+    //std::cerr << "Test Finished." << std::endl;
 }
 
 TEST_F(SM_Parser, CreateTalbes_large_persistent)
 {
+    /*
     freopen("../src/gtestcase/SM_Parser3_1.in","r",stdin);
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
@@ -360,4 +361,5 @@ TEST_F(SM_Parser, CreateTalbes_large_persistent)
         bpm->close();
     }
     std::cerr << "Test Finished." << std::endl;
+     */
 }

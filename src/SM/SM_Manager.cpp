@@ -29,7 +29,7 @@ SM_Manager :: ~SM_Manager ()
 RC SM_Manager :: OpenDb      (const char *dbName)
 {
     RC rc;
-    cerr << "Opening DB : " << dbName << endl;
+    // cerr << "Opening DB : " << dbName << endl;
     if (strcmp(dbName, RELCAT) == 0 || strcmp(dbName, ATTRCAT) == 0)
     {
         return SM_INVALID_DB_NAME;

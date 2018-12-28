@@ -13,7 +13,8 @@ void tester(int ident, std::string str)
 }
 
 // flush = 0, single inst (test mode)
-// flush = 1, multiple inst (terminal mode)
+// flush = 1, multiple inst
+// flush = 2, multiple inst (terminal mode)
 
 int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush)
 {
@@ -22,7 +23,7 @@ int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush)
 
     do
     {
-        if(flush) std :: cerr << ">$ ";
+        if(flush == 2) std :: cerr << ">$ ";
 
         parserError = 0;
 
@@ -119,7 +120,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             //std::cerr << "       [tbName]" << st.tbName << std::endl;
             //std::cerr << "       [fieldList] " << std::endl;
 
-            std::cerr << "Create Table ... " << std::endl;
+            // std::cerr << "Create Table ... " << std::endl;
 
             len = st.field_list.size();
             cnt = 0;

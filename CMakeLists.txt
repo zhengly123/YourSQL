@@ -65,13 +65,15 @@ SET(SOURCE
         src/Printer/StdoutPrinter.h)
 
 
-SET(GTEST 0)
+SET(GTEST 1)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}
-               src/gtestcase/IX1.cpp src/gtestcase/SM1.cpp
-               src/gtestcase/RM1.cpp
-       )
+            src/gtestcase/IX1.cpp
+            src/gtestcase/QL1.cpp
+            src/gtestcase/RM1.cpp
+            src/gtestcase/SM1.cpp
+            )
     set(LIBRARIES gtest_main)
 else()
     SET(SOURCE ${SOURCE}
