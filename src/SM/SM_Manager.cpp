@@ -569,6 +569,12 @@ RC SM_Manager::attrGet(RelAttrType attrName, AttrInfo* attrInfo)
     return 1;
 }
 
+/**
+ *
+ * @param relName
+ * @return
+ * @todo sort the attr against offset
+ */
 vector<AttrInfo> SM_Manager::attrGet(std::string relName)
 {
     assert(isOpen);

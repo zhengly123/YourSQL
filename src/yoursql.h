@@ -33,6 +33,7 @@ struct AttrInfo {
     char     relName[MAXNAME+1];
     int      flag;                // 1 : not null; 2 : primary key; 3 : not null & primary key
     int      indexNum;
+    int      nullOffset;             // attrNum-th attr in the relation
 };
 
 using RelAttrType = std::pair<std::string, std::string>;
@@ -55,6 +56,8 @@ struct Condition {
   RelAttr rhsAttr;      // right-hand side attribute if bRhsIsAttr = TRUE
   Value   rhsValue;     // right-hand side value if bRhsIsAttr = FALSE
 };
+const int IsNull = 1;
+const int IsNotNull = 2;
 
 struct RelationMeta{
     char relName[MAXNAME+1];//	relation name
@@ -62,6 +65,16 @@ struct RelationMeta{
     int attrCount;//	number of attributes
     int indexCount;//	number of indexed attributes
 };
+
+/**
+ * Compare two value
+ * @param a
+ * @param b
+ * @param compOp
+ * @param attrType
+ * @return
+ */
+bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType);
 
 #include "RM/rm.h"
 #include "PF/pf.h"

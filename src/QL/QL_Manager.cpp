@@ -2,6 +2,7 @@
 // Created by 杨乐 on 2018/12/23.
 //
 
+#include <cstring>
 #include "QL_Manager.h"
 
 
@@ -55,6 +56,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         }
         else if(curAttr.attrType != values[i].type) return QL_TYPEUNMATCHED;
 
+        //TODO: MAXNAME是最大的表名字、属性名字？
         if(values[i].type == STRING && strlen((char*)values[i].data) > MAXNAME) return QL_STRTOOLONG;
     }
 
@@ -91,7 +93,27 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
               int        nConditions,         // # conditions in Where clause
               const Condition conditions[])  // conditions in Where clause
 {
-
+    RelationMeta relmeta;
+    if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
+    vector<AttrInfo> attributes;
+    attributes = smm->attrGet(relName);
+//    for (int i = 0; i < nConditions; ++i)
+//    {
+//        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
+//    }
+    Selector selector(ixm,rmm, relName, relmeta, attributes,
+            nConditions, conditions);
+    RM_Record record;
+    RM_FileHandle *handle = nullptr;
+    RID rid;
+    int cnt=0;
+    while (selector.getNext(record, handle))
+    {
+        record.GetRid(rid);
+        handle->DeleteRec(rid);
+        cnt++;
+    }
+    printf("INFO: delete cnt=%d\n", cnt);
 }
 
 RC QL_Manager :: Update (const char *relName,            // relation to update
@@ -100,7 +122,27 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
               int   nConditions,              // # conditions in Where clause
               const Condition conditions[])  // conditions in Where clause
 {
-
+    RelationMeta relmeta;
+    if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
+    vector<AttrInfo> attributes;
+    attributes = smm->attrGet(relName);
+//    for (int i = 0; i < nConditions; ++i)
+//    {
+//        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
+//    }
+    Selector selector(ixm,rmm, relName, relmeta, attributes,
+                      nConditions, conditions);
+    RM_Record record;
+    RM_FileHandle *handle = nullptr;
+    RID rid;
+    int cnt=0;
+    while (selector.getNext(record, handle))
+    {
+        record.GetRid(rid);
+        handle->DeleteRec(rid);
+        cnt++;
+    }
+    printf("delete cnt=%d\n", cnt);
 }
 
 RC QL_Manager :: showRelation   (const char *relName)

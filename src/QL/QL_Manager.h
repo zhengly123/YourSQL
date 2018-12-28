@@ -5,10 +5,12 @@
 #ifndef YOURSQL_QL_MANAGER_H
 #define YOURSQL_QL_MANAGER_H
 
-#include "../IX/IX_PRIVATE.h"
+#include <vector>
 #include <list>
+#include "../IX/IX_PRIVATE.h"
 #include "QL_PUBLIC.h"
 #include "../SM/SM_PUBLIC.h"
+#include "Selector.h"
 
 class QL_Manager {
     SM_Manager *smm;

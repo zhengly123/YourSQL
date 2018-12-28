@@ -437,34 +437,35 @@ bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp) const
 
 bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp, AttrType attrType)
 {
-    switch (compOp)
-    {
-        case LT_OP:
-            switch (attrType)
-            {
-                case INT:
-                    return *(int*)(a)<*(int*)(b);
-                case FLOAT:
-                    return *(float*)(a)<*(float*)(b);
-                case STRING:
-                    return strcmp((char *) (a), (char *) (b)) < 0;
-            }
-            assert(false);
-        case GT_OP:
-            return cmp(b, a, LT_OP, attrType);
-        case EQ_OP:
-            return !cmp(a, b, LT_OP, attrType)&&!cmp(b, a, LT_OP, attrType);
-        case NE_OP:
-            return !cmp(a, b, EQ_OP, attrType);
-        case LE_OP:
-            return !cmp(a, b, GT_OP, attrType);
-        case GE_OP:
-            return !cmp(a, b, LT_OP, attrType);
-        case NO_OP:
-            return true;
-    }
-    assert(false);
-    return false;
+//    switch (compOp)
+//    {
+//        case LT_OP:
+//            switch (attrType)
+//            {
+//                case INT:
+//                    return *(int*)(a)<*(int*)(b);
+//                case FLOAT:
+//                    return *(float*)(a)<*(float*)(b);
+//                case STRING:
+//                    return strcmp((char *) (a), (char *) (b)) < 0;
+//            }
+//            assert(false);
+//        case GT_OP:
+//            return cmp(b, a, LT_OP, attrType);
+//        case EQ_OP:
+//            return !cmp(a, b, LT_OP, attrType)&&!cmp(b, a, LT_OP, attrType);
+//        case NE_OP:
+//            return !cmp(a, b, EQ_OP, attrType);
+//        case LE_OP:
+//            return !cmp(a, b, GT_OP, attrType);
+//        case GE_OP:
+//            return !cmp(a, b, LT_OP, attrType);
+//        case NO_OP:
+//            return true;
+//    }
+//    assert(false);
+//    return false;
+    return Cmp(a, b, compOp, attrType);
 }
 
 RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node, void *key, const RID &value)
