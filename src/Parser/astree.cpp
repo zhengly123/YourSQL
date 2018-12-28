@@ -412,7 +412,8 @@ void valueparser(ivalue value, Value * val)
 void setclauseparser(isetcl sc, struct Condition * con)
 {
     //colparser(sc.colName, &con->lhsAttr);
-    con->lhsAttr.relName = nullptr;
+    con->lhsAttr.relName = NULL;
+    con->lhsAttr.attrName = new char[sc.colName.size() + 1];
     strcpy(con->lhsAttr.attrName, sc.colName.c_str());
 
     //con->op = opparser(wh.oper);
@@ -442,10 +443,13 @@ void colparser(icol cl, struct RelAttr * rel)
 {
     if(cl.flag == 0)
     {
-        rel->relName = nullptr;
+        rel->relName = NULL;
+        rel->attrName = new char[cl.colName.size() + 1];
         strcpy(rel->attrName, cl.colName.c_str());
     } else {
-        strcpy(rel->relName, cl.tbName.c_str()); 
+        rel->relName = new char[cl.tbName.size() + 1];
+        strcpy(rel->relName, cl.tbName.c_str());
+        rel->attrName = new char[cl.colName.size() + 1];
         strcpy(rel->attrName, cl.colName.c_str());
     }
 }
@@ -486,7 +490,7 @@ void whereparser(iwhere wh, struct Condition * con)
     switch(wh.id)
     {
         case COL_V_WHERECLAUSE :
-            
+
             colparser(wh.fi, &con->lhsAttr);
             con->op = opparser(wh.oper);
             con->flag = 0;
