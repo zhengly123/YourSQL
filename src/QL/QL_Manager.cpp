@@ -6,7 +6,8 @@
 #include "QL_Manager.h"
 
 
-QL_Manager :: QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm)
+QL_Manager::QL_Manager(SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, Printer *printer)
+        : printer(printer)
 {
     this->rmm = &rmm;
     this->ixm = &ixm;
@@ -114,6 +115,7 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
         cnt++;
     }
     printf("INFO: delete cnt=%d\n", cnt);
+    return 0;
 }
 
 RC QL_Manager :: Update (const char *relName,            // relation to update
@@ -145,8 +147,70 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     printf("delete cnt=%d\n", cnt);
 }
 
+RC QL_Manager :: printRelation   (const char *relName)
+{
+    struct RelationMeta relmeta;
+
+    if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
+
+    vector<AttrInfo> attributes;
+    AttrInfo curAttr;
+
+    attributes = smm->attrGet(relName);
+    rmm->OpenFile(relToFileName(relName).data(), handle);
+
+    rmscan.OpenScan(handle, INT, 0, 0, NO_OP, NULL);
+
+    RM_Record rec;
+    char* buffer;
+    char* ifnullbuf;
+
+    for(int i = 0; i < attributes.size(); ++ i)
+    {
+        if(attributes[i].attrType == INT)
+            printer->getSS()<<"       INT      ";
+        else if(attributes[i].attrType == STRING)
+            printer->getSS()<<"     STRING     ";
+        else
+            printer->getSS()<<"       ***      ";
+    }
+    printer->getSS()<<"\n";
+
+    int tuplelength = relmeta.tupleLength;
+    int ifnull = relmeta.tupleLength - relmeta.attrCount;
+
+    while(rmscan.GetNextRec(rec) != RM_EOF)
+    {
+        rec.GetData(buffer);
+        ifnullbuf = buffer + ifnull;
+
+        for(int i = 0; i < attributes.size(); ++ i)
+        {
+            char* data = buffer + attributes[i].offset;
+            if(*(ifnullbuf + i) == 1)
+                printer->getSS() << "      NULL      ";
+            else if(attributes[i].attrType == INT)
+                printer->getSS() << *(int *) data<<" ";
+            else if(attributes[i].attrType == STRING)
+                printer->getSS() << data <<" ";
+            else
+                printer->getSS() << "       ***      ";
+        }
+        printer->getSS() << " \n";
+    }
+
+    rmscan.CloseScan();
+    rmm->CloseFile(handle);
+    return 0;
+}
+
 RC QL_Manager :: showRelation   (const char *relName)
 {
+    // for gtest
+#ifdef GTEST
+    return printRelation(relName);
+#endif
+
     struct RelationMeta relmeta;
 
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
@@ -223,5 +287,5 @@ RC QL_Manager :: showRelation   (const char *relName)
 
     rmscan.CloseScan();
     rmm->CloseFile(handle);
-
+    return 0;
 }

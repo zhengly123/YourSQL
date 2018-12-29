@@ -1,6 +1,7 @@
 #ifndef FILE_MANAGER
 #define FILE_MANAGER
 #include <string>
+#include <cassert>
 #include <stdio.h>
 #include <iostream>
 #include <sys/types.h>
@@ -35,6 +36,9 @@ private:
 	int _openFile(const char* name, int fileID) {
 		int f = open(name, O_RDWR);
 		if (f == -1) {
+			// No error is generated if failed to open file
+			// This is only for test, exception should be generated
+			assert(f == -1);
 			return -1;
 		}
 		fd[fileID] = f;

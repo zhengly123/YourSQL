@@ -37,3 +37,7 @@ bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType)
     return false;
 }
 
+std::string relToFileName(const char *relName)
+{
+    return std::string(relName)+std::string(".rel");
+}

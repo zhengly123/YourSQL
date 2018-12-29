@@ -9,6 +9,7 @@
 
 class StdoutPrinter: public Printer
 {
+public:
     ~StdoutPrinter();
     void flush() override;
     void syncFlush() override;

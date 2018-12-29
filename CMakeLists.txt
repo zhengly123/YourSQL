@@ -75,6 +75,8 @@ IF(GTEST)
             src/gtestcase/SM1.cpp
             )
     set(LIBRARIES gtest_main)
+    # for QL print control
+    add_compile_definitions(GTEST=OPEN)
 else()
     SET(SOURCE ${SOURCE}
             src/RM_Test/test_scan.cpp

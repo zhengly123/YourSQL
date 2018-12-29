@@ -11,7 +11,7 @@
 using namespace std;
 int AttrOutputWidth[]={10,10,10,0,0,0};
 
-Printer::Printer() : sync(false), attrCount(0), attrInfo(nullptr)
+Printer::Printer(bool sync) : sync(sync), attrCount(0), attrInfo(nullptr)
 {
 }
 
@@ -113,14 +113,13 @@ void Printer::syncFlush()
 
 }
 
-void Printer::PrintTables(const RelationMeta *data, int tupleCnt)
+void Printer::PrintTablesInfo(const RelationMeta *data, int tupleCnt)
 {
     for (int i = 0; i < tupleCnt; ++i)
     {
         iss << setw(10) << data[i].relName << setw(10)
             << data[i].attrCount << setw(10) << data[i].indexCount << endl;
     }
-
 }
 
 //template<typename T>

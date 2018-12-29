@@ -31,6 +31,7 @@ struct DataAttrInfo {
 class SM_Manager {
 public:
     SM_Manager  (IX_Manager &ixm, RM_Manager &rmm);  // Constructor
+    SM_Manager  (IX_Manager &ixm, RM_Manager &rmm, Printer *printer);  // Constructor
     ~SM_Manager ();                                  // Destructor
     RC CreateDb(const char *dbName);
     RC OpenDb      (const char *dbName);                // Open database

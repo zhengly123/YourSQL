@@ -21,7 +21,7 @@ Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
     {
         this->conditions.push_back(conditions[i]);
     }
-    rmm->OpenFile(relName, handle);
+    rmm->OpenFile(relToFileName(relName).data(), handle);
     if (!checkConditionLegal())
     {
         dead=true;
@@ -39,7 +39,8 @@ void Selector::iterateOptimize()
 int Selector::getNext(RM_Record &outRecord, RM_FileHandle *&outHandle)
 {
     assert(!dead);
-    while (scan.GetNextRec(outRecord) != RM_EOF)
+    RM_Record record;
+    while (scan.GetNextRec(record) != RM_EOF)
     {
 //        int i;
 //        for (int i = 0; i < conditions.size(); ++i)
@@ -49,11 +50,12 @@ int Selector::getNext(RM_Record &outRecord, RM_FileHandle *&outHandle)
         auto it=conditions.begin();
         for (; it != conditions.end(); ++it)
         {
-            if (!checkCondition(*it, outRecord.GetData()))
+            if (!checkCondition(*it, record.GetData()))
                 break;
         }
         if (it == conditions.end())
         {
+            outRecord = record;
             outHandle = &handle;
             return 1;
         }
@@ -133,10 +135,10 @@ bool Selector::checkCondition(Condition cond, void *data)
     leftValue=(char*)data+attrL.offset;
     if (cond.flag==IsNull)
     {
-        return (leftValue + attrL.nullOffset == 0);
+        return (*((char*)data + attrL.nullOffset) != 0);
     } else if (cond.flag == IsNotNull)
     {
-        return (leftValue + attrL.nullOffset != 0);
+        return (*((char*)data + attrL.nullOffset) == 0);
     } else
     {
         if (cond.bRhsIsAttr)

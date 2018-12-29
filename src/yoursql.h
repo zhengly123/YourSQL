@@ -75,6 +75,7 @@ struct RelationMeta{
  * @return
  */
 bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType);
+std::string relToFileName(const char *relName);
 
 #include "RM/rm.h"
 #include "PF/pf.h"

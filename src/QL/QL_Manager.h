@@ -11,6 +11,7 @@
 #include "QL_PUBLIC.h"
 #include "../SM/SM_PUBLIC.h"
 #include "Selector.h"
+#include "../Printer/StdoutPrinter.h"
 
 class QL_Manager {
     SM_Manager *smm;
@@ -20,7 +21,7 @@ class QL_Manager {
     RM_FileScan rmscan;
 public:
                                               // Constructor
-      QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm);
+      QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, Printer *printer);
       ~QL_Manager ();                         // Destructor
     RC Select (int           nSelAttrs,        // # attrs in Select clause
               const RelAttr selAttrs[],       // attrs in Select clause
@@ -40,8 +41,15 @@ public:
               const Condition conditions[]);  // conditions in Where clause
 
     RC showRelation   (const char *relName);
+    /**
+     * Print relation to printer
+     * @param relName
+     * @return
+     */
+    RC printRelation  (const char *relName);
 
 private:
+    Printer *printer;
     std::string relToFileName(const char *relName)
     {
         return std::string(relName)+std::string(".rel");
