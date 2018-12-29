@@ -2,6 +2,7 @@
 // Created by 杨乐 on 2018/12/10.
 //
 
+#include <cstring>
 #include "astree.h"
 #include "yacc.tab.cpp"
 
@@ -126,6 +127,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             cnt = 0;
 
             atrv = new AttrInfo[len];
+            memset(atrv, 0, sizeof(AttrInfo) * len);
             fieldlistparser(st.field_list, atrv, cnt);
             smm.CreateTable(st.tbName.c_str(), cnt, atrv);
             delete[] atrv;
@@ -156,6 +158,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             {
                 len = (*it).size();
                 vali = new Value[len];
+                memset(vali, 0, sizeof(Value) * len);
                 valuelistparser(*it, vali);
                 int rc = qlm.Insert(st.tbName.c_str(), len, vali);
                 delete[] vali;
@@ -172,6 +175,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
             lend = st.where_list.size();
             condi = new Condition[lend];
+            memset(condi, 0, sizeof(Condition) * lend);
             wherelistparser(st.where_list, condi);
             qlm.Delete(st.tbName.c_str(), lend, condi);
             delete[] condi;
@@ -189,10 +193,12 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
             lens = st.setcl_list.size();
             conds = new Condition[lens];
+            memset(conds, 0, sizeof(Condition) * lens);
             setclauselistparser(st.setcl_list, conds);
 
             lenw = st.where_list.size();
             condw = new Condition[lenw];
+            memset(condw, 0, sizeof(Condition) * lenw);
             wherelistparser(st.where_list, condw);
 
             qlm.Update(st.tbName.c_str(), lens, conds, lenw, condw);
@@ -215,10 +221,12 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
             lensc = st.sel.col_list.size();
             selist = new RelAttr[lensc];
+            memset(selist, 0, sizeof(RelAttr) * lensc);
             selectorparser(st.sel, selist);
 
             lenwr = st.where_list.size();
             condwr = new Condition[lenwr];
+            memset(condwr, 0, sizeof(Condition) * lenwr);
             wherelistparser(st.where_list, condwr);
 
             qlm.Select(lensc, selist, st.table_list, lenwr, condwr);
