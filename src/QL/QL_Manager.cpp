@@ -128,12 +128,10 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     vector<AttrInfo> attributes;
     attributes = smm->attrGet(relName);
-//    for (int i = 0; i < nConditions; ++i)
-//    {
-//        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
-//    }
     Selector selector(ixm,rmm, relName, relmeta, attributes,
                       nConditions, conditions);
+    // check legality of SETs
+    selector.checkSetLegal(nSet, sets);
     RM_Record record;
     RM_FileHandle *handle = nullptr;
     RID rid;
@@ -141,10 +139,26 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     while (selector.getNext(record, handle))
     {
         record.GetRid(rid);
-        handle->DeleteRec(rid);
+        char *data;
+        record.GetData(data);
+        for (int i = 0; i < nSet; ++i)
+        {
+            const Condition &set=sets[i];
+            AttrInfo attr=selector.getAttr(set.lhsAttr.attrName);
+            if (set.rhsValue.type == AttrType::NULLTYPE)
+            {
+                *(data + attr.nullOffset) = 1;
+            } else
+            {
+                *(data + attr.nullOffset) = 0;
+                memcpy(data + attr.offset, set.rhsValue.data, attr.attrLength);
+            }
+        }
+        handle->UpdateRec(record);
         cnt++;
     }
-    printf("delete cnt=%d\n", cnt);
+    printf("INFO: Update cnt=%d\n", cnt);
+    return 0;
 }
 
 RC QL_Manager :: printRelation   (const char *relName)

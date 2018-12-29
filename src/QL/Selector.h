@@ -35,8 +35,26 @@ public:
              const Condition conditions[]);  // conditions in Where clause
     ~Selector();
     void iterateOptimize();
+    /**
+     * Check whether condition is legal.
+     * @return return false if there are illegal sets, and set error indicator.
+     */
     bool checkConditionLegal();
+    /**
+     * Check legality for sets
+     * @param nSet
+     * @param sets
+     * @return return false if there are illegal sets, and set error indicator.
+     */
+    bool checkSetLegal(int nSet, const Condition sets[]);
     int getNext(RM_Record &outRecord, RM_FileHandle *&outHandle);
+    /**
+     * Get AttrInfo against attr name. It should be assumed the attr exist in
+     * the selector. Otherwise, an assert is triggered.
+     * @param attr
+     * @return
+     */
+    AttrInfo getAttr(char *attr);
 //    void remove();
 
 private:

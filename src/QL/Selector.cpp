@@ -157,3 +157,64 @@ Selector::~Selector()
     scan.CloseScan();
     rmm->CloseFile(handle);
 }
+
+bool Selector::checkSetLegal(const int nSet, const Condition sets[])
+{
+    int i;
+    std::vector<Condition> conditions;
+    for (int i = 0; i < nSet; ++i)
+    {
+        conditions.push_back(sets[i]);
+    }
+    for (i=0;i<conditions.size();++i)
+    {
+        const auto& cond=conditions[i];
+        // 1
+        if (cond.lhsAttr.relName!= nullptr)
+        {
+            errorReason = QL_RELNOTNULL;
+            break;
+        }
+        //
+        auto it = checkAttrExist(cond.lhsAttr.attrName);
+        if (it == attrs.end())
+        {
+            errorReason = QL_ATTRNOTFIND;
+            break;
+        }
+        AttrInfo attrL = *it;
+//        lhsAttrs.push_back(attrL);
+        if (cond.flag)
+        {
+            // IsNotNull cannot be accepted here
+            assert(0);
+        } else if (cond.bRhsIsAttr)
+        {
+            errorReason = QL_VALUE_EQPECTED;
+            break;
+        } else// if rhs is a value
+        {
+            if (cond.rhsValue.type == AttrType::NULLTYPE)
+            {
+                if (attrL.isNotNull())
+                    return QL_ATTRNOTNULL;
+            } else if (attrL.attrType != cond.rhsValue.type)
+            {
+                errorReason = QL_TYPEUNMATCHED;
+                break;
+            }
+        }
+    }
+    if (i < conditions.size())
+    {
+        errorIndex=i;
+        return false;
+    }
+    else
+        return true;
+}
+
+AttrInfo Selector::getAttr(char *attr)
+{
+    return *checkAttrExist(attr);
+}

@@ -34,6 +34,8 @@ struct AttrInfo {
     int      flag;                // 1 : not null; 2 : primary key; 3 : not null & primary key
     int      indexNum;
     int      nullOffset;             // attrNum-th attr in the relation
+
+    bool isNotNull(){ return (flag & 1) > 0; }
 };
 
 using RelAttrType = std::pair<std::string, std::string>;
