@@ -7,6 +7,9 @@
 #include <cstdlib>
 #include <gtest/gtest.h>
 #include <vector>
+#include <string>
+#include <sstream>
+#include <fstream>
 #include "../Parser/astree.h"
 #include "../QL/QL_PUBLIC.h"
 using namespace std;
@@ -221,7 +224,6 @@ protected:
 
 TEST_F(QL_DEL, DEL)
 {
-    printf("\nTesting : Insert Non-null Type Error. \n");
     freopen("../src/gtestcase/QL_DELETE3.in","r",stdin);
 
     Printer *printer=new StdoutPrinter;
@@ -338,7 +340,6 @@ TEST_F(QL_DEL, DEL)
 
 TEST_F(QL_DEL, UPD)
 {
-    printf("\nTesting : Insert Non-null Type Error. \n");
     freopen("../src/gtestcase/QL_UPDATE1.in","r",stdin);
 
     Printer *printer=new StdoutPrinter;
@@ -489,4 +490,89 @@ TEST_F(QL_DEL, UPD)
         if(rc == PARSEREXIT) break;
         EXPECT_EQ(rc, 0);
     }
+}
+
+class QL_StringCmp : public :: testing :: Test
+{
+protected:
+    char initialCwd[2049];
+void SetUp () override
+    {
+        char dbName[]="testDbapboa";
+//        char dbName2[]="asdfasfeawef";
+        system("rm -r db1");
+//        system("rm -r asdfasfeawef");
+        ASSERT_EQ(initialCwd, getcwd(initialCwd, 2048));
+        clearParser();
+    }
+
+    std::string exec()
+    {
+        Printer *printer=new StdoutPrinter;
+        FileManager* fm = new FileManager();
+        BufPageManager* bpm = new BufPageManager(fm);
+        RM_Manager rmManager(fm, bpm);
+        IX_Manager ixManager(*fm, *bpm);
+        SM_Manager smManager(ixManager, rmManager, printer); // add printer
+        QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
+
+        int rc;
+        for(;;)
+        {
+            rc = treeparser(smManager, qlManager, 0);
+            if(rc == PARSEREXIT) break;
+            EXPECT_EQ(rc, 0);
+        }
+        return printer->getSS().str();
+    }
+
+    void check(ifstream& fin, const std::string os)
+    {
+        istringstream iss(os);
+        string out,ans;
+        int cnt = 0;
+        do
+        {
+            iss >> out;
+            fin >> ans;
+            EXPECT_EQ(out, ans) << "Token " << cnt;
+            cnt++;
+        } while (iss || fin);
+    }
+
+    void TearDown () override
+    {
+        ASSERT_EQ(0, chdir(initialCwd));
+        clearParser();
+    }
+};
+
+TEST_F(QL_StringCmp, SELECT_SingleTable)
+{
+//    printf("\nTesting : Insert Non-null Type Error. \n");
+    freopen("../src/gtestcase/QL_SELECT1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT1.out");
+//    freopen("../src/gtestcase/QL_SELECT1.out","r",stdin);
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, SELECT_DoubleTable)
+{
+//    printf("\nTesting : Insert Non-null Type Error. \n");
+    freopen("../src/gtestcase/QL_SELECT2.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT2.out");
+//    freopen("../src/gtestcase/QL_SELECT2.out","r",stdin);
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, SELECT_TripleTable)
+{
+//    printf("\nTesting : Insert Non-null Type Error. \n");
+    freopen("../src/gtestcase/QL_SELECT3.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT3.out");
+//    freopen("../src/gtestcase/QL_SELECT3.out","r",stdin);
+    check(fin, os);
 }
