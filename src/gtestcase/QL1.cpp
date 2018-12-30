@@ -572,3 +572,19 @@ TEST_F(QL_StringCmp, SELECT_TripleTable)
     ifstream fin("../src/gtestcase/QL_SELECT3.out");
     check(fin, os);
 }
+
+TEST_F(QL_StringCmp, SELECT_IntertableCondition)
+{
+    freopen("../src/gtestcase/QL_SELECT4.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT4.out");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, SELECT_SelectAll)
+{
+    freopen("../src/gtestcase/QL_SELECT5.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT5.out");
+    check(fin, os);
+}

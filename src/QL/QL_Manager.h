@@ -64,6 +64,8 @@ private:
 
     RC checkRelLegal(const std::vector<std::string> &relVec, const char *relName);
     RC checkAttrLegal(const vector<AttrInfo> &attributes, const char *attrName);
+    RC checkAttrLegal(const vector<AttrInfo> &attributes, const RelAttr relAttr);
+    RC getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr relAttr);
 };
 
 #endif //YOURSQL_QL_MANAGER_H

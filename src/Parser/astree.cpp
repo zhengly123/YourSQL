@@ -534,7 +534,7 @@ void whereparser(iwhere wh, struct Condition * con)
             colparser(wh.fi, &con->lhsAttr);
             con->op = opparser(wh.oper);
             con->flag = 0;
-            con->bRhsIsAttr = false;
+            con->bRhsIsAttr = true;
             colparser(wh.scol, &con->rhsAttr);
             break;
 

@@ -65,7 +65,7 @@ SET(SOURCE
         src/Printer/StdoutPrinter.h src/QL/Selector.cpp src/QL/Selector.h src/utilities.cpp src/QL/SelectResult.cpp src/QL/SelectResult.h)
 
 
-#SET(GTEST 1)
+SET(GTEST 1)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}

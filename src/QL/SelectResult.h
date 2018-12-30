@@ -32,7 +32,26 @@ private:
 
 
     vector<RelAttr> targetRelAttrs; // attrs which should be inserted
+    /**
+     * Whether an attribute should be saved when filter data from file.
+     * NOT used for search a attribute in dataAttrInfos(dataList).
+     * @param relAttr
+     * @return
+     */
     bool setRelAttrExist(RelAttr relAttr);
+    /**
+     * Check whether an attribute is in dataAttrInfos(dataList).
+     * @param relAttr
+     * @return
+     */
+    bool isRelAttrIndexExist(RelAttr relAttr);
+    /**
+     * Get index of an attribute in dataAttrInfos(dataList).
+     * @param relAttr
+     * @return
+     * @attention It is assumed that *relAttr* exists in the dataAttrInfos(dataList).
+     * Otherwise, program will be aborted.
+     */
     int getRelAttrIndex(RelAttr relAttr);
 };
 
