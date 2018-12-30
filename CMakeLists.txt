@@ -65,7 +65,7 @@ SET(SOURCE
         src/Printer/StdoutPrinter.h)
 
 
-SET(GTEST 1)
+SET(GTEST 0)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}

@@ -33,8 +33,11 @@ void setclauselistparser(std::list<isetcl> sclist, struct Condition * con);
 CompOp opparser(int op);
 void whereparser(iwhere wh, struct Condition * con);
 void wherelistparser(std::list<iwhere> whlist, struct Condition * con);
-void colparser(icol cl, struct RelAttr * rel);
+void colparser(icol cl, RelAttr * rel);
 
+void grouplistparser(std::list<icol> grplist, struct RelAttr * rel);
+void orderparser(icol cl, RelAttr * rel);
+void orderlistparser(std::list<icol> ordlist, struct RelAttr * rel);
 void selectorparser(isel sl, struct RelAttr * rel);
 
 

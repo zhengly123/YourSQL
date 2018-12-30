@@ -21,9 +21,52 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
               const RelAttr selAttrs[],       // attrs in Select claus
               std::list<std::string> rellist,
               int           nConditions,      // # conditions in Where clause
-              const Condition conditions[])  // conditions in Where clause
+              const Condition conditions[],  // conditions in Where clause
+              int           nGroups,         // # attrs in Group By clause
+              const RelAttr grpAttrs[],     // attrs in Group By clause
+              int           nOrders,         // # attrs in Order By clause
+              const RelAttr ordAttrs[])  // conditions in Where clause
 {
+    if(nSelAttrs)
+    {
+        printf("Selector Clause:\n");
+        for(int i = 0; i < nSelAttrs; ++ i)
+        {
+            if(selAttrs[i].relName != NULL) printf("  %s.%s ", selAttrs[i].relName, selAttrs[i].attrName);
+            else printf("  %s", selAttrs[i].attrName);
+            if(selAttrs[i].op == AGGREGATE_SUM) printf("[sum], ");
+            else if(selAttrs[i].op == AGGREGATE_AVG) printf("[avg], ");
+            else if(selAttrs[i].op == AGGREGATE_MIN) printf("[min], ");
+            else if(selAttrs[i].op == AGGREGATE_MAX) printf("[max], ");
+            else printf("");
+            printf("\n");
+        }
+    }
 
+    if(nGroups)
+    {
+        printf("Group Clause:\n");
+        for(int i = 0; i < nGroups; ++ i)
+        {
+            if(grpAttrs[i].relName != NULL) printf("  %s.%s ", grpAttrs[i].relName, grpAttrs[i].attrName);
+            else printf("  %s", grpAttrs[i].attrName);
+            printf("\n");
+        }
+    }
+
+    if(nOrders)
+    {
+        printf("Order By Clause:\n");
+        for(int i = 0; i < nOrders; ++ i)
+        {
+            if(ordAttrs[i].relName != NULL) printf("  %s.%s ", ordAttrs[i].relName, ordAttrs[i].attrName);
+            else printf("  %s", ordAttrs[i].attrName);
+            if(ordAttrs[i].op == ORD_INC) printf("[inc], "); else printf("[dec], ");
+            printf("\n");
+        }
+    }
+
+    return 0;
 }
 
 /**
@@ -135,6 +178,10 @@ RC QL_Manager :: showRelation   (const char *relName)
             printf("|      INT      ");
         else if(attributes[i].attrType == STRING)
             printf("|    STRING     ");
+        else if(attributes[i].attrType == FLOAT)
+            printf("|     FLOAT     ");
+        else if(attributes[i].attrType == DATETYPE)
+            printf("|     DATE      ");
         else
             printf("|      ***      ");
     }
@@ -165,6 +212,10 @@ RC QL_Manager :: showRelation   (const char *relName)
                 printf("|% 9d      ", *(int*)data);
             else if(attributes[i].attrType == STRING)
                 printf("|% 9s      ", data);
+            else if(attributes[i].attrType == FLOAT)
+                printf("|% 9f      ", *(float*)data);
+            else if(attributes[i].attrType == DATETYPE)
+                printf("|% 9d      ", *(int*)data);
             else
                 printf("|      ***      ");
         }
@@ -182,4 +233,5 @@ RC QL_Manager :: showRelation   (const char *relName)
     rmscan.CloseScan();
     rmm->CloseFile(handle);
 
+    return 0;
 }

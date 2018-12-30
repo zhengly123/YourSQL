@@ -24,13 +24,20 @@ public:
               const RelAttr selAttrs[],       // attrs in Select clause
               std::list<std::string> rellist,
               int           nConditions,      // # conditions in Where clause
-              const Condition conditions[]);  // conditions in Where clause
+              const Condition conditions[],  // conditions in Where clause
+              int           nGroups,         // # attrs in Group By clause
+              const RelAttr grpAttrs[],     // attrs in Group By clause
+              int           nOrders,         // # attrs in Order By clause
+              const RelAttr ordAttrs[]);     // attrs in Order By clause
+
     RC Insert (const char  *relName,           // relation to insert into
               int         nValues,            // # values to insert
               const Value values[]);          // values to insert
+
     RC Delete (const char *relName,            // relation to delete from
               int        nConditions,         // # conditions in Where clause
               const Condition conditions[]);  // conditions in Where clause
+
     RC Update (const char *relName,            // relation to update
               int   nSet,
               const Condition sets[],

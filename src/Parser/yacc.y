@@ -17,6 +17,8 @@ ASType toplevel;
 
 %token<value_int> VALUE_INT
 %token<value_string> VALUE_STRING
+%token<value_float> VALUE_FLOAT
+%token<value_string> VALUE_DATE
 %token<ident> IDENTIFIER  
 %token OPERATOR
 
@@ -29,6 +31,8 @@ ASType toplevel;
 %token EQ NEQ LEQ GEQ LT GT
 %token LB RB FH DH DOT STAR
 %token QEXIT QCLOSE
+%token QMIN QMAX QAVG QSUM
+%token ORDERBY GROUPBY
 
 /* %type Program
 %type Stmt */
@@ -42,13 +46,20 @@ ASType toplevel;
 %type<value_list> ValueList
 %type<value_lists> ValueLists
 %type<where_list> WhereClause
+%type<where_list> WhereClauseX
 %type<where> WhereSubClause
 %type<oper> Oper
 %type<setcl> SetClause
 %type<setcl_list> SetClauseList
 %type<sel> Selector
 %type<col> Col
+%type<col> ACol
+%type<col> OCol
 %type<col_list> ColList
+%type<col_list> AColList
+%type<col_list> OColList
+%type<col_list> OrderByClause
+%type<col_list> GroupByClause
 %type<table_list> TableList
 %type<column_list> ColumnList
 
@@ -118,25 +129,27 @@ Stmt    : SHOW DATABASES
             $$.tbName = $3;
             $$.value_lists = $5;
         }
-        | DELETE FROM IDENTIFIER WHERE WhereClause
+        | DELETE FROM IDENTIFIER WhereClauseX
         {
             $$.id = DELETE_ST;
             $$.tbName = $3;
-            $$.where_list = $5;
+            $$.where_list = $4;
         }
-        | UPDATE IDENTIFIER SET SetClauseList WHERE WhereClause
+        | UPDATE IDENTIFIER SET SetClauseList WhereClauseX
         {
             $$.id = UPDATE_ST;
             $$.tbName = $2;
             $$.setcl_list = $4;
-            $$.where_list = $6;
+            $$.where_list = $5;
         }
-        | SELECT Selector FROM TableList WHERE WhereClause
+        | SELECT Selector FROM TableList WhereClauseX GroupByClause OrderByClause
         {
             $$.id = SELECT_ST;
             $$.sel = $2;
             $$.table_list = $4;
-            $$.where_list = $6;
+            $$.where_list = $5;
+            $$.group_list = $6;
+            $$.order_list = $7;
         }
         | CREATE INDEX IDENTIFIER LB IDENTIFIER RB
         {
@@ -265,11 +278,30 @@ Value   : VALUE_INT
             $$.id = VALUE_STRING_ID;
             $$.value_string = $1;
         }
+        | VALUE_FLOAT
+        {
+            $$.id = VALUE_FLOAT_ID;
+            $$.value_float = $1;
+        }
+        | VALUE_DATE
+        {
+            $$.id = VALUE_DATE_ID;
+            $$.value_string = $1;
+        }
         | MYNULL
         {
             $$.id = VALUE_NULL_ID;
         }
 ;
+
+WhereClauseX : WHERE WhereClause
+        {
+            $$ = $2;
+        }
+        | /* empty */
+        {
+            $$.clear();
+        }
 
 WhereClause : WhereSubClause
         {
@@ -358,7 +390,7 @@ Selector: STAR
         {
             $$.col_list.clear();
         }
-        | ColList
+        | AColList
         {
             $$.col_list = $1;
         }
@@ -367,20 +399,49 @@ Selector: STAR
 Col     : IDENTIFIER
         {
             $$.flag = 0;
+            $$.aggtype = 0;
             $$.colName = $1;
         }
         | IDENTIFIER DOT IDENTIFIER
         {
             $$.flag = 1;
+            $$.aggtype = 0;
             $$.tbName = $1;
             $$.colName = $3;
+        }
+;
+
+ACol    : Col
+        {
+            $$ = $1;
+            $$.aggtype = 0;
+        }
+        | QSUM LB Col RB
+        {
+            $$ = $3;
+            $$.aggtype = AGG_SUM;
+        }
+        | QAVG LB Col RB
+        {
+            $$ = $3;
+            $$.aggtype = AGG_AVG;
+        }
+        | QMAX LB Col RB
+        {
+            $$ = $3;
+            $$.aggtype = AGG_MAX;
+        }
+        | QMIN LB Col RB
+        {
+            $$ = $3;
+            $$.aggtype = AGG_MIN;
         }
 ;
 
 ColList : Col
         {
             $$.clear();
-            $$.push_back($1);            
+            $$.push_back($1);
         }
         | ColList DH Col
         {
@@ -388,6 +449,42 @@ ColList : Col
             $$.push_back($3);
         }
 ;
+
+AColList : ACol
+        {
+            $$.clear();
+            $$.push_back($1);            
+        }
+        | AColList DH ACol
+        {
+            $$ = $1;
+            $$.push_back($3);
+        }
+;
+
+OColList : OCol
+        {
+            $$.clear();
+            $$.push_back($1);
+        }
+        | OColList DH OCol
+        {
+            $$ = $1;
+            $$.push_back($3);
+        }
+;
+
+OCol    : Col DESC
+        {
+            $$ = $1;
+            $$.ordtype = ORDER_BY_DEC;
+        }
+        | Col
+        {
+            $$ = $1;
+            $$.ordtype = ORDER_BY_INC;
+        }
+
 
 TableList: IDENTIFIER
         {
@@ -412,6 +509,24 @@ ColumnList: IDENTIFIER
             $$.push_back($3);
         }
 ;
+
+OrderByClause : /* empty */
+        {
+            $$.clear();
+        }
+        | ORDERBY OColList
+        {
+            $$ = $2;
+        }
+
+GroupByClause : /* empty */
+        {
+            $$.clear();
+        }
+        | GROUPBY ColList
+        {
+            $$ = $2;
+        }
 
 %%  
 

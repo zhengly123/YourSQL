@@ -17,6 +17,7 @@ struct ivalue
 	int id;
 	int value_int;
 	std::string value_string;
+	float value_float;
 };
 
 struct isetcl
@@ -32,6 +33,8 @@ struct icol
 	// 1 : Has tbName
 	std::string tbName;
 	std::string colName;
+	int aggtype;
+	int ordtype;
 };
 
 struct isel
@@ -67,6 +70,8 @@ struct istmt
 	std::list<std::list<ivalue>> value_lists;
 	std::list<iwhere> where_list;
 	std::list<isetcl> setcl_list;
+	std::list<icol> order_list;
+	std::list<icol> group_list;
 	std::list<std::string> table_list;
 	isel sel;
 	std::string colName;
@@ -77,6 +82,7 @@ struct ASType
 	std::string ident;
     int value_int;  
    	std::string value_string;
+   	float value_float;
 
     itype type;
 
@@ -91,6 +97,7 @@ struct ASType
 
     icol col;
     std::list<icol> col_list;
+
     isel sel;
 
     isetcl setcl;
@@ -141,7 +148,9 @@ const int FOREIGN_FIELD = PRIMARY_FIELD + 1;
 
 const int VALUE_INT_ID = FOREIGN_FIELD + 1;
 const int VALUE_STRING_ID = VALUE_INT_ID + 1;
-const int VALUE_NULL_ID = VALUE_STRING_ID + 1;
+const int VALUE_FLOAT_ID = VALUE_STRING_ID + 1;
+const int VALUE_DATE_ID = VALUE_FLOAT_ID + 1;
+const int VALUE_NULL_ID = VALUE_DATE_ID + 1;
 
 const int EQ_OPER = VALUE_NULL_ID + 1;
 const int NEQ_OPER = EQ_OPER + 1;
@@ -154,5 +163,13 @@ const int COL_V_WHERECLAUSE = GT_OPER + 1;
 const int COL_C_WHERECLAUSE = COL_V_WHERECLAUSE + 1;
 const int COL_ISNULL_WHERECLAUSE = COL_C_WHERECLAUSE + 1;
 const int COL_ISNOTNULL_WHERECLAUSE = COL_ISNULL_WHERECLAUSE + 1;
+
+const int AGG_MAX = COL_ISNOTNULL_WHERECLAUSE + 1;
+const int AGG_MIN = AGG_MAX + 1;
+const int AGG_SUM = AGG_MIN + 1;
+const int AGG_AVG = AGG_SUM + 1;
+
+const int ORDER_BY_INC = AGG_AVG + 1;
+const int ORDER_BY_DEC = ORDER_BY_INC + 1;
 
 #endif

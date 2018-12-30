@@ -17,7 +17,15 @@ const int MAXNAME = 24;
 const int MAXATTRS = 40;
 const int PARSEREXIT = -1;
 
-enum AttrType {INT, FLOAT, STRING, VARCHR, NULLTYPE, ERRTYPE};
+const int AGGREGATE_SUM = 1;
+const int AGGREGATE_AVG = AGGREGATE_SUM + 1;
+const int AGGREGATE_MIN = AGGREGATE_AVG + 1;
+const int AGGREGATE_MAX = AGGREGATE_MIN + 1;
+
+const int ORD_INC = 1;
+const int ORD_DEC = ORD_INC + 1;
+
+enum AttrType {INT, FLOAT, STRING, DATETYPE, VARCHR, NULLTYPE, ERRTYPE};
 enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP};
 
 // Pin Strategy Hint
@@ -36,9 +44,22 @@ struct AttrInfo {
 };
 
 using RelAttrType = std::pair<std::string, std::string>;
+
 struct RelAttr {
   char *relName;     // relation name (may be NULL)
   char *attrName;    // attribute name
+
+  int op;
+    // aggregate function type
+    // 0: no aggregate function
+    // AGGREGATE_SUM : sum
+    // AGGREGATE_AVG : avg
+    // AGGREGATE_MIN : min
+    // AGGREGATE_MAX : max
+
+    // order
+    // ORD_INC : increase
+    // ORD_DEC : decrease
 };
 
 struct Value {

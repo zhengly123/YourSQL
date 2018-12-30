@@ -18,7 +18,11 @@ extern "C"
 
 nondigit    ([_A-Za-z])  
 digit       ([0-9])
-integer     ({digit}+)  
+integer     ({digit}+)
+minteger    (-{integer})
+float       ({integer}\.{integer})
+mfloat      (-{float})
+date        ([0-9]{4}-[0-9]{2}-[0-9]{2})
 identifier  ({nondigit}({nondigit}|{digit})*)
 string		('({nondigit}|{digit})*')
 linend      ([\n\r])
@@ -62,9 +66,19 @@ blank_chars ([ \f\r\t\v\n]+)
 "FOREIGN"		{return FOREIGN;}
 "EXIT"          {return QEXIT;}
 "CLOSE"         {return QCLOSE;}
+"MIN"           {return QMIN;}
+"MAX"           {return QMAX;}
+"SUM"           {return QSUM;}
+"AVG"           {return QAVG;}
+"ORDER BY"      {return ORDERBY;}
+"GROUP BY"      {return GROUPBY;}
 
 {identifier}    {yylval.ident = yytext; return IDENTIFIER;}
+{mfloat}        {yylval.value_float = atof(yytext); return VALUE_FLOAT;}
+{float}         {yylval.value_float = atof(yytext); return VALUE_FLOAT;}
+{minteger}      {yylval.value_int = atoi(yytext);return VALUE_INT;}
 {integer}		{yylval.value_int = atoi(yytext);return VALUE_INT;}
+{date}          {yylval.value_string = yytext; return VALUE_DATE;}
 {string}		{yylval.value_string = yytext; return VALUE_STRING;}
 {blank_chars}   {}
 

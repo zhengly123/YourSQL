@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     }
      */
 
-    // freopen("./insert_test/ins_typemismatch.txt","r",stdin);
+    //freopen("deletetest.txt","r",stdin);
 
     for(;;)
     {
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
             case QL_ATTRNOTNULL : cerr << "> Attr should not be null." << endl; break;
             case QL_STRTOOLONG : cerr << "> String too long." << endl; break;
             case QL_DUPLICATE : cerr << "> Insert Duplicated." << endl; break;
-            case 0 : /*cerr << "> Normal." << endl;*/  break;
+            case 0 : cerr << "> Normal." << endl;  break;
             default: cerr << "> Unrecognized Error." << endl; break;
         }
         if(rc == PARSEREXIT) break;

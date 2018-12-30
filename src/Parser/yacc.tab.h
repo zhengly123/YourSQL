@@ -41,107 +41,123 @@
    enum yytokentype {
      VALUE_INT = 258,
      VALUE_STRING = 259,
-     IDENTIFIER = 260,
-     OPERATOR = 261,
-     DATABASE = 262,
-     DATABASES = 263,
-     DROP = 264,
-     USE = 265,
-     INSERT = 266,
-     INTO = 267,
-     UPDATE = 268,
-     SET = 269,
-     DESC = 270,
-     REFERENCES = 271,
-     INDEX = 272,
-     TABLE = 273,
-     TABLES = 274,
-     SHOW = 275,
-     CREATE = 276,
-     PRIMARY = 277,
-     KEY = 278,
-     NOT = 279,
-     MYNULL = 280,
-     VALUES = 281,
-     DELETE = 282,
-     FROM = 283,
-     WHERE = 284,
-     SELECT = 285,
-     IS = 286,
-     MINT = 287,
-     VARCHAR = 288,
-     AND = 289,
-     DATE = 290,
-     MFLOAT = 291,
-     FOREIGN = 292,
-     ERROR = 293,
-     EQ = 294,
-     NEQ = 295,
-     LEQ = 296,
-     GEQ = 297,
-     LT = 298,
-     GT = 299,
-     LB = 300,
-     RB = 301,
-     FH = 302,
-     DH = 303,
-     DOT = 304,
-     STAR = 305,
-     QEXIT = 306,
-     QCLOSE = 307
+     VALUE_FLOAT = 260,
+     VALUE_DATE = 261,
+     IDENTIFIER = 262,
+     OPERATOR = 263,
+     DATABASE = 264,
+     DATABASES = 265,
+     DROP = 266,
+     USE = 267,
+     INSERT = 268,
+     INTO = 269,
+     UPDATE = 270,
+     SET = 271,
+     DESC = 272,
+     REFERENCES = 273,
+     INDEX = 274,
+     TABLE = 275,
+     TABLES = 276,
+     SHOW = 277,
+     CREATE = 278,
+     PRIMARY = 279,
+     KEY = 280,
+     NOT = 281,
+     MYNULL = 282,
+     VALUES = 283,
+     DELETE = 284,
+     FROM = 285,
+     WHERE = 286,
+     SELECT = 287,
+     IS = 288,
+     MINT = 289,
+     VARCHAR = 290,
+     AND = 291,
+     DATE = 292,
+     MFLOAT = 293,
+     FOREIGN = 294,
+     ERROR = 295,
+     EQ = 296,
+     NEQ = 297,
+     LEQ = 298,
+     GEQ = 299,
+     LT = 300,
+     GT = 301,
+     LB = 302,
+     RB = 303,
+     FH = 304,
+     DH = 305,
+     DOT = 306,
+     STAR = 307,
+     QEXIT = 308,
+     QCLOSE = 309,
+     QMIN = 310,
+     QMAX = 311,
+     QAVG = 312,
+     QSUM = 313,
+     ORDERBY = 314,
+     GROUPBY = 315
    };
 #endif
 /* Tokens.  */
 #define VALUE_INT 258
 #define VALUE_STRING 259
-#define IDENTIFIER 260
-#define OPERATOR 261
-#define DATABASE 262
-#define DATABASES 263
-#define DROP 264
-#define USE 265
-#define INSERT 266
-#define INTO 267
-#define UPDATE 268
-#define SET 269
-#define DESC 270
-#define REFERENCES 271
-#define INDEX 272
-#define TABLE 273
-#define TABLES 274
-#define SHOW 275
-#define CREATE 276
-#define PRIMARY 277
-#define KEY 278
-#define NOT 279
-#define MYNULL 280
-#define VALUES 281
-#define DELETE 282
-#define FROM 283
-#define WHERE 284
-#define SELECT 285
-#define IS 286
-#define MINT 287
-#define VARCHAR 288
-#define AND 289
-#define DATE 290
-#define MFLOAT 291
-#define FOREIGN 292
-#define ERROR 293
-#define EQ 294
-#define NEQ 295
-#define LEQ 296
-#define GEQ 297
-#define LT 298
-#define GT 299
-#define LB 300
-#define RB 301
-#define FH 302
-#define DH 303
-#define DOT 304
-#define STAR 305
-#define QEXIT 306
-#define QCLOSE 307
+#define VALUE_FLOAT 260
+#define VALUE_DATE 261
+#define IDENTIFIER 262
+#define OPERATOR 263
+#define DATABASE 264
+#define DATABASES 265
+#define DROP 266
+#define USE 267
+#define INSERT 268
+#define INTO 269
+#define UPDATE 270
+#define SET 271
+#define DESC 272
+#define REFERENCES 273
+#define INDEX 274
+#define TABLE 275
+#define TABLES 276
+#define SHOW 277
+#define CREATE 278
+#define PRIMARY 279
+#define KEY 280
+#define NOT 281
+#define MYNULL 282
+#define VALUES 283
+#define DELETE 284
+#define FROM 285
+#define WHERE 286
+#define SELECT 287
+#define IS 288
+#define MINT 289
+#define VARCHAR 290
+#define AND 291
+#define DATE 292
+#define MFLOAT 293
+#define FOREIGN 294
+#define ERROR 295
+#define EQ 296
+#define NEQ 297
+#define LEQ 298
+#define GEQ 299
+#define LT 300
+#define GT 301
+#define LB 302
+#define RB 303
+#define FH 304
+#define DH 305
+#define DOT 306
+#define STAR 307
+#define QEXIT 308
+#define QCLOSE 309
+#define QMIN 310
+#define QMAX 311
+#define QAVG 312
+#define QSUM 313
+#define ORDERBY 314
+#define GROUPBY 315
 
 
 

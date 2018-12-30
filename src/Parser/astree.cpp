@@ -70,12 +70,12 @@ int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush)
 
 int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 {
-    int len, cnt, lens, lenw, lensc, lenwr;
+    int len, cnt, lens, lenw, lensc, lenwr, leno, leng;
     AttrInfo * atrv;
     Value * vali;
     int lend;
     Condition * condi, * conds, *condw, *condwr;
-    RelAttr *selist;
+    RelAttr *selist, *ordlist, *grplist;
     int rc;
 
     switch (st.id) {
@@ -87,20 +87,17 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case CREATE_DB :
-            //std::cerr << "[Stmt] open database" << std::endl;
-            //std::cerr << "       [dbName]" << st.dbName << std::endl;
+
             smm.CreateDb(st.dbName.c_str());
             break;
 
         case DROP_DB :
-            //std::cerr << "[Stmt] drop database" << std::endl;
-            //std::cerr << "       [dbName]" << st.dbName << std::endl;
+
             smm.DestroyDb(st.dbName.c_str());
             break;
 
         case USE_DB :
-            //std::cerr << "[Stmt] use database" << std::endl;
-            //std::cerr << "       [dbName]" << st.dbName << std::endl;
+
             if (st.dbName != currentDB)
             {
                 if (!currentDB.empty())
@@ -116,11 +113,6 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case CREATE_TABLE :
-            //std::cerr << "[Stmt] create table" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
-            //std::cerr << "       [fieldList] " << std::endl;
-
-            // std::cerr << "Create Table ... " << std::endl;
 
             len = st.field_list.size();
             cnt = 0;
@@ -133,24 +125,16 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case DROP_TABLE :
-            //std::cerr << "[Stmt] drop table" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
 
             smm.DropTable(st.tbName.c_str());
             break;
 
         case DESC_ST :
-            //std::cerr << "[Stmt] desc" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
 
             // TODO: smm.Desc();
             break;
 
         case INSERT_ST :
-            //std::cerr << "[Stmt] insertion" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
-            //std::cerr << "       [valueLists] " << std::endl;
-            //valuelistsparser(st.value_lists);
 
             for(std::list<std::list<ivalue>>::iterator it = st.value_lists.begin(); it != st.value_lists.end(); ++ it)
             {
@@ -165,10 +149,6 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case DELETE_ST :
-            //std::cerr << "[Stmt] deletion" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
-            //std::cerr << "       [whereClause] " << std::endl;
-            //wherelistparser(st.where_list);
 
             lend = st.where_list.size();
             condi = new Condition[lend];
@@ -179,13 +159,6 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case UPDATE_ST :
-
-            //std::cerr << "[Stmt] update" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
-            //std::cerr << "       [setClause] " << std::endl;
-            //setclauselistparser(st.setcl_list);
-            //std::cerr << "       [whereClause] " << std::endl;
-            //wherelistparser(st.where_list);
 
             lens = st.setcl_list.size();
             conds = new Condition[lens];
@@ -203,15 +176,6 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case SELECT_ST :
-            //std::cerr << "[Stmt] select" << std::endl;
-            //std::cerr << "       [selector] ";
-            //selectorparser(st.sel);
-            //std::cerr << std::endl;
-            //std::cerr << "       [tableList] ";
-            //tableparser(st.table_list);
-            //std::cerr << std::endl;
-            //std::cerr << "       [whereClause] " << std::endl;
-            //wherelistparser(st.where_list);
 
             lensc = st.sel.col_list.size();
             selist = new RelAttr[lensc];
@@ -221,25 +185,28 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             condwr = new Condition[lenwr];
             wherelistparser(st.where_list, condwr);
 
-            qlm.Select(lensc, selist, st.table_list, lenwr, condwr);
+            leng = st.group_list.size();
+            grplist = new RelAttr[leng];
+            grouplistparser(st.group_list, grplist);
+
+            leno = st.order_list.size();
+            ordlist = new RelAttr[leno];
+            orderlistparser(st.order_list, ordlist);
+
+            qlm.Select(lensc, selist, st.table_list, lenwr, condwr, leng, grplist, leno, ordlist);
 
             delete[] selist;
             delete[] condw;
+            delete[] ordlist;
 
             break;
 
         case CREATE_IDX :
-            //std::cerr << "[Stmt] create index" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
-            //std::cerr << "       [colName]" << st.colName << std::endl;
 
             smm.CreateIndex(st.tbName.c_str(), st.colName.c_str());
             break;
 
         case DROP_IDX :
-            //std::cerr << "[Stmt] drop index" << std::endl;
-            //std::cerr << "       [tbName]" << st.tbName << std::endl;
-            //std::cerr << "       [colName]" << st.colName << std::endl;
 
             smm.DropIndex(st.tbName.c_str(), st.colName.c_str());
             break;
@@ -276,7 +243,7 @@ AttrType typeparser(itype ty)
         //case INT_CONST_TYPE : return "int (" + std::to_string(ty.value_int) + ")";
         case VARCHAR_TYPE : return STRING;
         //case VARCHAR_CONST_TYPE : return "varchar (" + std::to_string(ty.value_int) + ")";
-        //case DATE_TYPE : return "date";
+        case DATE_TYPE : return DATETYPE;
         case FLOAT_TYPE : return FLOAT;
         default: return ERRTYPE;
     }
@@ -387,6 +354,9 @@ void valuelistparser(std::list<ivalue> valuelist, Value * val)
 
 void valueparser(ivalue value, Value * val)
 {
+    std::string s;
+    int dt;
+
     switch(value.id)
     {
         case VALUE_INT_ID :
@@ -400,6 +370,18 @@ void valueparser(ivalue value, Value * val)
             strcpy((char*) val->data, value.value_string.c_str());
             break;
 
+        case VALUE_FLOAT_ID :
+            val->type = FLOAT;
+            val->data = new float (value.value_float);
+            break;
+
+        case VALUE_DATE_ID :
+            val->type = DATETYPE;
+            s = value.value_string;
+            dt = atoi(s.substr(0,3).c_str()) * 10000 + atoi(s.substr(5,6).c_str()) * 100 + atoi(s.substr(8,9).c_str());
+            val->data = new int (dt);
+            break;
+
         case VALUE_NULL_ID :
             val->type = NULLTYPE;
             break;
@@ -411,20 +393,11 @@ void valueparser(ivalue value, Value * val)
 
 void setclauseparser(isetcl sc, struct Condition * con)
 {
-    //colparser(sc.colName, &con->lhsAttr);
     con->lhsAttr.relName = NULL;
     con->lhsAttr.attrName = new char[sc.colName.size() + 1];
     strcpy(con->lhsAttr.attrName, sc.colName.c_str());
-
-    //con->op = opparser(wh.oper);
-    //con->flag = 0;
     con->bRhsIsAttr = false;
     valueparser(sc.value, &con->rhsValue);
-
-    //std::cerr << "               [colName] " << sc.colName << std::endl;
-    //std::cerr << "               [value] ";
-    //valueparser(sc.value);
-    //std::cerr << std::endl;
 }
 
 void setclauselistparser(std::list<isetcl> sclist, struct Condition * con)
@@ -432,7 +405,6 @@ void setclauselistparser(std::list<isetcl> sclist, struct Condition * con)
     int cnt = 0;
     for(std::list<isetcl>::iterator it = sclist.begin(); it != sclist.end(); ++ it)
     {
-        //std::cerr << "             [subclause] " << ++cnt << std::endl;
         setclauseparser(*it, con + cnt);
         ++ cnt;
     }
@@ -452,6 +424,15 @@ void colparser(icol cl, struct RelAttr * rel)
         rel->attrName = new char[cl.colName.size() + 1];
         strcpy(rel->attrName, cl.colName.c_str());
     }
+
+    switch(cl.aggtype)
+    {
+        case AGG_MAX : rel->op = AGGREGATE_MAX; break;
+        case AGG_MIN : rel->op = AGGREGATE_MIN; break;
+        case AGG_AVG : rel->op = AGGREGATE_AVG; break;
+        case AGG_SUM : rel->op = AGGREGATE_SUM; break;
+        default: rel->op = 0; break;
+    }
 }
 
 void selectorparser(isel sl, struct RelAttr * rel)
@@ -466,6 +447,48 @@ void selectorparser(isel sl, struct RelAttr * rel)
             colparser(*it, rel + cnt); 
             ++ cnt;
         }
+    }
+}
+
+void orderparser(icol cl, RelAttr * rel)
+{
+    if(cl.flag == 0)
+    {
+        rel->relName = NULL;
+        rel->attrName = new char[cl.colName.size() + 1];
+        strcpy(rel->attrName, cl.colName.c_str());
+    } else {
+        rel->relName = new char[cl.tbName.size() + 1];
+        strcpy(rel->relName, cl.tbName.c_str());
+        rel->attrName = new char[cl.colName.size() + 1];
+        strcpy(rel->attrName, cl.colName.c_str());
+    }
+
+    switch(cl.ordtype)
+    {
+        case ORDER_BY_INC : rel->op = ORD_INC; break;
+        case ORDER_BY_DEC : rel->op = ORD_DEC; break;
+        default: rel->op = 0; break;
+    }
+}
+
+void orderlistparser(std::list<icol> ordlist, struct RelAttr * rel)
+{
+    int cnt = 0;
+    for(std::list<icol>::iterator it = ordlist.begin(); it != ordlist.end(); ++ it)
+    {
+        orderparser(*it, rel + cnt);
+        ++ cnt;
+    }
+}
+
+void grouplistparser(std::list<icol> grplist, struct RelAttr * rel)
+{
+    int cnt = 0;
+    for(std::list<icol>::iterator it = grplist.begin(); it != grplist.end(); ++ it)
+    {
+        colparser(*it, rel + cnt);
+        ++ cnt;
     }
 }
 
