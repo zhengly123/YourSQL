@@ -232,7 +232,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             qlm.Select(lensc, selist, st.table_list, lenwr, condwr);
 
             delete[] selist;
-            delete[] condw;
+            delete[] condwr;
 
             break;
 
