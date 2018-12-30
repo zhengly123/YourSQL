@@ -179,7 +179,7 @@ void SelectResult::print(int nSelAttrs, const RelAttr *selAttrs)
         indexes.push_back(getRelAttrIndex(selAttrs[i]));
     }
 
-    for (auto dataVector: dataList)
+    for (auto dataVector: conlist)
     {
         for (int i=0;i<nSelAttrs;++i)
         {
@@ -238,11 +238,13 @@ RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAtt
             it = std::find(grplist.begin(), grplist.end(), Grpvec);
             if(it == grplist.end())
             {
+                //printf("New.\n");
                 grplist.push_back(Grpvec);
                 conlist.push_back(dataVec);
             }
             else
             {
+                //printf("Exist.\n");
                 int d = it - grplist.begin();
                 for(int i = 0; i < attrlen; ++ i)
                 {
@@ -309,6 +311,7 @@ bool SelectResult::isRelAttrIndexExist(RelAttr relAttr)
             std::find_if(dataAttrInfos.begin(), dataAttrInfos.end(),
                          [relAttr](AttrInfo t) {
                              return strcmp(t.relName, relAttr.relName) == 0 &&
-                                    strcmp(t.attrName, relAttr.attrName) == 0;
+                                    strcmp(t.attrName, relAttr.attrName) == 0 &&
+                                     t.aggregateFunc == relAttr.op;
                          }) != dataAttrInfos.end();
 }

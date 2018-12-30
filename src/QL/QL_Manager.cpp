@@ -109,6 +109,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
         {
             selAttrs[nSelAttrs].relName = attrInfo.relName;
             selAttrs[nSelAttrs].attrName = attrInfo.attrName;
+            selAttrs[nSelAttrs].op = 0;
             nSelAttrs++;
         }
     }
