@@ -116,6 +116,7 @@ private:
 
     void setMinimum(void *p, AttrType attrType)
     {
+        //TODO: add type
         switch (attrType)
         {
             case AttrType::INT :

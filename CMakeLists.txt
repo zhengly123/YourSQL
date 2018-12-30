@@ -62,7 +62,7 @@ SET(SOURCE
         src/Printer/Printer.cpp
         src/Printer/Printer.h
         src/Printer/StdoutPrinter.cpp
-        src/Printer/StdoutPrinter.h src/QL/Selector.cpp src/QL/Selector.h src/utilities.cpp)
+        src/Printer/StdoutPrinter.h src/QL/Selector.cpp src/QL/Selector.h src/utilities.cpp src/QL/SelectResult.cpp src/QL/SelectResult.h)
 
 
 #SET(GTEST 1)

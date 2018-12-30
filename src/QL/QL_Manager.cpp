@@ -3,7 +3,9 @@
 //
 
 #include <cstring>
+#include <algorithm>
 #include "QL_Manager.h"
+#include "SelectResult.h"
 
 
 QL_Manager::QL_Manager(SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, Printer *printer)
@@ -20,12 +22,106 @@ QL_Manager :: ~QL_Manager ()                         // Destructor
 }
 
 RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select clause
-              const RelAttr selAttrs[],       // attrs in Select claus
+              RelAttr selAttrs[],       // attrs in Select claus
               std::list<std::string> rellist,
               int           nConditions,      // # conditions in Where clause
-              const Condition conditions[])  // conditions in Where clause
+              Condition conditions[])  // conditions in Where clause
 {
+    RC rc = 0;
+    std::vector<std::string> relVec;
+    for (auto t:rellist)
+        relVec.push_back(t);
+    std::string firstRelName = relVec[0];
+    // whether same relations exist
+    for (int i = 0; i < relVec.size(); ++i)
+    {
+        for (int j = i + 1; j < relVec.size(); ++j)
+        {
+            if (relVec[i]==relVec[j])
+                return QL_DUPLICATE;
+        }
+    }
+    // whether all rels in rellist
+    for (int i=0;i<nSelAttrs;++i)
+    {
+        if (relVec.size() == 1 && selAttrs[i].relName == nullptr)
+            selAttrs[i].relName = const_cast<char *>(firstRelName.c_str());
+        if ((rc = checkRelLegal(relVec, selAttrs[i].relName)))
+        {
+            return rc;
+        }
+    }
+    for (int i=0;i<nConditions;++i)
+    {
+        if (relVec.size() == 1 && conditions[i].lhsAttr.relName == nullptr)
+            conditions[i].lhsAttr.relName = const_cast<char *>(firstRelName.c_str());
+        if ((rc = checkRelLegal(relVec, conditions[i].lhsAttr.relName)))
+        {
+            return rc;
+        }
+        if (conditions[i].bRhsIsAttr)
+        {
+            if (relVec.size() == 1 && conditions[i].rhsAttr.relName == nullptr)
+                conditions[i].rhsAttr.relName = const_cast<char *>(firstRelName.c_str());
+            if ((rc = checkRelLegal(relVec, conditions[i].rhsAttr.relName)))
+            {
+                return rc;
+            }
+        }
+    }
+    // whether all sels exist
+    for (int i=0;i<nSelAttrs;++i)
+    {
+        if (relVec.size() == 1 && selAttrs[i].relName == nullptr)
+            selAttrs[i].relName = const_cast<char *>(firstRelName.c_str());
+        if ((rc = checkRelLegal(relVec, selAttrs[i].relName)))
+        {
+            return rc;
+        }
+    }
 
+    SelectResult selectResult(printer, std::string(), 0, nullptr, 0, nullptr);
+    // should not be empty
+    selectResult.setUnit();
+    for (const auto& rel:rellist)
+    {
+        const char *relName = rel.data();
+        RelationMeta relmeta;
+        if (smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
+        vector<AttrInfo> attributes;
+        attributes = smm->attrGet(relName);
+        // check whether attr in the relation
+        for (int i = 0; i < nSelAttrs; ++i)
+        {
+            if (string(selAttrs[i].relName) == rel)
+            {
+                if (checkAttrLegal(attributes, selAttrs[i].attrName))
+                    return QL_AttrNotExist;
+            }
+        }
+
+        Selector selector(ixm, rmm, relName, relmeta, attributes,
+                          nConditions, conditions, true);
+        RM_Record record;
+        RM_FileHandle *handle = nullptr;
+        RID rid;
+        if (selector.dead)
+            return selector.errorReason;
+//        int cnt=0;
+//        while (selector.getNext(record, handle))
+//        {
+//            record.GetRid(rid);
+//            handle->DeleteRec(rid);
+//            cnt++;
+//        }
+        SelectResult newResult(printer, rel, nSelAttrs, selAttrs, nConditions, conditions);
+        newResult.insert(relName, selector, attributes);
+        selectResult = selectResult * newResult;
+        selectResult.filter(nConditions, conditions);
+    }
+    selectResult.print(nSelAttrs, selAttrs);
+//    printf("INFO: delete cnt=%d\n", cnt);
+    return 0;
 }
 
 /**
@@ -37,7 +133,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
               int         nValues,            // # values to insert
               const Value values[])          // values to insert
 {
-    struct RelationMeta relmeta;
+    struct RelationMeta relmeta;    void filter(int nConditions, Condition conditions[]);
 
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     if(relmeta.attrCount != nValues) return QL_INVALIDSIZE;
@@ -168,7 +264,6 @@ RC QL_Manager :: printRelation   (const char *relName)
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
 
     vector<AttrInfo> attributes;
-    AttrInfo curAttr;
 
     attributes = smm->attrGet(relName);
     rmm->OpenFile(relToFileName(relName).data(), handle);
@@ -190,7 +285,7 @@ RC QL_Manager :: printRelation   (const char *relName)
     }
     printer->getSS()<<"\n";
 
-    int tuplelength = relmeta.tupleLength;
+//    int tuplelength = relmeta.tupleLength;
     int ifnull = relmeta.tupleLength - relmeta.attrCount;
 
     while(rmscan.GetNextRec(rec) != RM_EOF)
@@ -301,5 +396,33 @@ RC QL_Manager :: showRelation   (const char *relName)
 
     rmscan.CloseScan();
     rmm->CloseFile(handle);
+    return 0;
+}
+
+RC QL_Manager::checkRelLegal(const std::vector<std::string> &relVec, const char *relName)
+{
+    if (relName == nullptr)
+    {
+        return QL_RELNULL;
+    }
+    auto ret = std::find(std::begin(relVec), std::end(relVec),
+                         std::string(relName));
+    if (ret == relVec.end())
+    {
+        return QL_RELNOTEXIST;
+    }
+    return 0;
+}
+
+RC QL_Manager::checkAttrLegal(const vector<AttrInfo> &attributes, const char *attrName)
+{
+    auto ret = std::find_if(std::begin(attributes), std::end(attributes),
+                            [attrName](AttrInfo attrInfo) {
+                                return strcmp(attrName, attrInfo.attrName) == 0;
+                            });
+    if (ret == attributes.end())
+    {
+        return QL_AttrNotExist;
+    }
     return 0;
 }

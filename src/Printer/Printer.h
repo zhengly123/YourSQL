@@ -25,6 +25,8 @@ public:
 
     void Print(const char *const data[], int tupleCnt);
     void PrintTablesInfo(const RelationMeta *data, int tupleCnt);
+    void PrintValue(char *data, bool isNull, AttrType attrType);
+    void Println();
     void PrintFooter();
 //    void PrintTable(vector<AttrInfo> attrs,);
 

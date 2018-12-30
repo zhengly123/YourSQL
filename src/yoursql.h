@@ -57,6 +57,8 @@ struct Condition {
                         //   and not a value
   RelAttr rhsAttr;      // right-hand side attribute if bRhsIsAttr = TRUE
   Value   rhsValue;     // right-hand side value if bRhsIsAttr = FALSE
+
+  bool    skip;         // used in Selector
 };
 const int IsNull = 1;
 const int IsNotNull = 2;

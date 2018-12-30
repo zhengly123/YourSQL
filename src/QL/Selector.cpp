@@ -8,8 +8,8 @@
 #include "QL_PUBLIC.h"
 
 Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
-                   RelationMeta relmeta,
-                   vector<AttrInfo> attributes, int nConditions, const Condition *conditions)
+                   RelationMeta relmeta, vector<AttrInfo> attributes,
+                   int nConditions, const Condition *conditions, bool interTable)
         : dead(false), errorReason(0), errorIndex(0)
 {
 
@@ -19,7 +19,33 @@ Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
     this->attrs = attributes;
     for (int i = 0; i < nConditions; ++i)
     {
-        this->conditions.push_back(conditions[i]);
+        if (interTable)
+        {
+            Condition cond = conditions[i];
+            // this should be forbid in parser
+            assert(cond.skip==false);
+            if (cond.lhsAttr.relName == nullptr)
+            {
+                errorReason = QL_RELNULL;
+                errorIndex = i;
+                dead = true;
+                assert(0);
+            }
+            // skip if cond relates to other table
+            if (strcmp(cond.lhsAttr.relName, relName) != 0
+                || (cond.bRhsIsAttr && strcmp(cond.rhsAttr.relName, relName) != 0))
+            {
+                cond.skip = true;
+                this->conditions.push_back(cond);
+            } else
+            {
+                cond.lhsAttr.relName = cond.rhsAttr.relName = nullptr;
+                this->conditions.push_back(cond);
+            }
+        } else
+        {
+            this->conditions.push_back(conditions[i]);
+        }
     }
     rmm->OpenFile(relToFileName(relName).data(), handle);
     if (!checkConditionLegal())
@@ -74,10 +100,13 @@ auto Selector::checkAttrExist(char *attrName)
 
 bool Selector::checkConditionLegal()
 {
+    assert(dead == false);
     int i;
     for (i=0;i<conditions.size();++i)
     {
         const auto& cond=conditions[i];
+        if (cond.skip)
+            continue;
         // 1
         if (cond.lhsAttr.relName!= nullptr)
         {
@@ -88,7 +117,7 @@ bool Selector::checkConditionLegal()
         auto it = checkAttrExist(cond.lhsAttr.attrName);
         if (it == attrs.end())
         {
-            errorReason = QL_ATTRNOTFIND;
+            errorReason = QL_AttrNotExist;
             break;
         }
         AttrInfo attrL = *it;
@@ -101,7 +130,7 @@ bool Selector::checkConditionLegal()
             it = checkAttrExist(cond.rhsAttr.attrName);
             if (it == attrs.end())
             {
-                errorReason = QL_ATTRNOTFIND;
+                errorReason = QL_AttrNotExist;
                 break;
             }
             AttrInfo attrR = *it;
@@ -130,6 +159,8 @@ bool Selector::checkConditionLegal()
 
 bool Selector::checkCondition(Condition cond, void *data)
 {
+    if (cond.skip)
+        return true;
     char *leftValue, *rightValue;
     AttrInfo attrL = *checkAttrExist(cond.lhsAttr.attrName);
     leftValue=(char*)data+attrL.offset;
@@ -179,7 +210,7 @@ bool Selector::checkSetLegal(const int nSet, const Condition sets[])
         auto it = checkAttrExist(cond.lhsAttr.attrName);
         if (it == attrs.end())
         {
-            errorReason = QL_ATTRNOTFIND;
+            errorReason = QL_AttrNotExist;
             break;
         }
         AttrInfo attrL = *it;

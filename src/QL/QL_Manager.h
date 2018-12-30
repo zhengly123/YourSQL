@@ -24,10 +24,10 @@ public:
       QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, Printer *printer);
       ~QL_Manager ();                         // Destructor
     RC Select (int           nSelAttrs,        // # attrs in Select clause
-              const RelAttr selAttrs[],       // attrs in Select clause
+              RelAttr selAttrs[],       // attrs in Select clause
               std::list<std::string> rellist,
               int           nConditions,      // # conditions in Where clause
-              const Condition conditions[]);  // conditions in Where clause
+              Condition conditions[]);  // conditions in Where clause
     RC Insert (const char  *relName,           // relation to insert into
               int         nValues,            // # values to insert
               const Value values[]);          // values to insert
@@ -54,6 +54,9 @@ private:
     {
         return std::string(relName)+std::string(".rel");
     }
+
+    RC checkRelLegal(const std::vector<std::string> &relVec, const char *relName);
+    RC checkAttrLegal(const vector<AttrInfo> &attributes, const char *attrName);
 };
 
 #endif //YOURSQL_QL_MANAGER_H

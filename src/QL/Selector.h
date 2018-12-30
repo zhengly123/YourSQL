@@ -26,13 +26,15 @@ public:
     bool dead;
     int errorReason;
     int errorIndex;
+
     Selector(IX_Manager *ixm,
              RM_Manager *rmm,
              const char *relName,
              RelationMeta relmeta,
              vector<AttrInfo> attributes,
-             int   nConditions,              // # conditions in Where clause
-             const Condition conditions[]);  // conditions in Where clause
+             int nConditions,              // # conditions in Where clause
+             const Condition conditions[],  // conditions in Where clause
+             bool interTable = false);
     ~Selector();
     void iterateOptimize();
     /**
@@ -58,9 +60,13 @@ public:
 //    void remove();
 
 private:
-//    vector<AttrInfo> lhsAttrs;
-//    vector<AttrInfo> rhsAttrs;
     auto checkAttrExist(char *attrName);
+    /**
+     * Check whether a tuple fits a condition
+     * @param cond
+     * @param data
+     * @return
+     */
     bool checkCondition(Condition cond, void *data);
 };
 

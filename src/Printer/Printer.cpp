@@ -122,9 +122,21 @@ void Printer::PrintTablesInfo(const RelationMeta *data, int tupleCnt)
     }
 }
 
-//template<typename T>
-//Printer &Printer::operator<<(const T b)
-//{
-//    iss<<b;
-//    return *this;
-//}
+void Printer::PrintValue(char *data, bool isNull, AttrType attrType)
+{
+    if(isNull == 1)
+        iss << "      NULL      ";
+    else if(attrType == INT)
+        iss << *(int *) data<<" ";
+    else if(attrType == AttrType::FLOAT)
+        iss << *(float *) data<<" ";
+    else if(attrType == STRING)
+        iss << data <<" ";
+    else
+        iss << "       ***      ";
+}
+
+void Printer::Println()
+{
+    iss << "\n";
+}
