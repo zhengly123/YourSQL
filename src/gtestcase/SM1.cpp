@@ -276,18 +276,18 @@ protected:
 
 TEST_F(SM_Parser, CreateDB)
 {
-    freopen("../src/gtestcase/dbstmt_test.txt","r",stdin);
-    StdoutPrinter printer;
-    FileManager* fm = new FileManager();
-    BufPageManager* bpm = new BufPageManager(fm);
-    RM_Manager rmManager(fm, bpm);
-    IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
-
-    //std::cerr << "Before Test." << std::endl;
-    treeparser(smManager, qlManager);
-    //std::cerr << "Test Finished." << std::endl;
+//    freopen("../src/gtestcase/dbstmt_test.txt","r",stdin);
+//    StdoutPrinter printer;
+//    FileManager* fm = new FileManager();
+//    BufPageManager* bpm = new BufPageManager(fm);
+//    RM_Manager rmManager(fm, bpm);
+//    IX_Manager ixManager(*fm, *bpm);
+//    SM_Manager smManager(ixManager, rmManager, &printer);
+//    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+//
+//    //std::cerr << "Before Test." << std::endl;
+//    treeparser(smManager, qlManager);
+//    //std::cerr << "Test Finished." << std::endl;
 }
 
 TEST_F(SM_Parser, CreateTalbes)

@@ -32,6 +32,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
               const RelAttr ordAttrs[])  // conditions in Where clause
 {
     RC rc = 0;
+    const bool SelectAllAttrs = (nSelAttrs == 0);
     std::vector<std::string> relVec;
     for (auto t:rellist)
         relVec.push_back(t);
@@ -87,6 +88,47 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
     SelectResult selectResult(printer, std::string(), 0, nullptr, 0, nullptr);
     // should not be empty
     selectResult.setUnit();
+    int cntTotalAttrs = 0;
+    std::vector<AttrInfo> allAttrInfo;
+    for (const auto& rel:rellist)
+    {
+        const char *relName = rel.data();
+        RelationMeta relmeta;
+        if (smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
+        vector<AttrInfo> attributes;
+        attributes = smm->attrGet(relName);
+        allAttrInfo.insert(allAttrInfo.end(), attributes.begin(),
+                           attributes.end());
+        cntTotalAttrs += attributes.size();
+    }
+    // if select all with "*", add all the attrs
+    if (SelectAllAttrs)
+    {
+        selAttrs=new RelAttr[cntTotalAttrs];
+        for (auto &attrInfo:allAttrInfo)
+        {
+            selAttrs[nSelAttrs].relName = attrInfo.relName;
+            selAttrs[nSelAttrs].attrName = attrInfo.attrName;
+            nSelAttrs++;
+        }
+    }
+    // check type compatibility of inter-table conditions
+    for (int i = 0; i < nConditions; ++i)
+    {
+        if (conditions[i].bRhsIsAttr)
+        {
+            if (checkAttrLegal(allAttrInfo, conditions[i].lhsAttr))
+                return QL_AttrNotExist;
+            if (checkAttrLegal(allAttrInfo, conditions[i].rhsAttr))
+                return QL_AttrNotExist;
+            int lIndex=getAttrIndex(allAttrInfo, conditions[i].lhsAttr);
+            int rIndex=getAttrIndex(allAttrInfo, conditions[i].rhsAttr);
+            if (allAttrInfo[lIndex].attrType!=allAttrInfo[rIndex].attrType)
+                return QL_CONDITION_INVALID;
+        }
+    }
+
+
     for (const auto& rel:rellist)
     {
         const char *relName = rel.data();
@@ -438,3 +480,29 @@ RC QL_Manager::checkAttrLegal(const vector<AttrInfo> &attributes, const char *at
     }
     return 0;
 }
+
+RC QL_Manager::checkAttrLegal(const vector<AttrInfo> &attributes, const RelAttr relAttr)
+{
+    auto ret = std::find_if(std::begin(attributes), std::end(attributes),
+                            [relAttr](AttrInfo attrInfo) {
+                                return strcmp(relAttr.relName, attrInfo.relName) == 0 &&
+                                       strcmp(relAttr.attrName, attrInfo.attrName) == 0;
+                            });
+    if (ret == attributes.end())
+    {
+        return QL_AttrNotExist;
+    }
+    return 0;
+}
+
+RC QL_Manager::getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr relAttr)
+{
+    int ret = (int) std::distance(attributes.begin(),
+                                  std::find_if(attributes.begin(), attributes.end(),
+                                               [relAttr](AttrInfo t) {
+                                                   return strcmp(t.relName, relAttr.relName) == 0 &&
+                                                          strcmp(t.attrName, relAttr.attrName) == 0;
+                                               }));
+    return ret;
+}
+

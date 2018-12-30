@@ -123,8 +123,8 @@ void SelectResult::filter(int nConditions, const Condition *conditions)
         if (!conditions[i].bRhsIsAttr)
             continue;
 
-        if (setRelAttrExist(conditions->lhsAttr) &&
-            setRelAttrExist(conditions->rhsAttr))
+        if (isRelAttrIndexExist(conditions->lhsAttr) &&
+            isRelAttrIndexExist(conditions->rhsAttr))
         {
             int lIndex = getRelAttrIndex(conditions->lhsAttr);
             int rIndex = getRelAttrIndex(conditions->rhsAttr);
@@ -140,6 +140,9 @@ void SelectResult::filter(int nConditions, const Condition *conditions)
                 {
                     dataList.erase(it++);
                     ++cnt;
+                } else
+                {
+                    ++it;
                 }
             }
             printf("DEBUG: filter out %d tuples\n", cnt);
@@ -176,9 +179,7 @@ void SelectResult::print(int nSelAttrs, const RelAttr *selAttrs)
         indexes.push_back(getRelAttrIndex(selAttrs[i]));
     }
 
-    //printf("SEL LEN = %d\n", conlist.size());
-
-    for (auto dataVector: conlist)
+    for (auto dataVector: dataList)
     {
         for (int i=0;i<nSelAttrs;++i)
         {
@@ -301,3 +302,13 @@ bool OrderByCompare :: operator() (vector<vector<char>> a, vector<vector<char>> 
     }
 }
 
+
+bool SelectResult::isRelAttrIndexExist(RelAttr relAttr)
+{
+    return dataAttrInfos.begin(),
+            std::find_if(dataAttrInfos.begin(), dataAttrInfos.end(),
+                         [relAttr](AttrInfo t) {
+                             return strcmp(t.relName, relAttr.relName) == 0 &&
+                                    strcmp(t.attrName, relAttr.attrName) == 0;
+                         }) != dataAttrInfos.end();
+}

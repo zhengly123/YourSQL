@@ -549,31 +549,49 @@ void SetUp () override
 
 TEST_F(QL_StringCmp, SELECT_SingleTable)
 {
-//    printf("\nTesting : Insert Non-null Type Error. \n");
     freopen("../src/gtestcase/QL_SELECT1.in","r",stdin);
     auto os = exec();
-    ifstream fin("../src/gtestcase/QL_SELECT1.out");
-//    freopen("../src/gtestcase/QL_SELECT1.out","r",stdin);
+    ifstream fin("../src/gtestcase/QL_SELECT1.ans");
     check(fin, os);
 }
 
 TEST_F(QL_StringCmp, SELECT_DoubleTable)
 {
-//    printf("\nTesting : Insert Non-null Type Error. \n");
     freopen("../src/gtestcase/QL_SELECT2.in","r",stdin);
     auto os = exec();
-    ifstream fin("../src/gtestcase/QL_SELECT2.out");
-//    freopen("../src/gtestcase/QL_SELECT2.out","r",stdin);
+    ifstream fin("../src/gtestcase/QL_SELECT2.ans");
     check(fin, os);
 }
 
 TEST_F(QL_StringCmp, SELECT_TripleTable)
 {
-//    printf("\nTesting : Insert Non-null Type Error. \n");
     freopen("../src/gtestcase/QL_SELECT3.in","r",stdin);
     auto os = exec();
-    ifstream fin("../src/gtestcase/QL_SELECT3.out");
-//    freopen("../src/gtestcase/QL_SELECT3.out","r",stdin);
+    ifstream fin("../src/gtestcase/QL_SELECT3.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, SELECT_IntertableCondition)
+{
+    freopen("../src/gtestcase/QL_SELECT4.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT4.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, SELECT_SelectAll)
+{
+    freopen("../src/gtestcase/QL_SELECT5.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT5.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, SELECT_WithoutWhere)
+{
+    freopen("../src/gtestcase/QL_SELECT6.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_SELECT6.ans");
     check(fin, os);
 }
 

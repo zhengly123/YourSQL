@@ -1,0 +1,12 @@
+3 6 'c' 
+3 7 'c' 
+3       NULL      'c' 
+3 6 'a' 11 
+3 6       NULL      44 
+3 6 'c'       NULL      
+3 7 'a' 11 
+3 7       NULL      44 
+3 7 'c'       NULL      
+3       NULL      'a' 11 
+3       NULL            NULL      44 
+3       NULL      'c'       NULL
