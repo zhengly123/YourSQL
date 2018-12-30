@@ -11,49 +11,29 @@
 
 int main(int argc, char *argv[])
 {
-    StdoutPrinter printer;
+
+    Printer *printer = new StdoutPrinter;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, printer); // add printer
+    QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
 
-    // std::cerr << "Before Test." << std::endl;
+    freopen("QL_SELECT1.in", "r", stdin);
 
-    int cnt = 0;
-
-    /*
+    int rc;
     for(;;)
     {
-        printf("------ Inst Test #%d ------\n", ++cnt);
-        if(treeparser(smManager, qlManager, 0)){
-            printf("------ Inst Test End ------\n");
-            break;
-        }
-    }
-     */
-
-    // freopen("./insert_test/ins_typemismatch.txt","r",stdin);
-    freopen("../src/gtestcase/QL_SELECT3.in","r",stdin);
-
-    for(;;)
-    {
-        int rc = treeparser(smManager, qlManager, 0);
-        switch(rc)
-        {
-            case PARSEREXIT : cerr << "> Exit." << endl; break;
-            case QL_RELNOTEXIST : cerr << "> Rel not exist." << endl; break;
-            case QL_INVALIDSIZE : cerr << "> Invalid size." << endl; break;
-            case QL_TYPEUNMATCHED : cerr << "> Type mismatched." << endl; break;
-            case QL_ATTRNOTNULL : cerr << "> Attr should not be null." << endl; break;
-            case QL_STRTOOLONG : cerr << "> String too long." << endl; break;
-            case QL_DUPLICATE : cerr << "> Insert Duplicated." << endl; break;
-            case 0 : cerr << "> Normal." << endl;  break;
-            default: cerr << "> Unrecognized Error." << endl; break;
-        }
+        rc = treeparser(smManager, qlManager, 0);
         if(rc == PARSEREXIT) break;
+
+        if(rc != 0) printf("ERROR.\n");
+        //else printf("NORMAL.\n");
+        //EXPECT_EQ(rc, 0);
     }
+
+    //cout << printer->getSS().str();
 
     return 0;
 }

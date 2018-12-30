@@ -576,3 +576,13 @@ TEST_F(QL_StringCmp, SELECT_TripleTable)
 //    freopen("../src/gtestcase/QL_SELECT3.out","r",stdin);
     check(fin, os);
 }
+
+TEST_F(QL_StringCmp, AGGREGATE_FUNC_1)
+{
+//    printf("\nTesting : Insert Non-null Type Error. \n");
+    freopen("../src/gtestcase/QL_AGG1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_AGG1.ans");
+//    freopen("../src/gtestcase/QL_SELECT3.out","r",stdin);
+    check(fin, os);
+}

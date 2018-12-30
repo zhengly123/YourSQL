@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstring>
 #include "SelectResult.h"
+
 SelectResult::SelectResult(Printer *printer, std::string relName, int nSelAttrs, const RelAttr *selAttrs, int nConditions,
                            const Condition *conditions)
                            :printer(printer)
@@ -37,7 +38,8 @@ bool SelectResult::setRelAttrExist(RelAttr relAttr)
     return std::find_if(targetRelAttrs.begin(), targetRelAttrs.end(),
                         [relAttr](RelAttr t) {
                             return strcmp(t.relName, relAttr.relName) == 0 &&
-                                   strcmp(t.attrName, relAttr.attrName) == 0;
+                                   strcmp(t.attrName, relAttr.attrName) == 0 &&
+                                   t.op == relAttr.op;
                         }) != targetRelAttrs.end();
 }
 
@@ -55,12 +57,17 @@ RC SelectResult::insert(const char *relName, Selector &selector, vector<AttrInfo
         RelAttr relAttr;
         relAttr.relName = const_cast<char *>(relName);
         relAttr.attrName = attr.attrName;
-        if (setRelAttrExist(relAttr))
+        for(int j = 0; j < 5; ++ j) // TODO: 5
         {
+            relAttr.op = j;
+            if (setRelAttrExist(relAttr))
+            {
 //            dataRelAttr.push_back(relAttr);
 //            strcpy(attr.relName, relName);
-            dataAttrInfos.push_back(attr);
-            usedAttrIndexes.push_back(i);
+                attr.aggregateFunc = j;
+                dataAttrInfos.push_back(attr);
+                usedAttrIndexes.push_back(i);
+            }
         }
         ++i;
     }
@@ -146,9 +153,11 @@ int SelectResult::getRelAttrIndex(RelAttr relAttr)
                                   std::find_if(dataAttrInfos.begin(), dataAttrInfos.end(),
                                                [relAttr](AttrInfo t) {
                                                    return strcmp(t.relName, relAttr.relName) == 0 &&
-                                                          strcmp(t.attrName, relAttr.attrName) == 0;
+                                                          strcmp(t.attrName, relAttr.attrName) == 0 &&
+                                                           t.aggregateFunc == relAttr.op;
                                                }));
 
+    if(ret == dataAttrInfos.size()) return -1;
     assert(ret<dataAttrInfos.size());
     return ret;
 }
@@ -167,7 +176,9 @@ void SelectResult::print(int nSelAttrs, const RelAttr *selAttrs)
         indexes.push_back(getRelAttrIndex(selAttrs[i]));
     }
 
-    for (auto dataVector: dataList)
+    //printf("SEL LEN = %d\n", conlist.size());
+
+    for (auto dataVector: conlist)
     {
         for (int i=0;i<nSelAttrs;++i)
         {
@@ -178,3 +189,115 @@ void SelectResult::print(int nSelAttrs, const RelAttr *selAttrs)
         printer->Println();
     }
 }
+
+RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAttr grp[], int nord, const RelAttr ord[])
+{
+    // Validate
+
+    for(int i = 0; i < ngrp; ++ i)
+        if(getRelAttrIndex(grp[i]) < 0) return QL_AttrNotExist;
+
+    for(int i = 0; i < nord; ++ i)
+        if(getRelAttrIndex(ord[i]) < 0) return QL_AttrNotExist;
+
+    int attrlen = dataAttrInfos.size();
+    int noAggregateFunc = 0;
+
+    //if(natt != attrlen) return QL_INVALIDSIZE;
+
+    for(int i = 0; i < natt; ++ i)
+        if(att[i].op == 0) noAggregateFunc ++; // No Aggregate Function Must be Group By
+
+    if(noAggregateFunc < natt && ngrp != noAggregateFunc) return QL_GROUPBYERR;
+
+    if(ngrp == 0)
+    {
+        // No group : Normal Exit
+        conlist.clear();
+
+        for(auto dataVec : dataList) conlist.push_back(dataVec);
+    }
+    else
+    {
+        conlist.clear();
+        grplist.clear();
+
+        std::vector<int> indexes;
+        for (int i = 0; i < natt; ++i)
+        {
+            indexes.push_back(getRelAttrIndex(att[i]));
+        }
+
+        for(auto dataVec : dataList)
+        {
+            // check group by attrs
+            vector<vector<char>> Grpvec = dataVec;
+            for(int i = 0; i < attrlen; ++ i) if(att[i].op != 0) Grpvec[indexes[i]].clear();
+            vector<vector<vector<char>>>::iterator it;
+            it = std::find(grplist.begin(), grplist.end(), Grpvec);
+            if(it == grplist.end())
+            {
+                grplist.push_back(Grpvec);
+                conlist.push_back(dataVec);
+            }
+            else
+            {
+                int d = it - grplist.begin();
+                for(int i = 0; i < attrlen; ++ i)
+                {
+                    int id = indexes[i];
+                    switch(att[i].op)
+                    {
+                        case AGGREGATE_SUM : Tadd(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType); break;
+                        case AGGREGATE_MAX : Tmax(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType); break;
+                        case AGGREGATE_MIN : Tmin(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType); break;
+                        default: break;
+                    }
+                }
+            }
+        }
+    }
+
+
+    if(nord)
+    {
+        orderType.clear();
+        orderIndex.clear();
+        orderSig.clear();
+
+        for(int i = 0; i < nord; ++ i)
+        {
+            int index = getRelAttrIndex(ord[i]);
+            orderIndex.push_back(index);
+            orderType.push_back(dataAttrInfos[index].attrType);
+            orderSig.push_back(ord[i].op);
+        }
+
+        OrderByCompare ordercmp(orderIndex, orderType, orderSig);
+        sort(conlist.begin(), conlist.end(), ordercmp);
+    }
+
+    return 0;
+}
+
+
+OrderByCompare :: OrderByCompare(vector<int> ordindex, vector<AttrType> ordtype, vector<int> ordsig)
+{
+    ordIndex = ordindex;
+    ordType = ordtype;
+    ordSig = ordsig;
+}
+
+bool OrderByCompare :: operator() (vector<vector<char>> a, vector<vector<char>> b)
+{
+    for(int i = 0; i < ordType.size(); ++ i)
+    {
+        int index = ordIndex[i];
+        AttrType typ = ordType[i];
+        int if_eq = Cmp(a[index].data(), b[index].data(), EQ_OP, typ);
+        if(if_eq) continue;
+        int if_lt = Cmp(a[index].data(), b[index].data(), LT_OP, typ);
+        return if_lt ^ (ordSig[i] == ORD_DEC);
+    }
+}
+

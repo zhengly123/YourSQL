@@ -42,7 +42,7 @@ struct AttrInfo {
     int      flag;                // 1 : not null; 2 : primary key; 3 : not null & primary key
     int      indexNum;
     int      nullOffset;             // attrNum-th attr in the relation
-
+    int      aggregateFunc;
     bool isNotNull(){ return (flag & 1) > 0; }
 };
 
@@ -100,6 +100,43 @@ struct RelationMeta{
  * @return
  */
 bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType);
+
+/**
+ * Sum Up Two value
+ * @param a
+ * @param b
+ * @param attrType
+ * @return error code
+ */
+RC Tadd(void *a, void *b, AttrType attrType);
+
+/**
+ * Min operation
+ * @param a
+ * @param b
+ * @param attrType
+ * @return error code
+ */
+RC Tmin(void *a, void *b, AttrType attrType);
+
+/**
+ * Max operation
+ * @param a
+ * @param b
+ * @param attrType
+ * @return error code
+ */
+RC Tmax(void *a, void *b, AttrType attrType);
+
+/**
+ * Assign b to a
+ * @param a
+ * @param b
+ * @param attrType
+ * @return error code
+ */
+RC Tassign(void *a, void *b, AttrType attrType);
+
 std::string relToFileName(const char *relName);
 
 #include "RM/rm.h"

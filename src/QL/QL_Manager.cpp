@@ -97,6 +97,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
         // check whether attr in the relation
         for (int i = 0; i < nSelAttrs; ++i)
         {
+            //attributes[i].aggregateFunc = selAttrs[i].op;
             if (string(selAttrs[i].relName) == rel)
             {
                 if (checkAttrLegal(attributes, selAttrs[i].attrName))
@@ -107,24 +108,22 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
         Selector selector(ixm, rmm, relName, relmeta, attributes,
                           nConditions, conditions, true);
         RM_Record record;
-        RM_FileHandle *handle = nullptr;
+
         RID rid;
         if (selector.dead)
             return selector.errorReason;
-//        int cnt=0;
-//        while (selector.getNext(record, handle))
-//        {
-//            record.GetRid(rid);
-//            handle->DeleteRec(rid);
-//            cnt++;
-//        }
+
         SelectResult newResult(printer, rel, nSelAttrs, selAttrs, nConditions, conditions);
         newResult.insert(relName, selector, attributes);
         selectResult = selectResult * newResult;
         selectResult.filter(nConditions, conditions);
     }
+
+    rc = selectResult.applyConstraint(nSelAttrs, selAttrs, nGroups, grpAttrs, nOrders, ordAttrs);
+    if(rc) return rc;
+
     selectResult.print(nSelAttrs, selAttrs);
-//    printf("INFO: delete cnt=%d\n", cnt);
+
     return 0;
 }
 
@@ -167,6 +166,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
     int ifnull = relmeta.tupleLength - relmeta.attrCount;
 
     char *buffer = new char[tuplelength];
+    memset(buffer, 0, tuplelength);
 
     for(int i = 0; i < nValues; ++ i)
     {

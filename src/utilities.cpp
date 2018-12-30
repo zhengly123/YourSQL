@@ -18,6 +18,8 @@ bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType)
                     return *(float*)(a)<*(float*)(b);
                 case STRING:
                     return strcmp((char *) (a), (char *) (b)) < 0;
+                case DATETYPE:
+                    return *(int*)(a)<*(int*)(b);
             }
             assert(false);
         case GT_OP:
@@ -35,6 +37,61 @@ bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType)
     }
     assert(false);
     return false;
+}
+
+RC Tadd(void *a, void *b, AttrType attrType)
+{
+    switch(attrType)
+    {
+        case INT:
+            *(int*)(a) += *(int*)b;
+            break;
+        case FLOAT:
+            *(float*)(a) += *(float*)(b);
+            break;
+        default:
+            // Error
+            break;
+    }
+
+    return 0;
+}
+
+RC Tmin(void *a, void *b, AttrType attrType)
+{
+    if(!Cmp(b, a, LT_OP, attrType)) return 0;
+    int rc = Tassign(a, b, attrType);
+    if(rc) return rc;
+    return 0;
+}
+
+RC Tmax(void *a, void *b, AttrType attrType)
+{
+    if(!Cmp(a, b, LT_OP, attrType)) return 0;
+    int rc = Tassign(a, b, attrType);
+    if(rc) return rc;
+    return 0;
+}
+
+RC Tassign(void *a, void *b, AttrType attrType)
+{
+    switch(attrType)
+    {
+        case INT:
+            *(int*)(a) = *(int*)(b); break;
+        case FLOAT:
+            *(float*)(a) = *(float*)(b); break;
+        case STRING:
+            memcpy(a, b, MAXNAME); break;
+        case VARCHR:
+            memcpy(a, b, MAXNAME); break;
+        case DATETYPE:
+            *(int*)(a) = *(int*)(b); break;
+        default:
+            return 1;
+    }
+
+    return 0;
 }
 
 std::string relToFileName(const char *relName)

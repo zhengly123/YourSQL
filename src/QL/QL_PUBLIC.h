@@ -18,5 +18,6 @@ const int QL_RELNULL = QL_CONDITION_INVALID + 1;
 const int QL_RELNOTNULL = QL_RELNULL + 1;
 const int QL_AttrNotExist = QL_RELNOTNULL + 1;
 const int QL_VALUE_EQPECTED = QL_AttrNotExist + 1;
+const int QL_GROUPBYERR = QL_VALUE_EQPECTED + 1;
 
 #endif //YOURSQL_QL_PUBLIC_H

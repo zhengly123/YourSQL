@@ -201,7 +201,8 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             ordlist = new RelAttr[leno];
             orderlistparser(st.order_list, ordlist);
 
-            qlm.Select(lensc, selist, st.table_list, lenwr, condwr, leng, grplist, leno, ordlist);
+            if(rc = qlm.Select(lensc, selist, st.table_list, lenwr, condwr, leng, grplist, leno, ordlist))
+                return rc;
 
             delete[] selist;
             delete[] ordlist;
@@ -374,7 +375,8 @@ void valueparser(ivalue value, Value * val)
 
         case VALUE_STRING_ID :
             val->type = STRING;
-            val->data = new char[value.value_string.length()+1];
+            val->data = new char[MAXNAME+1];
+            memset(val->data, 0, MAXNAME+1);
             strcpy((char*) val->data, value.value_string.c_str());
             break;
 
@@ -534,7 +536,7 @@ void whereparser(iwhere wh, struct Condition * con)
             colparser(wh.fi, &con->lhsAttr);
             con->op = opparser(wh.oper);
             con->flag = 0;
-            con->bRhsIsAttr = false;
+            con->bRhsIsAttr = true;
             colparser(wh.scol, &con->rhsAttr);
             break;
 
