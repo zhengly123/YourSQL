@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
      */
 
     // freopen("./insert_test/ins_typemismatch.txt","r",stdin);
-    freopen("../src/gtestcase/QL_SELECT4.in","r",stdin);
+    freopen("../src/gtestcase/QL_SELECT6.in","r",stdin);
 
     for(;;)
     {

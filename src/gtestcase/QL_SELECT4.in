@@ -1,0 +1,14 @@
+create database db1;
+use db1;
+create table tb1 (col1 int, col2 int);
+insert into tb1 values (1,3),(2,4),(null,5);
+create table tb2 (col3 int, col4 int);
+insert into tb2 values (4,6),(5,3),(6,null);
+create table tb3 (col3 varchar, col4 int);
+insert into tb3 values ('a',11),(null,44),('c',null);
+select tb1.col2, tb2.col4, tb3.col3 from tb1,tb2,tb3 where tb1.col2 =tb2.col4;
+select * from tb1,tb2,tb3 where tb1.col2 =tb2.col4 and tb3.col4 is not null;
+drop table tb1;
+close;
+drop database db1;
+exit;
