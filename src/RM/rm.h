@@ -45,6 +45,12 @@ public:
 
     RC SetData    (char *pData);   // Set pData to point to the record's contents
     RC SetRid     (RID rid);       // Set the record id
+
+    /**
+     * This function is the same as (char *&pData) const.
+     * @return return pData directly
+     */
+    void* GetData    () const;   // Set pData to point to the record's contents
 };
 
 class RM_Manager;

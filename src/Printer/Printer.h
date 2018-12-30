@@ -17,15 +17,18 @@ struct RelationMeta;
 class Printer
 {
 public:
-    Printer();
+    Printer(bool sync = true);
     ~Printer();
     void setAttr(const DataAttrInfo *attributes, const int attrCount);
     void PrintHeader();
     void Print(const char * const data);
 
     void Print(const char *const data[], int tupleCnt);
-    void PrintTables(const RelationMeta *data, int tupleCnt);
+    void PrintTablesInfo(const RelationMeta *data, int tupleCnt);
+    void PrintValue(char *data, bool isNull, AttrType attrType);
+    void Println();
     void PrintFooter();
+//    void PrintTable(vector<AttrInfo> attrs,);
 
 //    template <typename T>
 //    Printer& operator <<(const T b);

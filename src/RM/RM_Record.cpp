@@ -3,6 +3,8 @@
 //
 
 #include "rm_internal.h"
+#include "rm.h"
+
 
 /*
  * Constructor
@@ -53,5 +55,10 @@ RC RM_Record :: SetRid     (RID rid)
 {
     this->rid = rid;
     return 0;
+}
+
+void *RM_Record::GetData() const
+{
+    return this->pData;
 }
 

@@ -5,10 +5,13 @@
 #ifndef YOURSQL_QL_MANAGER_H
 #define YOURSQL_QL_MANAGER_H
 
-#include "../IX/IX_PRIVATE.h"
+#include <vector>
 #include <list>
+#include "../IX/IX_PRIVATE.h"
 #include "QL_PUBLIC.h"
 #include "../SM/SM_PUBLIC.h"
+#include "Selector.h"
+#include "../Printer/StdoutPrinter.h"
 
 class QL_Manager {
     SM_Manager *smm;
@@ -18,13 +21,13 @@ class QL_Manager {
     RM_FileScan rmscan;
 public:
                                               // Constructor
-      QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm);
+      QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, Printer *printer);
       ~QL_Manager ();                         // Destructor
     RC Select (int           nSelAttrs,        // # attrs in Select clause
-              const RelAttr selAttrs[],       // attrs in Select clause
+              RelAttr selAttrs[],       // attrs in Select clause
               std::list<std::string> rellist,
               int           nConditions,      // # conditions in Where clause
-              const Condition conditions[],  // conditions in Where clause
+              Condition conditions[],  // conditions in Where clause
               int           nGroups,         // # attrs in Group By clause
               const RelAttr grpAttrs[],     // attrs in Group By clause
               int           nOrders,         // # attrs in Order By clause
@@ -45,12 +48,22 @@ public:
               const Condition conditions[]);  // conditions in Where clause
 
     RC showRelation   (const char *relName);
+    /**
+     * Print relation to printer
+     * @param relName
+     * @return
+     */
+    RC printRelation  (const char *relName);
 
 private:
+    Printer *printer;
     std::string relToFileName(const char *relName)
     {
         return std::string(relName)+std::string(".rel");
     }
+
+    RC checkRelLegal(const std::vector<std::string> &relVec, const char *relName);
+    RC checkAttrLegal(const vector<AttrInfo> &attributes, const char *attrName);
 };
 
 #endif //YOURSQL_QL_MANAGER_H

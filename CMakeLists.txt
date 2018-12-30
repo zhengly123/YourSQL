@@ -62,7 +62,7 @@ SET(SOURCE
         src/Printer/Printer.cpp
         src/Printer/Printer.h
         src/Printer/StdoutPrinter.cpp
-        src/Printer/StdoutPrinter.h)
+        src/Printer/StdoutPrinter.h src/QL/Selector.cpp src/QL/Selector.h src/utilities.cpp src/QL/SelectResult.cpp src/QL/SelectResult.h)
 
 
 SET(GTEST 0)
@@ -75,6 +75,8 @@ IF(GTEST)
             src/gtestcase/SM1.cpp
             )
     set(LIBRARIES gtest_main)
+    # for QL print control
+    add_compile_definitions(GTEST=OPEN)
 else()
     SET(SOURCE ${SOURCE}
             src/RM_Test/test_scan.cpp

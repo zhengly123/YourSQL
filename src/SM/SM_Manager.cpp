@@ -18,6 +18,12 @@ SM_Manager::SM_Manager(IX_Manager &ixm, RM_Manager &rmm)
     printer = new StdoutPrinter();
 }
 
+SM_Manager::SM_Manager(IX_Manager &ixm, RM_Manager &rmm, Printer *printer)
+:ixm(&ixm), rmm(&rmm), isOpen(false), currentDbName(), printer(printer)
+{
+
+}
+
 SM_Manager :: ~SM_Manager ()
 {
     printer->flush();
@@ -93,6 +99,11 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
         memset(&attributes[i].relName, 0, MAXNAME+1);//make sure the vacant part is zero
         strcpy(attributes[i].relName, relName);
         relSize += attributes[i].attrLength;
+    }
+    // calculate null flag offset
+    for (int i = 0; i < attrCount; ++i)
+    {
+        attributes[i].nullOffset = relSize + i;
     }
     relationMeta.attrCount=attrCount;
     relationMeta.indexCount=0;
@@ -409,7 +420,7 @@ RC SM_Manager::PrintTables()
     {
         char *relationMetaData;
         relRecord.GetData(relationMetaData);
-        printer->PrintTables((RelationMeta *) relationMetaData, 1);
+        printer->PrintTablesInfo((RelationMeta *) relationMetaData, 1);
     }
     printer->flush();
     return 0;
@@ -428,7 +439,7 @@ vector<RelationMeta> SM_Manager::TestReturnTables()
     {
         char *relationMetaData;
         relRecord.GetData(relationMetaData);
-//        printer->PrintTables((RelationMeta *) relationMetaData, 1);
+//        printer->PrintTablesInfo((RelationMeta *) relationMetaData, 1);
         ret.push_back(*(RelationMeta *) relationMetaData);
     }
     return ret;
@@ -569,6 +580,12 @@ RC SM_Manager::attrGet(RelAttrType attrName, AttrInfo* attrInfo)
     return 1;
 }
 
+/**
+ *
+ * @param relName
+ * @return
+ * @todo sort the attr against offset
+ */
 vector<AttrInfo> SM_Manager::attrGet(std::string relName)
 {
     assert(isOpen);

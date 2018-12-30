@@ -277,12 +277,13 @@ protected:
 TEST_F(SM_Parser, CreateDB)
 {
     freopen("../src/gtestcase/dbstmt_test.txt","r",stdin);
+    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager);
-    QL_Manager qlManager(smManager, ixManager, rmManager);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
     //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
@@ -292,12 +293,13 @@ TEST_F(SM_Parser, CreateDB)
 TEST_F(SM_Parser, CreateTalbes)
 {
     freopen("../src/gtestcase/SM_Parser1.in","r",stdin);
+    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager);
-    QL_Manager qlManager(smManager, ixManager, rmManager);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
     //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
@@ -307,12 +309,13 @@ TEST_F(SM_Parser, CreateTalbes)
 TEST_F(SM_Parser, CreateTalbes_large)
 {
     freopen("../src/gtestcase/SM_Parser2.in","r",stdin);
+    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager);
-    QL_Manager qlManager(smManager, ixManager, rmManager);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
     //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
@@ -321,45 +324,43 @@ TEST_F(SM_Parser, CreateTalbes_large)
 
 TEST_F(SM_Parser, CreateTalbes_large_persistent)
 {
-    /*
-    freopen("../src/gtestcase/SM_Parser3_1.in","r",stdin);
-    FileManager* fm = new FileManager();
-    BufPageManager* bpm = new BufPageManager(fm);
-
-    {
-        RM_Manager rmManager(fm, bpm);
-        IX_Manager ixManager(*fm, *bpm);
-        SM_Manager smManager(ixManager, rmManager);
-        QL_Manager qlManager(smManager, ixManager, rmManager);
-        std::cerr << "Before Test." << std::endl;
-        treeparser(smManager, qlManager);
-    clearParser();
-    smManager.CloseDb();
-    smManager.flush();
-        bpm->close();
-    }
-    {
-        RM_Manager rmManager(fm, bpm);
-        IX_Manager ixManager(*fm, *bpm);
-        SM_Manager smManager(ixManager, rmManager);
-        QL_Manager qlManager(smManager, ixManager, rmManager);
-        freopen("../src/gtestcase/SM_Parser3_2.in", "r", stdin);
-        treeparser(smManager, qlManager);
-        smManager.flush();
-        smManager.CloseDb();
-        bpm->close();
-    }
-    {
-        RM_Manager rmManager(fm, bpm);
-        IX_Manager ixManager(*fm, *bpm);
-        SM_Manager smManager(ixManager, rmManager);
-        QL_Manager qlManager(smManager, ixManager, rmManager);
-        freopen("../src/gtestcase/SM_Parser3_3.in", "r", stdin);
-        treeparser(smManager, qlManager);
-        smManager.flush();
-        smManager.CloseDb();
-        bpm->close();
-    }
-    std::cerr << "Test Finished." << std::endl;
-     */
+//    freopen("../src/gtestcase/SM_Parser3_1.in","r",stdin);
+//    FileManager* fm = new FileManager();
+//    BufPageManager* bpm = new BufPageManager(fm);
+//
+//    {
+//        RM_Manager rmManager(fm, bpm);
+//        IX_Manager ixManager(*fm, *bpm);
+//        SM_Manager smManager(ixManager, rmManager);
+//        QL_Manager qlManager(smManager, ixManager, rmManager);
+//        std::cerr << "Before Test." << std::endl;
+//        treeparser(smManager, qlManager);
+//    clearParser();
+//    smManager.CloseDb();
+//    smManager.flush();
+//        bpm->close();
+//    }
+//    {
+//        RM_Manager rmManager(fm, bpm);
+//        IX_Manager ixManager(*fm, *bpm);
+//        SM_Manager smManager(ixManager, rmManager);
+//        QL_Manager qlManager(smManager, ixManager, rmManager);
+//        freopen("../src/gtestcase/SM_Parser3_2.in", "r", stdin);
+//        treeparser(smManager, qlManager);
+//        smManager.flush();
+//        smManager.CloseDb();
+//        bpm->close();
+//    }
+//    {
+//        RM_Manager rmManager(fm, bpm);
+//        IX_Manager ixManager(*fm, *bpm);
+//        SM_Manager smManager(ixManager, rmManager);
+//        QL_Manager qlManager(smManager, ixManager, rmManager);
+//        freopen("../src/gtestcase/SM_Parser3_3.in", "r", stdin);
+//        treeparser(smManager, qlManager);
+//        smManager.flush();
+//        smManager.CloseDb();
+//        bpm->close();
+//    }
+//    std::cerr << "Test Finished." << std::endl;
 }

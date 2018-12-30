@@ -11,13 +11,13 @@
 
 int main(int argc, char *argv[])
 {
-
+    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
     SM_Manager smManager(ixManager, rmManager);
-    QL_Manager qlManager(smManager, ixManager, rmManager);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
     // std::cerr << "Before Test." << std::endl;
 
@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
     }
      */
 
-    //freopen("deletetest.txt","r",stdin);
+    // freopen("./insert_test/ins_typemismatch.txt","r",stdin);
+    freopen("../src/gtestcase/QL_SELECT3.in","r",stdin);
 
     for(;;)
     {
