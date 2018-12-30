@@ -32,6 +32,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
               const RelAttr ordAttrs[])  // conditions in Where clause
 {
     RC rc = 0;
+    const bool SelectAllAttrs = (nSelAttrs == 0);
     std::vector<std::string> relVec;
     for (auto t:rellist)
         relVec.push_back(t);
@@ -87,6 +88,31 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
     SelectResult selectResult(printer, std::string(), 0, nullptr, 0, nullptr);
     // should not be empty
     selectResult.setUnit();
+    int cntTotalAttrs = 0;
+    std::vector<AttrInfo> allAttrInfo;
+    for (const auto& rel:rellist)
+    {
+        const char *relName = rel.data();
+        RelationMeta relmeta;
+        if (smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
+        vector<AttrInfo> attributes;
+        attributes = smm->attrGet(relName);
+        allAttrInfo.insert(allAttrInfo.end(), attributes.begin(),
+                           attributes.end());
+        cntTotalAttrs += attributes.size();
+    }
+    // if select all with "*", add all the attrs
+    if (SelectAllAttrs)
+    {
+        selAttrs=new RelAttr[cntTotalAttrs];
+        for (auto &attrInfo:allAttrInfo)
+        {
+            selAttrs[nSelAttrs].relName = attrInfo.relName;
+            selAttrs[nSelAttrs].attrName = attrInfo.attrName;
+            nSelAttrs++;
+        }
+    }
+
     for (const auto& rel:rellist)
     {
         const char *relName = rel.data();
