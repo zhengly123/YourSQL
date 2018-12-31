@@ -26,7 +26,7 @@ const int ORD_INC = 1;
 const int ORD_DEC = ORD_INC + 1;
 
 enum AttrType {INT, FLOAT, STRING, DATETYPE, VARCHR, NULLTYPE, ERRTYPE};
-enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP};
+enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP, LK_OP};
 
 // Pin Strategy Hint
 enum ClientHint {
