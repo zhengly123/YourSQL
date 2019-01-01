@@ -34,6 +34,9 @@ bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType)
             return !Cmp(a, b, LT_OP, attrType);
         case NO_OP:
             return true;
+            //TODO:LIKE
+//        case LK_OP:
+//            return isLike(a,b);
     }
     assert(false);
     return false;
