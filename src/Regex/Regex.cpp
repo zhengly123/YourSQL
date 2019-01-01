@@ -13,6 +13,7 @@ bool Regex::checkLegalRegex(const char *cp)
 {
     p = cp;
     bool inSelect = false;
+    sep.push_back(-1);
     for (int i = 0; i < p.length(); ++i)
     {
         if (p[i] == '[')
@@ -28,7 +29,7 @@ bool Regex::checkLegalRegex(const char *cp)
             inSelect = false;
         } else if (inSelect)
         {
-            if (p[i] == '%' || p[i] == '_')
+            if (p[i] == ANY || p[i] == ONE)
             {
                 return false;
             } else if (p[i] == '^')
@@ -36,17 +37,17 @@ bool Regex::checkLegalRegex(const char *cp)
                 if (sep.back() != i - 1)
                     return false;
             }
-        }
+        } else
+            sep.push_back(i);
     }
-    if (inSelect)
-        return false;
+    return !inSelect;
 }
 
 bool Regex::match(const char *ca)
 {
-    string a = ca;
-    std::vector<std::vector<bool>> f(a.size() + 1,
-                                     vector<bool>(p.size() + 1, false));
+    string a = string(" ") + ca;
+    std::vector<std::vector<bool>> f(a.size(),
+                                     vector<bool>(sep.size(), false));
 
     f[0][0] = true;
     for (int i = 1; i < a.length(); ++i)
@@ -55,11 +56,11 @@ bool Regex::match(const char *ca)
         {
             if (f[i - 1][j - 1])
             {
-                if ((a[i] == p[sep[j]] || p[sep[j]] == '_'))
+                if ((a[i] == p[sep[j]] || p[sep[j]] == ANY|| p[sep[j]] == ONE))
                     f[i][j] = true;
                 else if (p[sep[j]] == '[')
                 {
-                    if (p[sep[j] + 1] == '^' || p[sep[j] + 1] == '!')
+                    if (p[sep[j] + 1] == '^')
                     {
                         f[i][j] = true;
                         for (int k = sep[j]+2; p[k] != ']'; ++k)
@@ -73,7 +74,7 @@ bool Regex::match(const char *ca)
                     } else
                     {
                         f[i][j] = false;
-                        for (int k = sep[j]+2; p[k] != ']'; ++k)
+                        for (int k = sep[j]+1; p[k] != ']'; ++k)
                         {
                             if (p[k]==a[i])
                             {
@@ -83,12 +84,12 @@ bool Regex::match(const char *ca)
                         }
                     }
                 }
-            } else if (f[i - 1][j] && p[j] == '%')
+            } else if (f[i - 1][j] && p[sep[j]] == ANY)
             {
                 f[i][j] = true;
             }
         }
     }
-    return f[a.size()][sep.size()];
+    return f[a.size() - 1][sep.size() - 1];
 }
 
