@@ -27,12 +27,12 @@ ASType toplevel;
 %token REFERENCES INDEX TABLE TABLES SHOW 
 %token CREATE PRIMARY KEY NOT MYNULL VALUES DELETE 
 %token FROM WHERE SELECT IS MINT VARCHAR AND DATE MFLOAT FOREIGN
-%token ERROR
+%token ERROR GLIKE
 %token EQ NEQ LEQ GEQ LT GT
 %token LB RB FH DH DOT STAR
 %token QEXIT QCLOSE
 %token QMIN QMAX QAVG QSUM
-%token ORDERBY GROUPBY
+%token ORDERBY GROUPBY ASC
 
 /* %type Program
 %type Stmt */
@@ -339,6 +339,18 @@ WhereSubClause : Col Oper Value
             $$.id = COL_ISNOTNULL_WHERECLAUSE;
             $$.fi = $1;
         }
+        | Col GLIKE VALUE_STRING
+        {
+            $$.id = COL_LIKECLAUSE;
+            $$.fi = $1;
+            $$.pattern = $3;
+        }
+        | Col NOT GLIKE VALUE_STRING
+        {
+            $$.id = COL_NOTLIKECLAUSE;
+            $$.fi = $1;
+            $$.pattern = $4;
+        }
 ;
 
 Oper    : EQ
@@ -474,12 +486,17 @@ OColList : OCol
         }
 ;
 
-OCol    : Col DESC
+OCol    : ACol DESC
         {
             $$ = $1;
             $$.ordtype = ORDER_BY_DEC;
         }
-        | Col
+        | ACol ASC
+        {
+            $$ = $1;
+            $$.ordtype = ORDER_BY_INC;
+        }
+        | ACol
         {
             $$ = $1;
             $$.ordtype = ORDER_BY_INC;

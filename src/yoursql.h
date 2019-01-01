@@ -25,6 +25,7 @@ const int AGGREGATE_MAX = AGGREGATE_MIN + 1;
 const int ORD_INC = 1;
 const int ORD_DEC = ORD_INC + 1;
 
+enum CondType {COND_NORMAL, COND_ISNULL, COND_NOTNULL, COND_LIKE, COND_NOTLIKE};
 enum AttrType {INT, FLOAT, STRING, DATETYPE, VARCHR, NULLTYPE, ERRTYPE};
 enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP};
 
@@ -60,6 +61,7 @@ struct RelAttr {
     // AGGREGATE_MIN : min
     // AGGREGATE_MAX : max
 
+  int ord;
     // order
     // ORD_INC : increase
     // ORD_DEC : decrease
@@ -73,12 +75,20 @@ struct Value {
 struct Condition {
   RelAttr lhsAttr;      // left-hand side attribute
   CompOp  op;           // comparison operator
-  int 	  flag;			// 0 if normal; 1 if is null; 2 if is not null
+
+  CondType flag;
+    // COND_NORMAL : normal
+    // COND_ISNULL : 'lhsAttr is null'
+    // COND_NOTNULL: 'lhsAttr is not null'
+    // COND_LIKE   : 'lhsAttr like 'pattern''
+    // COND_NOTLIKE: 'lhsAttr not like 'pattern''
+
   int     bRhsIsAttr;   // TRUE if right-hand side is an attribute
                         //   and not a value
   RelAttr rhsAttr;      // right-hand side attribute if bRhsIsAttr = TRUE
   Value   rhsValue;     // right-hand side value if bRhsIsAttr = FALSE
 
+  std::string  pattern;
   bool    skip;         // used in Selector
 };
 const int IsNull = 1;

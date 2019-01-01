@@ -50,6 +50,7 @@ struct iwhere
 	icol fi, scol;
 	int oper;
 	ivalue sval;
+	std::string pattern;
 };
 
 struct ifield
@@ -163,8 +164,10 @@ const int COL_V_WHERECLAUSE = GT_OPER + 1;
 const int COL_C_WHERECLAUSE = COL_V_WHERECLAUSE + 1;
 const int COL_ISNULL_WHERECLAUSE = COL_C_WHERECLAUSE + 1;
 const int COL_ISNOTNULL_WHERECLAUSE = COL_ISNULL_WHERECLAUSE + 1;
+const int COL_LIKECLAUSE = COL_ISNOTNULL_WHERECLAUSE + 1;
+const int COL_NOTLIKECLAUSE = COL_LIKECLAUSE + 1;
 
-const int AGG_MAX = COL_ISNOTNULL_WHERECLAUSE + 1;
+const int AGG_MAX = COL_NOTLIKECLAUSE + 1;
 const int AGG_MIN = AGG_MAX + 1;
 const int AGG_SUM = AGG_MIN + 1;
 const int AGG_AVG = AGG_SUM + 1;

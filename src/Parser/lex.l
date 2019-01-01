@@ -24,7 +24,7 @@ float       ({integer}\.{integer})
 mfloat      (-{float})
 date        ([0-9]{4}-[0-9]{2}-[0-9]{2})
 identifier  ({nondigit}({nondigit}|{digit})*)
-string		('({nondigit}|{digit})*')
+string		('({nondigit}|{digit}|[\%_\[\]^])*')
 linend      ([\n\r])
 blank_chars ([ \f\r\t\v\n]+)
 
@@ -42,6 +42,7 @@ blank_chars ([ \f\r\t\v\n]+)
 "UPDATE"		{return UPDATE;}
 "SET"			{return SET;}
 "DESC"			{return DESC;}
+"ASC"           {return ASC;}
 "REFERENCES"	{return REFERENCES;}
 "INDEX"			{return INDEX;}
 "TABLE"			{return TABLE;}
@@ -72,6 +73,7 @@ blank_chars ([ \f\r\t\v\n]+)
 "AVG"           {return QAVG;}
 "ORDER BY"      {return ORDERBY;}
 "GROUP BY"      {return GROUPBY;}
+"LIKE"          {return GLIKE;}
 
 {identifier}    {yylval.ident = yytext; return IDENTIFIER;}
 {mfloat}        {yylval.value_float = atof(yytext); return VALUE_FLOAT;}

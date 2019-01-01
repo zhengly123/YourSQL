@@ -77,26 +77,28 @@
      MFLOAT = 293,
      FOREIGN = 294,
      ERROR = 295,
-     EQ = 296,
-     NEQ = 297,
-     LEQ = 298,
-     GEQ = 299,
-     LT = 300,
-     GT = 301,
-     LB = 302,
-     RB = 303,
-     FH = 304,
-     DH = 305,
-     DOT = 306,
-     STAR = 307,
-     QEXIT = 308,
-     QCLOSE = 309,
-     QMIN = 310,
-     QMAX = 311,
-     QAVG = 312,
-     QSUM = 313,
-     ORDERBY = 314,
-     GROUPBY = 315
+     GLIKE = 296,
+     EQ = 297,
+     NEQ = 298,
+     LEQ = 299,
+     GEQ = 300,
+     LT = 301,
+     GT = 302,
+     LB = 303,
+     RB = 304,
+     FH = 305,
+     DH = 306,
+     DOT = 307,
+     STAR = 308,
+     QEXIT = 309,
+     QCLOSE = 310,
+     QMIN = 311,
+     QMAX = 312,
+     QAVG = 313,
+     QSUM = 314,
+     ORDERBY = 315,
+     GROUPBY = 316,
+     ASC = 317
    };
 #endif
 /* Tokens.  */
@@ -138,26 +140,28 @@
 #define MFLOAT 293
 #define FOREIGN 294
 #define ERROR 295
-#define EQ 296
-#define NEQ 297
-#define LEQ 298
-#define GEQ 299
-#define LT 300
-#define GT 301
-#define LB 302
-#define RB 303
-#define FH 304
-#define DH 305
-#define DOT 306
-#define STAR 307
-#define QEXIT 308
-#define QCLOSE 309
-#define QMIN 310
-#define QMAX 311
-#define QAVG 312
-#define QSUM 313
-#define ORDERBY 314
-#define GROUPBY 315
+#define GLIKE 296
+#define EQ 297
+#define NEQ 298
+#define LEQ 299
+#define GEQ 300
+#define LT 301
+#define GT 302
+#define LB 303
+#define RB 304
+#define FH 305
+#define DH 306
+#define DOT 307
+#define STAR 308
+#define QEXIT 309
+#define QCLOSE 310
+#define QMIN 311
+#define QMAX 312
+#define QAVG 313
+#define QSUM 314
+#define ORDERBY 315
+#define GROUPBY 316
+#define ASC 317
 
 
 

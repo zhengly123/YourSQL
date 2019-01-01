@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, printer); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
 
-    freopen("QL_SELECT5.in", "r", stdin);
+    freopen("avgtest.txt", "r", stdin);
 
     int rc;
     for(;;)
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         if(rc == PARSEREXIT) break;
 
         if(rc != 0) printf("ERROR.\n");
-        //else printf("NORMAL.\n");
+        else printf("NORMAL.\n");
         //EXPECT_EQ(rc, 0);
     }
 

@@ -24,8 +24,8 @@ int typelength(AttrType ty);
 void fieldparser(ifield fd, struct AttrInfo * atrv);
 void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt);
 
-void valuelistparser(std::list<ivalue> valuelist, Value * val);
-void valueparser(ivalue value, Value * val);
+int valuelistparser(std::list<ivalue> valuelist, Value * val);
+int valueparser(ivalue value, Value * val);
 
 void setclauseparser(isetcl sc, struct Condition * con);
 void setclauselistparser(std::list<isetcl> sclist, struct Condition * con);

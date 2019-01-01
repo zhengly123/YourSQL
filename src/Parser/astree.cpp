@@ -143,8 +143,8 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 len = (*it).size();
                 vali = new Value[len];
                 memset(vali, 0, sizeof(Value) * len);
-                valuelistparser(*it, vali);
-                int rc = qlm.Insert(st.tbName.c_str(), len, vali);
+                if(rc = valuelistparser(*it, vali)) return rc;
+                rc = qlm.Insert(st.tbName.c_str(), len, vali);
                 delete[] vali;
                 if(rc) return rc;
             }
@@ -350,18 +350,19 @@ void fieldparser(ifield fd, struct AttrInfo * atrv)
     }
 }
 
-void valuelistparser(std::list<ivalue> valuelist, Value * val)
+int valuelistparser(std::list<ivalue> valuelist, Value * val)
 {
     //std::cerr << "    Valuelist[" << valuelist.size() << "]" << std::endl;
-    int cnt = 0;
+    int cnt = 0, rc;
     for(std::list<ivalue>::iterator it = valuelist.begin(); it != valuelist.end(); ++ it)
     {
-        valueparser(*it, val + cnt);
+        if(rc = valueparser(*it, val + cnt)) return rc;
         ++ cnt;
     }
+    return 0;
 }
 
-void valueparser(ivalue value, Value * val)
+int valueparser(ivalue value, Value * val)
 {
     std::string s;
     int dt;
@@ -375,6 +376,7 @@ void valueparser(ivalue value, Value * val)
 
         case VALUE_STRING_ID :
             val->type = STRING;
+            if(value.value_string.length() > MAXNAME) return QL_STRTOOLONG;
             val->data = new char[MAXNAME+1];
             memset(val->data, 0, MAXNAME+1);
             strcpy((char*) val->data, value.value_string.c_str());
@@ -399,6 +401,8 @@ void valueparser(ivalue value, Value * val)
         default :
             std::cerr << "(Unrecognized Value)";
     }
+
+    return 0;
 }
 
 void setclauseparser(isetcl sc, struct Condition * con)
@@ -474,11 +478,20 @@ void orderparser(icol cl, RelAttr * rel)
         strcpy(rel->attrName, cl.colName.c_str());
     }
 
+    switch(cl.aggtype)
+    {
+        case AGG_MAX : rel->op = AGGREGATE_MAX; break;
+        case AGG_MIN : rel->op = AGGREGATE_MIN; break;
+        case AGG_AVG : rel->op = AGGREGATE_AVG; break;
+        case AGG_SUM : rel->op = AGGREGATE_SUM; break;
+        default: rel->op = 0; break;
+    }
+
     switch(cl.ordtype)
     {
-        case ORDER_BY_INC : rel->op = ORD_INC; break;
-        case ORDER_BY_DEC : rel->op = ORD_DEC; break;
-        default: rel->op = 0; break;
+        case ORDER_BY_INC : rel->ord = ORD_INC; break;
+        case ORDER_BY_DEC : rel->ord = ORD_DEC; break;
+        default: rel->ord = 0; break;
     }
 }
 
@@ -526,7 +539,7 @@ void whereparser(iwhere wh, struct Condition * con)
 
             colparser(wh.fi, &con->lhsAttr);
             con->op = opparser(wh.oper);
-            con->flag = 0;
+            con->flag = COND_NORMAL;
             con->bRhsIsAttr = false;
             valueparser(wh.sval, &con->rhsValue);
             break;
@@ -535,7 +548,7 @@ void whereparser(iwhere wh, struct Condition * con)
 
             colparser(wh.fi, &con->lhsAttr);
             con->op = opparser(wh.oper);
-            con->flag = 0;
+            con->flag = COND_NORMAL;
             con->bRhsIsAttr = true;
             colparser(wh.scol, &con->rhsAttr);
             break;
@@ -543,13 +556,27 @@ void whereparser(iwhere wh, struct Condition * con)
         case COL_ISNULL_WHERECLAUSE :
 
             colparser(wh.fi, &con->lhsAttr);
-            con->flag = 1;
+            con->flag = COND_ISNULL;
             break;
 
         case COL_ISNOTNULL_WHERECLAUSE :
 
             colparser(wh.fi, &con->lhsAttr);
-            con->flag = 2;
+            con->flag = COND_NOTNULL;
+            break;
+
+        case COL_LIKECLAUSE :
+
+            colparser(wh.fi, &con->lhsAttr);
+            con->flag = COND_LIKE;
+            con->pattern = wh.pattern;
+            break;
+
+        case COL_NOTLIKECLAUSE :
+
+            colparser(wh.fi, &con->lhsAttr);
+            con->flag = COND_NOTLIKE;
+            con->pattern = wh.pattern;
             break;
 
         default:
