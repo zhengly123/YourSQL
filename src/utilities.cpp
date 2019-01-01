@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include "yoursql.h"
+#include "Regex/Regex.h"
 
 bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType)
 {
@@ -35,11 +36,20 @@ bool Cmp(void *a, void *b, CompOp compOp, AttrType attrType)
         case NO_OP:
             return true;
             //TODO:LIKE
-//        case LK_OP:
-//            return isLike(a,b);
+        case LK_OP:
+            return Match((char*)a, (char*)b);
+        case UKL_OP:
+            return !Match((char*)a, (char*)b);
+
     }
     assert(false);
     return false;
+}
+
+bool Match(char*a, char* b)
+{
+    Regex pattern(b);
+    return pattern.match(a);
 }
 
 RC Tadd(void *a, void *b, AttrType attrType)

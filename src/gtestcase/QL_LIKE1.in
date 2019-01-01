@@ -1,0 +1,46 @@
+create database db1;
+use db1;
+create table tb1 (name varchar, mark int);
+
+insert into tb1 values 
+	('aabba', 1),
+	('bbaab', 2),
+	('babab', 3),
+	('ababa', 4),
+	('abbaa', 5),
+	('bbbab', 6),
+	('babaa', 7),
+	('bbbaa', 8),
+	('aaaab', 9),
+	('abbba', 10),
+	('aaaaa', 11),
+	('aaaab', 12);
+
+select tb1.name, tb1.mark
+	from tb1 
+	where tb1.name like '%aaa%';
+
+select tb1.name, tb1.mark
+	from tb1 
+	where tb1.name like '%ab%';
+
+select tb1.name, tb1.mark
+	from tb1 
+	where tb1.name like '__ab_';
+
+select tb1.name, tb1.mark
+	from tb1 
+	where tb1.name not like '__a__';
+
+select tb1.name, tb1.mark
+	from tb1 
+	where tb1.name like '[a]%';
+
+select tb1.name, tb1.mark
+	from tb1 
+	where tb1.name like '[^a]%';
+
+drop table tb1;
+close;
+drop database db1;
+exit; 

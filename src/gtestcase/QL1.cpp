@@ -604,3 +604,22 @@ TEST_F(QL_StringCmp, AGGREGATE_FUNC_1)
 //    freopen("../src/gtestcase/QL_SELECT3.out","r",stdin);
     check(fin, os);
 }
+
+TEST_F(QL_StringCmp, AVG_FUNC_1)
+{
+    printf("\nTesting : Avg testcase 1. \n");
+    freopen("../src/gtestcase/QL_AVG1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_AVG1.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, LIKE_FUNC_1)
+{
+    printf("\nTesting : Like testcase 1. \n");
+    freopen("../src/gtestcase/QL_LIKE1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_LIKE1.ans");
+    check(fin, os);
+}
+

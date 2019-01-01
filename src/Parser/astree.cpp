@@ -201,6 +201,14 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             ordlist = new RelAttr[leno];
             orderlistparser(st.order_list, ordlist);
 
+            /*
+            for(int p = 0; p < lenwr; ++ p)
+                if(condwr[p].op == CompOp::LK_OP)
+                    printf("Detect : %s LIKE %s\n", condwr[p].lhsAttr.attrName, (char*)condwr[p].rhsValue.data);
+                else if(condwr[p].op == CompOp::UKL_OP)
+                    printf("Detect : %s NOT LIKE %s\n", condwr[p].lhsAttr.attrName, (char*)condwr[p].rhsValue.data);
+            */
+
             if(rc = qlm.Select(lensc, selist, st.table_list, lenwr, condwr, leng, grplist, leno, ordlist))
                 return rc;
 
@@ -266,8 +274,6 @@ void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
 
     for(std::list<ifield>::iterator fd = fdlist.begin(); fd != fdlist.end(); fd ++)
     {
-        //std::cerr << "             [subfield] " << std::endl;
-
         if(fd->id == PRIMARY_FIELD)
         {
             // Not a real field but primary key
@@ -314,8 +320,6 @@ void fieldparser(ifield fd, struct AttrInfo * atrv)
     switch (fd.id)
     {
         case COL_FIELD :
-            //std::cerr << "               [colName] " << fd.colName << " " << std::endl;
-            //std::cerr << "               [type] " << typeparser(fd.type) << std::endl;
 
             strcpy(atrv->attrName, fd.colName.c_str());
             atrv->flag = 0;
@@ -324,8 +328,6 @@ void fieldparser(ifield fd, struct AttrInfo * atrv)
             break;
 
             case NOTNULL_COL_FIELD :
-            //std::cerr << "               [colName] " << fd.colName << " NOT NULL" << std::endl;
-            //std::cerr << "               [type] " << typeparser(fd.type) << std::endl;
 
             strcpy(atrv->attrName, fd.colName.c_str());
             atrv->flag = 1;
@@ -334,25 +336,19 @@ void fieldparser(ifield fd, struct AttrInfo * atrv)
             break;
 
         case PRIMARY_FIELD :
-            //std::cerr << "               [coList] ";
             tableparser(fd.colList);
-            //std::cerr << "AS PRIMARY KEY" << std::endl;
             break;
 
         case FOREIGN_FIELD :
-            //std::cerr << "               [colName] " << fd.colName << ", AS FOREIGN KEY" << std::endl;
-            //std::cerr << "               [tbName] " << fd.tbName << " " << std::endl;
-            //std::cerr << "               [refColName] " << fd.refcolName << " " << std::endl;
             break;
         default:
-            std::cerr << "               [Error] " <<  std::endl;
+            assert(false);
             break;
     }
 }
 
 int valuelistparser(std::list<ivalue> valuelist, Value * val)
 {
-    //std::cerr << "    Valuelist[" << valuelist.size() << "]" << std::endl;
     int cnt = 0, rc;
     for(std::list<ivalue>::iterator it = valuelist.begin(); it != valuelist.end(); ++ it)
     {
@@ -517,22 +513,22 @@ void grouplistparser(std::list<icol> grplist, struct RelAttr * rel)
 
 CompOp opparser(int op)
 {
-    //std::cerr << "OP ";
     switch (op)
     {
-        case EQ_OPER : return EQ_OP;
-        case NEQ_OPER: return NE_OP;
-        case LEQ_OPER: return LE_OP;
-        case GEQ_OPER: return GE_OP;
-        case LT_OPER : return LT_OP;
-        case GT_OPER : return GT_OP;
-        default:       return NO_OP;
+        case EQ_OPER : return CompOp::EQ_OP;
+        case NEQ_OPER: return CompOp::NE_OP;
+        case LEQ_OPER: return CompOp::LE_OP;
+        case GEQ_OPER: return CompOp::GE_OP;
+        case LT_OPER : return CompOp::LT_OP;
+        case GT_OPER : return CompOp::GT_OP;
+        default:       return CompOp::NO_OP;
     }
 }
 
 void whereparser(iwhere wh, struct Condition * con)
 {
-    //std::cerr << "Where Clause : " << std::endl;
+    int len;
+
     switch(wh.id)
     {
         case COL_V_WHERECLAUSE :
@@ -557,26 +553,39 @@ void whereparser(iwhere wh, struct Condition * con)
 
             colparser(wh.fi, &con->lhsAttr);
             con->flag = COND_ISNULL;
+            con->bRhsIsAttr = false;
             break;
 
         case COL_ISNOTNULL_WHERECLAUSE :
 
             colparser(wh.fi, &con->lhsAttr);
             con->flag = COND_NOTNULL;
+            con->bRhsIsAttr = false;
             break;
 
         case COL_LIKECLAUSE :
 
             colparser(wh.fi, &con->lhsAttr);
-            con->flag = COND_LIKE;
-            con->pattern = wh.pattern;
+            con->op = CompOp::LK_OP;
+            con->bRhsIsAttr = false;
+            con->flag = CondType::COND_NORMAL;
+            con->rhsValue.type = AttrType::STRING;
+
+            con->rhsValue.data = new char[wh.pattern.length()+1];
+            strcpy((char*)con->rhsValue.data, wh.pattern.data());
+
             break;
 
         case COL_NOTLIKECLAUSE :
 
             colparser(wh.fi, &con->lhsAttr);
-            con->flag = COND_NOTLIKE;
-            con->pattern = wh.pattern;
+            con->op = CompOp::UKL_OP;
+            con->bRhsIsAttr = false;
+            con->flag = CondType::COND_NORMAL;
+            con->rhsValue.type = AttrType::STRING;
+
+            con->rhsValue.data = new char[wh.pattern.length()+1];
+            strcpy((char*)con->rhsValue.data, wh.pattern.data());
             break;
 
         default:

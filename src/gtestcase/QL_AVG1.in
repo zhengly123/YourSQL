@@ -1,0 +1,36 @@
+create database db1;
+use db1;
+create table tb1 (name varchar, chinese int, math float, english int);
+
+insert into tb1 values 
+	('Alice', 90, 80.5, 85),
+	('Billy', 89, 82.5, 98),
+	('Chalie', 70, 83.5, 99),
+	('Dodop', 40, 84.5, 100),
+	('Billy', 60, 85.5, 80),
+	('Alice', 68, 86.5, 85),
+	('Chalie', 34, 87.5, 83),
+	('Dodop', 90, 60.0, 65),
+	('Dodop', 39, 80.0, 35),
+	('Alice', 46, 90.2, 98),
+	('Dodop', 70, 94.3, 43),
+	('Billy', 95, 99.4, 84),
+	('Chalie', 95, 70.5, 85),
+	('Dodop', 100, 89.5, 53),
+	('Billy', 56, 45.2, 35),
+	('Chalie', 46, 68.4, 65),
+	('Alice', 77, 84.2, 56),
+	('Dodop', 88, 87.1, 43),
+	('Chalie', 76, 88.4, 56),
+	('Billy', 54, 97.8, 46);
+
+select tb1.name, max(tb1.chinese), min(tb1.chinese), sum(tb1.chinese), avg(tb1.chinese)
+	from tb1 
+	where tb1.english > 0
+	group by tb1.name
+	order by max(tb1.chinese) desc, avg(tb1.chinese) asc;
+
+drop table tb1;
+close;
+drop database db1;
+exit; 

@@ -122,7 +122,7 @@ bool Selector::checkConditionLegal()
         }
         AttrInfo attrL = *it;
 //        lhsAttrs.push_back(attrL);
-        if (cond.flag)
+        if (cond.flag != CondType::COND_NORMAL)
         {
             // cond is null of not null
         } else if (cond.bRhsIsAttr)
@@ -164,10 +164,10 @@ bool Selector::checkCondition(Condition cond, void *data)
     char *leftValue, *rightValue;
     AttrInfo attrL = *checkAttrExist(cond.lhsAttr.attrName);
     leftValue=(char*)data+attrL.offset;
-    if (cond.flag==IsNull)
+    if (cond.flag == CondType::COND_ISNULL)
     {
         return (*((char*)data + attrL.nullOffset) != 0);
-    } else if (cond.flag == IsNotNull)
+    } else if (cond.flag == CondType::COND_NOTNULL)
     {
         return (*((char*)data + attrL.nullOffset) == 0);
     } else
@@ -215,7 +215,7 @@ bool Selector::checkSetLegal(const int nSet, const Condition sets[])
         }
         AttrInfo attrL = *it;
 //        lhsAttrs.push_back(attrL);
-        if (cond.flag)
+        if (cond.flag != CondType::COND_NORMAL)
         {
             // IsNotNull cannot be accepted here
             assert(0);
@@ -233,6 +233,15 @@ bool Selector::checkSetLegal(const int nSet, const Condition sets[])
             {
                 errorReason = QL_TYPEUNMATCHED;
                 break;
+            }
+        }
+
+        if(cond.flag == CondType::COND_NORMAL)
+        {
+            if(cond.op == CompOp::LK_OP || cond.op == CompOp::UKL_OP)
+            {
+                if(attrL.attrType != AttrType::STRING)
+                    return QL_TYPEUNMATCHED;
             }
         }
     }
