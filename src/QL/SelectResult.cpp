@@ -211,14 +211,15 @@ RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAtt
 
     if(noAggregateFunc < natt && ngrp != noAggregateFunc) return QL_GROUPBYERR;
 
-    if(ngrp == 0)
-    {
-        // No group : Normal Exit
-        conlist.clear();
-
-        for(auto dataVec : dataList) conlist.push_back(dataVec);
-    }
-    else
+    // In order to permit no group collective operation, comment out the following
+//    if(ngrp == 0)
+//    {
+//        // No group : Normal Exit
+//        conlist.clear();
+//
+//        for(auto dataVec : dataList) conlist.push_back(dataVec);
+//    }
+//    else
     {
         // Handle AVG
 
