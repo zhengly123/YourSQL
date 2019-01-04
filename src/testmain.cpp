@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         rc = treeparser(smManager, qlManager, 0);
         if(rc == PARSEREXIT) break;
 
-
+/*
         switch(rc)
         {
             case SM_FOREIGN_NOTFOUND : printf("Foreign not found.\n"); break;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
                 if(rc == 0) printf("Normal.\n");
                 else printf("Unrecognized error.\n");
         }
-
+*/
 
         //if(rc != 0) printf("ERROR.\n");
         //else printf("NORMAL.\n");

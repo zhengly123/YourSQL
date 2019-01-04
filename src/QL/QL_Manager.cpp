@@ -150,7 +150,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
         }
 
         Selector selector(ixm, rmm, relName, relmeta, attributes,
-                          nConditions, conditions, true);
+                          nConditions, conditions, smm->filehandleGet(relName), true);
         RM_Record record;
 
         RID rid;
@@ -204,7 +204,8 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         if(values[i].type == STRING && strlen((char*)values[i].data) > MAXNAME) return QL_STRTOOLONG;
     }
 
-    rmm->OpenFile(relToFileName(relName).data(), handle);
+    handle = smm->filehandleGet(std::string(relName));
+    //rmm->OpenFile(relToFileName(relName).data(), handle);
 
     // TODO: Check primary key!
     int primaryindex = -1;
@@ -244,8 +245,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
     handle.InsertRec(buffer, rid);
 
     // TODO: insert it into index!
-
-    rmm->CloseFile(handle);
+    // rmm->CloseFile(handle);
 
     return 0;
 }
@@ -264,7 +264,7 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
 //        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
 //    }
     Selector selector(ixm,rmm, relName, relmeta, attributes,
-            nConditions, conditions);
+            nConditions, conditions, smm->filehandleGet(relName));
     RM_Record record;
     RM_FileHandle *handle = nullptr;
     RID rid;
@@ -290,7 +290,7 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     vector<AttrInfo> attributes;
     attributes = smm->attrGet(relName);
     Selector selector(ixm,rmm, relName, relmeta, attributes,
-                      nConditions, conditions);
+                      nConditions, conditions, smm->filehandleGet(relName));
     // check legality of SETs
     selector.checkSetLegal(nSet, sets);
     RM_Record record;
@@ -331,7 +331,8 @@ RC QL_Manager :: printRelation   (const char *relName)
     vector<AttrInfo> attributes;
 
     attributes = smm->attrGet(relName);
-    rmm->OpenFile(relToFileName(relName).data(), handle);
+    handle = smm->filehandleGet(relName);
+    //rmm->OpenFile(relToFileName(relName).data(), handle);
 
     rmscan.OpenScan(handle, INT, 0, 0, NO_OP, NULL);
 
@@ -374,7 +375,7 @@ RC QL_Manager :: printRelation   (const char *relName)
     }
 
     rmscan.CloseScan();
-    rmm->CloseFile(handle);
+    //rmm->CloseFile(handle);
     return 0;
 }
 

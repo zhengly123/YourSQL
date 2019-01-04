@@ -34,7 +34,9 @@ public:
              vector<AttrInfo> attributes,
              int nConditions,              // # conditions in Where clause
              const Condition conditions[],  // conditions in Where clause
-             bool interTable = false);
+             RM_FileHandle SMhandle,
+             bool interTable = false
+             );
     ~Selector();
     void iterateOptimize();
     /**

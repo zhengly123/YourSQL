@@ -547,6 +547,38 @@ void SetUp () override
     }
 };
 
+TEST_F(QL_StringCmp, DEL_1)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_DELETE1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_DELETE1.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, DEL_2)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_DELETE2.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_DELETE2.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, DEL_3)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_DELETE3.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_DELETE3.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, UPD)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_UPDATE1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_UPDATE1.ans");
+    check(fin, os);
+}
+
 TEST_F(QL_StringCmp, SELECT_SingleTable)
 {
     freopen("../src/gtestcase/QL_SELECT1.in","r",stdin);

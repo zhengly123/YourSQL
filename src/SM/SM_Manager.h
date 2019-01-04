@@ -106,6 +106,8 @@ public:
 
     vector<RelationMeta> TestReturnTables();
     vector<AttrInfo> TestReturnAttrs();
+
+    RM_FileHandle filehandleGet(std::string relName);
 private:
     IX_Manager *ixm;
     RM_Manager *rmm;
@@ -121,6 +123,13 @@ private:
     {
         return std::string(relName)+std::string(".rel");
     }
+
+    std::string relToFileName(std::string relName)
+    {
+        return relName + std::string(".rel");
+    }
+
+    std::map<std::string, RM_FileHandle> smFileHandle;
 };
 
 #endif //YOURSQL_SM_MANAGER_H

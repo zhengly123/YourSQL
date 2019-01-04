@@ -55,6 +55,7 @@ RC SM_Manager :: OpenDb      (const char *dbName)
 
     isOpen=true;
     currentDbName=std::string(dbName);
+    smFileHandle.clear();
     return 0;
 }
 
@@ -67,6 +68,9 @@ RC SM_Manager :: CloseDb     ()
         rmm->CloseFile(attrcatHandler);
         isOpen = false;
         assert(chdir(initialCwd)==0);
+
+        for(auto it : smFileHandle) rmm->CloseFile(it.second);
+        smFileHandle.clear();
     } else{
         printer->getSS() << "No database is opened.\n";
     }
@@ -627,4 +631,20 @@ vector<AttrInfo> SM_Manager::attrGet(std::string relName)
 
     attrScan.CloseScan();
     return attributes;
+}
+
+RM_FileHandle SM_Manager::filehandleGet(std::string relName)
+{
+    auto it = smFileHandle.find(relName);
+
+    if(it == smFileHandle.end())
+    {
+        // the file do not exist in handler yet.
+        RM_FileHandle newhandle;
+        rmm->OpenFile(relToFileName(relName).data(), newhandle);
+        smFileHandle.insert(std::make_pair(relName, newhandle));
+        return newhandle;
+    }
+
+    return it->second;
 }
