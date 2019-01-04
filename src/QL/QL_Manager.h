@@ -55,8 +55,11 @@ public:
      */
     RC printRelation  (const char *relName);
 
+    void setCheckPrimary(int flag) {checkPrimaryKey = flag;}
 private:
     Printer *printer;
+    int checkPrimaryKey;
+
     std::string relToFileName(const char *relName)
     {
         return std::string(relName)+std::string(".rel");

@@ -20,5 +20,6 @@ const int QL_AttrNotExist = QL_RELNOTNULL + 1;
 const int QL_VALUE_EQPECTED = QL_AttrNotExist + 1;
 const int QL_GROUPBYERR = QL_VALUE_EQPECTED + 1;
 const int QL_WRONGAVGTYPE = QL_GROUPBYERR + 1;
+const int QL_PRIMARY_DUPLICATE = QL_WRONGAVGTYPE + 1;
 
 #endif //YOURSQL_QL_PUBLIC_H

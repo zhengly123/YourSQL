@@ -649,14 +649,19 @@ protected:
 
     void SetUp () override
     {
-        /*
-        char dbName[]="testDbapboa";
-        char dbName2[]="asdfasfeawef";
-        system("rm -r testDbapboa");
-        system("rm -r asdfasfeawef");
-        */
+
         ASSERT_EQ(initialCwd, getcwd(initialCwd, 2048));
         clearParser();
+    }
+
+    void Accept(SM_Manager &smm, QL_Manager &qlm, int expectValue, int num)
+    {
+        for(int i = 0; i < num; ++ i)
+        {
+            int rc = treeparser(smm, qlm, 0);
+            if (rc == PARSEREXIT) return;
+            EXPECT_EQ(rc, expectValue);
+        }
     }
 
     void TearDown () override
@@ -679,23 +684,10 @@ TEST_F(QL_PRIMARY, PK_MULTIPLE)
     SM_Manager smManager(ixManager, rmManager, &printer);
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
-    int rc;
+    Accept(smManager, qlManager, 0, 2);
+    Accept(smManager, qlManager, PASERR_MULTIPLE_PRIMARY, 1);
+    Accept(smManager, qlManager, 0, 200);
 
-    for(int i = 0; i < 2; ++ i)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        EXPECT_EQ(rc, 0);
-    }
-
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, PASERR_MULTIPLE_PRIMARY);
-
-    for(;;)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        if(rc == PARSEREXIT) break;
-        EXPECT_EQ(rc, 0);
-    }
 }
 
 TEST_F(QL_PRIMARY, PK_NOTFOUND)
@@ -711,23 +703,9 @@ TEST_F(QL_PRIMARY, PK_NOTFOUND)
     SM_Manager smManager(ixManager, rmManager, &printer);
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
-    int rc;
-
-    for(int i = 0; i < 2; ++ i)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        EXPECT_EQ(rc, 0);
-    }
-
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, PASERR_PRIMARY_NOTFOUND);
-
-    for(;;)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        if(rc == PARSEREXIT) break;
-        EXPECT_EQ(rc, 0);
-    }
+    Accept(smManager, qlManager, 0, 2);
+    Accept(smManager, qlManager, PASERR_PRIMARY_NOTFOUND, 1);
+    Accept(smManager, qlManager, 0, 200);
 }
 
 TEST_F(QL_PRIMARY, PK_ATTRTOOLONG)
@@ -743,32 +721,11 @@ TEST_F(QL_PRIMARY, PK_ATTRTOOLONG)
     SM_Manager smManager(ixManager, rmManager, &printer);
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
-    int rc;
-
-    for(int i = 0; i < 2; ++ i)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        EXPECT_EQ(rc, 0);
-    }
-
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, PASERR_ATTR_TOOLONG);
-
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, PASERR_ATTR_TOOLONG);
-
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, PASERR_PRIMARY_NOTFOUND);
-
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, PASERR_ATTR_TOOLONG);
-
-    for(;;)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        if(rc == PARSEREXIT) break;
-        EXPECT_EQ(rc, 0);
-    }
+    Accept(smManager, qlManager, 0, 2);
+    Accept(smManager, qlManager, PASERR_ATTR_TOOLONG, 2);
+    Accept(smManager, qlManager, PASERR_PRIMARY_NOTFOUND, 1);
+    Accept(smManager, qlManager, PASERR_ATTR_TOOLONG, 1);
+    Accept(smManager, qlManager, 0, 200);
 }
 
 TEST_F(QL_PRIMARY, FK_SAMEATTR)
@@ -784,23 +741,9 @@ TEST_F(QL_PRIMARY, FK_SAMEATTR)
     SM_Manager smManager(ixManager, rmManager, &printer);
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
-    int rc;
-
-    for(int i = 0; i < 3; ++ i)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        EXPECT_EQ(rc, 0);
-    }
-
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, SM_SAME_NAME_ATTR);
-
-    for(;;)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        if(rc == PARSEREXIT) break;
-        EXPECT_EQ(rc, 0);
-    }
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, SM_SAME_NAME_ATTR, 1);
+    Accept(smManager, qlManager, 0, 200);
 }
 
 
@@ -817,24 +760,29 @@ TEST_F(QL_PRIMARY, FK_NOTFOUND)
     SM_Manager smManager(ixManager, rmManager, &printer);
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
-    int rc;
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, SM_FOREIGN_NOTFOUND, 2);
+    Accept(smManager, qlManager, 0, 200);
+}
 
-    for(int i = 0; i < 3; ++ i)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        EXPECT_EQ(rc, 0);
-    }
+TEST_F(QL_PRIMARY, PK_DUP)
+{
+    printf("\nTesting : Primary Key Duplicate error. \n");
+    freopen("../src/gtestcase/Primarytest/PK_dup.txt", "r" , stdin);
 
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, SM_FOREIGN_NOTFOUND);
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
-    rc = treeparser(smManager, qlManager, 0);
-    EXPECT_EQ(rc, SM_FOREIGN_NOTFOUND);
-
-    for(;;)
-    {
-        rc = treeparser(smManager, qlManager, 0);
-        if(rc == PARSEREXIT) break;
-        EXPECT_EQ(rc, 0);
-    }
+    Accept(smManager, qlManager, 0, 4);
+    Accept(smManager, qlManager, QL_PRIMARY_DUPLICATE, 1);
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, QL_PRIMARY_DUPLICATE, 1);
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, QL_PRIMARY_DUPLICATE, 1);
+    Accept(smManager, qlManager, 0, 200);
 }

@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         rc = treeparser(smManager, qlManager, 0);
         if(rc == PARSEREXIT) break;
 
-        /*
+
         switch(rc)
         {
             case SM_FOREIGN_NOTFOUND : printf("Foreign not found.\n"); break;
@@ -37,11 +37,12 @@ int main(int argc, char *argv[])
             case PASERR_PRIMARY_NOTFOUND : printf("Primary Key not found.\n"); break;
             case PASERR_ATTR_TOOLONG : printf("Attr too long.\n"); break;
             case SM_SAME_NAME_ATTR : printf("Same name attr.\n"); break;
+            case QL_PRIMARY_DUPLICATE : printf("Insertion : Primary duplicate.\n"); break;
             default:
                 if(rc == 0) printf("Normal.\n");
                 else printf("Unrecognized error.\n");
         }
-         */
+
 
         //if(rc != 0) printf("ERROR.\n");
         //else printf("NORMAL.\n");

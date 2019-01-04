@@ -14,6 +14,7 @@ QL_Manager::QL_Manager(SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, Printe
     this->rmm = &rmm;
     this->ixm = &ixm;
     this->smm = &smm;
+    checkPrimaryKey = 1;
 }
 
 QL_Manager :: ~QL_Manager ()                         // Destructor
@@ -203,7 +204,26 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         if(values[i].type == STRING && strlen((char*)values[i].data) > MAXNAME) return QL_STRTOOLONG;
     }
 
+    rmm->OpenFile(relToFileName(relName).data(), handle);
+
     // TODO: Check primary key!
+    int primaryindex = -1;
+    for(int i = 0; i < nValues; ++ i)
+        if(attributes[i].flag & 2) primaryindex = i;
+
+    if(primaryindex >= 0 && checkPrimaryKey)
+    {
+        RM_FileScan scanner;
+        RM_Record record;
+        scanner.OpenScan(handle, attributes[primaryindex].attrType, attributes[primaryindex].attrLength,
+            attributes[primaryindex].offset, CompOp::EQ_OP, values[primaryindex].data);
+        if(scanner.GetNextRec(record) != RM_EOF)
+        {
+            rmm->CloseFile(handle);
+            return QL_PRIMARY_DUPLICATE;
+        }
+        scanner.CloseScan();
+    }
 
     int tuplelength = relmeta.tupleLength;
     int ifnull = relmeta.tupleLength - relmeta.attrCount;
@@ -219,8 +239,6 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         else
             *(buffer + ifnull + i) = 1; // null flag set
     }
-
-    rmm->OpenFile(relToFileName(relName).data(), handle);
 
     RID rid;
     handle.InsertRec(buffer, rid);
