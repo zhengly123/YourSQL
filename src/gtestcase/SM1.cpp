@@ -71,7 +71,10 @@ TEST_F(SM, CreateTable)
     char relName[]="rel1";
     ASSERT_EQ(0, sm.CreateDb(dbName));
     ASSERT_EQ(0, sm.OpenDb(dbName));
+
     AttrInfo attrInfo[5];
+    memset(attrInfo, 0, sizeof(AttrInfo) * 5);
+
     attrInfo->attrLength=4;
     attrInfo->attrType=AttrType::INT;
     strcpy(attrInfo->attrName, attrName);
@@ -148,6 +151,7 @@ TEST_F(SM, Exist)
     ASSERT_EQ(0, sm.CreateDb(dbName));
     ASSERT_EQ(0, sm.OpenDb(dbName));
     AttrInfo attrInfo[5];
+    memset(attrInfo, 0, sizeof(AttrInfo) * 5);
     attrInfo->attrLength=4;
     attrInfo->attrType=AttrType::INT;
     strcpy(attrInfo->attrName, attrName);
@@ -181,6 +185,7 @@ TEST_F(SM, PersistentCreateTable)
     ASSERT_EQ(0, sm.CreateDb(dbName));
     ASSERT_EQ(0, sm.OpenDb(dbName));
     AttrInfo attrInfo[5];
+    memset(attrInfo, 0, sizeof(AttrInfo) * 5);
     attrInfo->attrLength=4;
     attrInfo->attrType=AttrType::INT;
     strcpy(attrInfo->attrName, attrName);

@@ -86,6 +86,21 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
         return SM_TABLE_EXIST;
     }
 
+    // Resolve Foreign Key First : Get their attrType & attrLength
+    for(int i=0;i<attrCount;++i)
+        if(attributes[i].isForeign)
+        {
+            RelAttr relattr;
+            AttrInfo atr;
+            std::string relName(attributes[i].foreignTable);
+            std::string attrName(attributes[i].foreignName);
+            if(attrGet(std::make_pair(relName, attrName), &atr)) return SM_FOREIGN_NOTFOUND;
+            if(!(atr.flag & 2)) return SM_FOREIGN_NOTPRIMARY;
+            attributes[i].attrType = atr.attrType;
+            attributes[i].attrLength = atr.attrLength;
+        }
+
+
     int relSize=0;
     std::set<std::string> nameSet;
     RelationMeta relationMeta={};
@@ -96,7 +111,7 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
         nameSet.insert(string(attributes[i].attrName));
         attributes[i].offset = relSize;
         attributes[i].indexNum = 0;
-        memset(&attributes[i].relName, 0, MAXNAME+1);//make sure the vacant part is zero
+        memset(&attributes[i].relName, 0, MAXNAME+1); // make sure the vacant part is zero
         strcpy(attributes[i].relName, relName);
         relSize += attributes[i].attrLength;
     }

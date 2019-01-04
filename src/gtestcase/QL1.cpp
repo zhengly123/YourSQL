@@ -623,3 +623,218 @@ TEST_F(QL_StringCmp, LIKE_FUNC_1)
     check(fin, os);
 }
 
+
+TEST_F(QL_StringCmp, ForeignKeyTest_1)
+{
+    printf("\nTesting : Foreign key testcase 1. \n");
+    freopen("../src/gtestcase/Primarytest/FK_1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Primarytest/FK_1.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, ForeignKeyTest_2)
+{
+    printf("\nTesting : Foreign key testcase 2. \n");
+    freopen("../src/gtestcase/Primarytest/FK_2.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Primarytest/FK_2.ans");
+    check(fin, os);
+}
+
+class QL_PRIMARY : public :: testing :: Test
+{
+protected:
+    char initialCwd[2049];
+
+    void SetUp () override
+    {
+        /*
+        char dbName[]="testDbapboa";
+        char dbName2[]="asdfasfeawef";
+        system("rm -r testDbapboa");
+        system("rm -r asdfasfeawef");
+        */
+        ASSERT_EQ(initialCwd, getcwd(initialCwd, 2048));
+        clearParser();
+    }
+
+    void TearDown () override
+    {
+        ASSERT_EQ(0, chdir(initialCwd));
+        clearParser();
+    }
+};
+
+TEST_F(QL_PRIMARY, PK_MULTIPLE)
+{
+    printf("\nTesting : Primary Key Multiple Error. \n");
+    freopen("../src/gtestcase/Primarytest/PK_multiple.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    int rc;
+
+    for(int i = 0; i < 2; ++ i)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        EXPECT_EQ(rc, 0);
+    }
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, PASERR_MULTIPLE_PRIMARY);
+
+    for(;;)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        if(rc == PARSEREXIT) break;
+        EXPECT_EQ(rc, 0);
+    }
+}
+
+TEST_F(QL_PRIMARY, PK_NOTFOUND)
+{
+    printf("\nTesting : Primary Key Not Found Error. \n");
+    freopen("../src/gtestcase/Primarytest/PK_notfound.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    int rc;
+
+    for(int i = 0; i < 2; ++ i)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        EXPECT_EQ(rc, 0);
+    }
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, PASERR_PRIMARY_NOTFOUND);
+
+    for(;;)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        if(rc == PARSEREXIT) break;
+        EXPECT_EQ(rc, 0);
+    }
+}
+
+TEST_F(QL_PRIMARY, PK_ATTRTOOLONG)
+{
+    printf("\nTesting : Primary Key Too Long. \n");
+    freopen("../src/gtestcase/Primarytest/PK_attrtoolong.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    int rc;
+
+    for(int i = 0; i < 2; ++ i)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        EXPECT_EQ(rc, 0);
+    }
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, PASERR_ATTR_TOOLONG);
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, PASERR_ATTR_TOOLONG);
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, PASERR_PRIMARY_NOTFOUND);
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, PASERR_ATTR_TOOLONG);
+
+    for(;;)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        if(rc == PARSEREXIT) break;
+        EXPECT_EQ(rc, 0);
+    }
+}
+
+TEST_F(QL_PRIMARY, FK_SAMEATTR)
+{
+    printf("\nTesting : Foreign Key Duplicated. \n");
+    freopen("../src/gtestcase/Primarytest/FK_sameattr.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    int rc;
+
+    for(int i = 0; i < 3; ++ i)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        EXPECT_EQ(rc, 0);
+    }
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, SM_SAME_NAME_ATTR);
+
+    for(;;)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        if(rc == PARSEREXIT) break;
+        EXPECT_EQ(rc, 0);
+    }
+}
+
+
+TEST_F(QL_PRIMARY, FK_NOTFOUND)
+{
+    printf("\nTesting : Foreign Key Not Found error. \n");
+    freopen("../src/gtestcase/Primarytest/FK_notfound1.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    int rc;
+
+    for(int i = 0; i < 3; ++ i)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        EXPECT_EQ(rc, 0);
+    }
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, SM_FOREIGN_NOTFOUND);
+
+    rc = treeparser(smManager, qlManager, 0);
+    EXPECT_EQ(rc, SM_FOREIGN_NOTFOUND);
+
+    for(;;)
+    {
+        rc = treeparser(smManager, qlManager, 0);
+        if(rc == PARSEREXIT) break;
+        EXPECT_EQ(rc, 0);
+    }
+}

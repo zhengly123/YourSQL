@@ -120,8 +120,13 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
             atrv = new AttrInfo[len];
             memset(atrv, 0, sizeof(AttrInfo) * len);
-            fieldlistparser(st.field_list, atrv, cnt);
-            smm.CreateTable(st.tbName.c_str(), cnt, atrv);
+
+            if(rc = fieldlistparser(st.field_list, atrv, cnt))
+                {delete[] atrv; return rc;}
+
+            if(rc = smm.CreateTable(st.tbName.c_str(), cnt, atrv))
+                {delete[] atrv; return rc;}
+
             delete[] atrv;
 
             break;
@@ -266,11 +271,12 @@ AttrType typeparser(itype ty)
     }
 }
 
-void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
+int fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
 {
     cnt = 0;
 
     std::list<std::string> primarylist;
+    int rc = 0;
 
     for(std::list<ifield>::iterator fd = fdlist.begin(); fd != fdlist.end(); fd ++)
     {
@@ -282,10 +288,13 @@ void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
         }
         else
         {
-            fieldparser(*fd, atrv + cnt);
+            if(rc = fieldparser(*fd, atrv + cnt)) return rc;
             ++ cnt;
         }
     }
+
+    if(primarylist.size() > 1)
+        return PASERR_MULTIPLE_PRIMARY;
 
     for(std::list<std::string>::iterator coli = primarylist.begin(); coli != primarylist.end(); coli ++)
     {
@@ -298,10 +307,11 @@ void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
 
         if(!found)
         {
-            // TODO: Error Handle!
+            return PASERR_PRIMARY_NOTFOUND;
         }
     }
 
+    return 0;
 }
 
 int typelength(AttrType ty)
@@ -315,36 +325,57 @@ int typelength(AttrType ty)
     }
 }
 
-void fieldparser(ifield fd, struct AttrInfo * atrv)
+int fieldparser(ifield fd, struct AttrInfo * atrv)
 {
     switch (fd.id)
     {
         case COL_FIELD :
 
+            if(fd.colName.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+
             strcpy(atrv->attrName, fd.colName.c_str());
+
             atrv->flag = 0;
+            atrv->isForeign = 0;
             atrv->attrType = typeparser(fd.type);
             atrv->attrLength = typelength(atrv->attrType);
+
             break;
 
             case NOTNULL_COL_FIELD :
 
+            if(fd.colName.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+
             strcpy(atrv->attrName, fd.colName.c_str());
+
             atrv->flag = 1;
+            atrv->isForeign = 0;
+
             atrv->attrType = typeparser(fd.type);
             atrv->attrLength = typelength(atrv->attrType);
             break;
 
-        case PRIMARY_FIELD :
-            tableparser(fd.colList);
+        case FOREIGN_FIELD :
+
+            if(fd.colName.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+            if(fd.tbName.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+            if(fd.refcolName.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+
+            strcpy(atrv->attrName, fd.colName.c_str());
+            strcpy(atrv->foreignTable, fd.tbName.c_str());
+            strcpy(atrv->foreignName, fd.refcolName.c_str());
+
+            atrv->flag = 0;
+            atrv->isForeign = 1;
+
             break;
 
-        case FOREIGN_FIELD :
-            break;
         default:
             assert(false);
             break;
     }
+
+    return 0;
 }
 
 int valuelistparser(std::list<ivalue> valuelist, Value * val)

@@ -1,0 +1,9 @@
+create database db1;
+use db1;
+create table tb1 (col1issolongthatitcannotstoreintothesystem int, col2 int, primary key(col2));
+create table tb2 (col1issolongthatitcannotstoreintothesystem int, col2 int, primary key(col1issolongthatitcannotstoreintothesystem));
+create table tb3 (col1 int, col2 int, primary key(col1issolongthatitcannotstoreintothesystem));
+create table tb4 (col1 int, col2 int, foreign key(col3) references tb2(col1issolongthatitcannotstoreintothesystem));
+close;
+drop database db1;
+exit;
