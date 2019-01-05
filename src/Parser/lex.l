@@ -24,7 +24,7 @@ integer     ({digit}+)
 minteger    (-{integer})
 float       ({integer}\.{integer})
 mfloat      (-{float})
-date        ([0-9]{4}-[0-9]{2}-[0-9]{2})
+date        ('[0-9]{4}-[0-9]{2}-[0-9]{2}')
 identifier  ({nondigit}({nondigit}|{digit})*)
 /* string		('({nondigit}|{digit}|[\%_\[\]^ \-\.])*') */
 /* string      ('[^\n]+') */

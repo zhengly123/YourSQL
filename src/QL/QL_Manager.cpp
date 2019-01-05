@@ -178,7 +178,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
  **/
 RC QL_Manager :: Insert (const char  *relName,           // relation to insert into
               int         nValues,            // # values to insert
-              const Value values[])          // values to insert
+              Value values[])          // values to insert
 {
     struct RelationMeta relmeta;
 
@@ -197,6 +197,12 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         if(values[i].type == NULLTYPE)
         {
             if(curAttr.flag & 1) return QL_ATTRNOTNULL;
+        }
+        else if(curAttr.attrType == FLOAT && values[i].type == INT)
+        {
+            float d = *(int*) values[i].data;
+            values[i].type = FLOAT;
+            *(float*)values[i].data = d;
         }
         else if(curAttr.attrType != values[i].type) return QL_TYPEUNMATCHED;
 

@@ -450,7 +450,7 @@ int valueparser(ivalue value, Value * val)
         case VALUE_DATE_ID :
             val->type = DATETYPE;
             s = value.value_string;
-            dt = atoi(s.substr(0,3).c_str()) * 10000 + atoi(s.substr(5,6).c_str()) * 100 + atoi(s.substr(8,9).c_str());
+            dt = atoi(s.substr(1,4).c_str()) * 10000 + atoi(s.substr(6,7).c_str()) * 100 + atoi(s.substr(9,10).c_str());
             val->data = new int (dt);
             break;
 
