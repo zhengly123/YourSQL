@@ -5,6 +5,7 @@
 #include <cstring>
 #include "astree.h"
 #include "yacc.tab.cpp"
+#include "parsererror.h"
 
 void tester(int ident, std::string str)
 {

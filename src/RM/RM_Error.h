@@ -5,10 +5,20 @@
 #ifndef YOURSQL_RM_ERROR_H
 #define YOURSQL_RM_ERROR_H
 
+#include "../errorhandle.h"
+
+/*
 #define RM_BADRECSIZE      (START_RM_WARN + 0)  // rec size invalid <= 0
 #define RM_NORECATRID      (START_RM_WARN + 1)  // This rid has no record
 
 #define RM_LASTWARN RM_NORECATRID
+*/
+
+const int RM_NORECATRID = YOURSQL_RM_ERROR_START;
+const int RM_EOF = RM_NORECATRID + 1;
+const int RM_BAD_FILESCAN = RM_EOF + 1;
+
+/*
 
 #define START_RM_ERR        -1
 #define RM_SIZETOOBIG      (START_RM_ERR - 0)  // record size too big
@@ -23,5 +33,7 @@
 #define RM_BAD_FILESCAN    (START_RM_ERR - 9)  // file scan error
 
 #define RM_LASTERROR RM_BAD_FILESCAN
+
+*/
 
 #endif //YOURSQL_RM_ERROR_H

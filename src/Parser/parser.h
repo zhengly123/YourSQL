@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <list>
+#include "../errorhandle.h"
 
 struct itype
 {
@@ -175,8 +176,6 @@ const int AGG_AVG = AGG_SUM + 1;
 const int ORDER_BY_INC = AGG_AVG + 1;
 const int ORDER_BY_DEC = ORDER_BY_INC + 1;
 
-const int PASERR_MULTIPLE_PRIMARY = ORDER_BY_DEC + 1;
-const int PASERR_PRIMARY_NOTFOUND = PASERR_MULTIPLE_PRIMARY + 1;
-const int PASERR_ATTR_TOOLONG = PASERR_PRIMARY_NOTFOUND + 1;
+
 
 #endif

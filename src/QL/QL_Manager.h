@@ -8,10 +8,10 @@
 #include <vector>
 #include <list>
 #include "../IX/IX_PRIVATE.h"
-#include "QL_PUBLIC.h"
 #include "../SM/SM_PUBLIC.h"
 #include "Selector.h"
 #include "../Printer/StdoutPrinter.h"
+#include "QL_PRIVATE.h"
 
 class QL_Manager {
     SM_Manager *smm;

@@ -9,6 +9,7 @@ include_directories(./googletest/include)
 link_directories(./googltest)
 
 SET(SOURCE
+        src/yoursql.h
         src/PF/bufmanager/BufPageManager.h
         src/PF/bufmanager/FindReplace.h
         src/PF/fileio/FileManager.h
@@ -62,10 +63,19 @@ SET(SOURCE
         src/Printer/Printer.cpp
         src/Printer/Printer.h
         src/Printer/StdoutPrinter.cpp
-        src/Printer/StdoutPrinter.h src/QL/Selector.cpp src/QL/Selector.h src/utilities.cpp src/QL/SelectResult.cpp src/QL/SelectResult.h src/Regex/Regex.cpp src/Regex/Regex.h)
+        src/Printer/StdoutPrinter.h
+        src/QL/Selector.cpp
+        src/QL/Selector.h
+        src/utilities.cpp
+        src/QL/SelectResult.cpp
+        src/QL/SelectResult.h
+        src/Regex/Regex.cpp
+        src/Regex/Regex.h
+        src/errorhandle.h
+        src/Parser/parsererror.h)
 
 
-SET(GTEST 1)
+SET(GTEST 0)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}

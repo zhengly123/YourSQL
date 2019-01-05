@@ -12,6 +12,8 @@
 #include <fstream>
 #include "../Parser/astree.h"
 #include "../QL/QL_PUBLIC.h"
+#include "../errorhandle.h"
+#include "../Parser/parsererror.h"
 using namespace std;
 
 class QL_INS : public :: testing :: Test
