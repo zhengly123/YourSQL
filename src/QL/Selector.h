@@ -76,6 +76,10 @@ public:
         return indexHandle;
     }
 
+    /**
+     * Check which index is used or none.
+     * @return If no index is used, return empty string.
+     */
     string getAttrNameWithIndex()
     {
         return attrWithIndex;
