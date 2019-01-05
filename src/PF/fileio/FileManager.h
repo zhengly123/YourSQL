@@ -102,6 +102,9 @@ public:
 	 * 返回:操作成功，返回0
 	 */
 	int closeFile(int fileID) {
+#ifdef OutputFileOperation
+		printf("DEBUG: Close                   fileID=%d\n", fileID);
+#endif
 		fm->setBit(fileID, 1);
 		int f = fd[fileID];
 		close(f);
@@ -125,10 +128,15 @@ public:
 	 * 返回:如果成功打开，在fileID中存储为该文件分配的id，返回true，否则返回false
 	 */
 	bool openFile(const char* name, int& fileID) {
-		fileID = fm->findLeftOne();
+//		fileID = fm->findLeftOne();
+		// reuse of fileID cause chaos of the hash of bpm which may not clear hash data
+		fileID = ++cntFileID;
 		fm->setBit(fileID, 0);
 		//cerr << "Openfile : " << fileID << endl;
 		_openFile(name, fileID);
+#ifdef OutputFileOperation
+		printf("DEBUG: Open Filename=%s, fileID=%d\n", name, fileID);
+#endif
 		return true;
 	}
 	int newType() {
@@ -146,5 +154,7 @@ public:
 	~FileManager() {
 		this->shutdown();
 	}
+private:
+	int cntFileID = 0;
 };
 #endif

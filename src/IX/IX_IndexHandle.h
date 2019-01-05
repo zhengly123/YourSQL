@@ -16,7 +16,13 @@ public:
     ~IX_IndexHandle ();                             // Destructor
     RC InsertEntry     (void *key, const RID &value);  // Insert new index entry
     /**
-     * Depending on your design, it may require some extra effort for scans to always return RIDs such that the corresponding attribute values are in increasing (actually nondecreasing) order. This property is not required in the project, however you may find it useful later on, e.g., if you decide to use index scans to produce a sorted relation. Note that one of the provided tests does exploit this property, but passing this test is not required.
+     * Depending on your design, it may require some extra effort for scans to
+     * always return RIDs such that the corresponding attribute values are in
+     * increasing (actually nondecreasing) order. This property is not required
+     * in the project, however you may find it useful later on, e.g., if you
+     * decide to use index scans to produce a sorted relation. Note that one
+     * of the provided tests does exploit this property, but passing this test
+     * is not required.
      * @param key
      * @param value
      * @return
@@ -34,6 +40,12 @@ public:
              IX_Manager &ixManager,
              int fileID,
              const char *fileName, int indexNo);
+
+    /**
+     * copy index header back to bpm, flush all thing and disable handler
+     * @return
+     */
+    RC close();
 
     void printBPT();
     void printLinearLeaves();
@@ -59,6 +71,7 @@ public:
     int getIndexNo(){return indexNo;}
 
 private:
+    bool isOpen;
     FileManager *fm;
     BufPageManager *bpm;
     IX_Manager *ixManager;

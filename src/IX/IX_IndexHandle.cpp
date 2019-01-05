@@ -15,9 +15,11 @@ RC IX_IndexHandle::open(FileManager &fm, BufPageManager &bpm,
     this->fileID = fileID;
     this->fileName = string(fileName);
     this->indexNo = indexNo;
+    this->isOpen = true;
     headBuffer = bpm.getPage(fileID, 0, headerBpmIndex);
     memcpy(&this->ixHeader, headBuffer, sizeof(this->ixHeader));
     bpm.access(headerBpmIndex);
+    bpm.markDirty(headerBpmIndex);
     return 0;
 }
 
@@ -98,7 +100,7 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
         BPlusTreeNode *childNode;
 
         childNode = (BPlusTreeNode*)bpm->getPage(fileID, childPage, childBufferIndex);
-        bpm->markDirty(bufferIndex);
+        bpm->markDirty(childBufferIndex);
         if (childNode->isLeaf)
         {
             if (cmp(node->getKey(childK), key, EQ_OP) == false)
@@ -378,9 +380,9 @@ RC IX_IndexHandle::DeleteEntry(void *key, const RID &value)
 
 RC IX_IndexHandle::ForcePages()
 {
-    memcpy(headBuffer, &this->ixHeader, sizeof(this->ixHeader));
-    bpm->markDirty(headerBpmIndex);
-    bpm->close(fileID);
+//    memcpy(headBuffer, &this->ixHeader, sizeof(this->ixHeader));
+//    bpm->markDirty(headerBpmIndex);
+//    bpm->close(fileID);
     return 0;
 }
 
@@ -540,14 +542,15 @@ void IX_IndexHandle::printDFS(const RID rid, int intend)
     }
 }
 
-IX_IndexHandle::IX_IndexHandle()
+IX_IndexHandle::IX_IndexHandle(): isOpen(false)
 {
 
 }
 
 IX_IndexHandle::~IX_IndexHandle()
 {
-
+    if (isOpen)
+        close();
 }
 
 void IX_IndexHandle::printLinearLeaves()
@@ -562,8 +565,8 @@ void IX_IndexHandle::printLinearLeaves()
         node = (BPlusTreeNode*)bpm->getPage(fileID, rid.GetPageNum(), bufferIndex);
         for (int i = 0; i < node->n; ++i)
             if (!node->rmFlag[i])
-                printf("(%d,%d;%d)->",node->chRIDs[i].GetPageNum(),node->chRIDs[i].GetSlotNum(),
-                       *((int *)node->getKey(i)));
+                printf("(%d,%d;%d,del=%d)->",node->chRIDs[i].GetPageNum(),node->chRIDs[i].GetSlotNum(),
+                       *((int *)node->getKey(i)), node->rmFlag[i]);
         rid=node->nextInList;
     }
     puts("");
@@ -597,5 +600,20 @@ RID IX_IndexHandle::getLeftestLeafDFS(RID rid) const
 int IX_IndexHandle::getAttrLength() const
 {
     return ixHeader.attrLength;
+}
+
+RC IX_IndexHandle::close()
+{
+    assert(isOpen);
+    BufType headerNewBuf;
+    int headerNewIndex;
+    headerNewBuf = bpm->getPage(fileID, 0, headerNewIndex);
+    memcpy(headerNewBuf, &this->ixHeader, sizeof(this->ixHeader));
+    bpm->markDirty(headerNewIndex);
+    this->fileID = -1;
+    this->fileName = "";
+    this->indexNo = -1;
+    this->isOpen = false;
+    return 0;
 }
 

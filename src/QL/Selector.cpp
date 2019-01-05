@@ -10,7 +10,7 @@
 Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
                    RelationMeta relmeta, vector<AttrInfo> attributes,
                    int nConditions, const Condition *conditions, RM_FileHandle SMhandle, bool interTable)
-        : dead(false), errorReason(0), errorIndex(0)
+        : dead(false), errorReason(0), errorIndex(0), enableIndex(false)
 {
 
     this->ixm = ixm;
@@ -54,37 +54,91 @@ Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
         dead=true;
         return;
     }
-    iterateOptimize();
+    iterateOptimize(relName, nConditions, conditions);
 }
 
-void Selector::iterateOptimize()
+void Selector::iterateOptimize(const char *relName, int nCondition, const Condition *conditions)
 {
-    void *data;
-    scan.OpenScan(handle,AttrType::INT, 0, 0, NO_OP, data);
+    assert(!enableIndex);
+    for (int i = 0; i < nCondition; ++i)
+    {
+        const Condition &cond = conditions[i];
+        // In multiple tables selection, check relName is necessary.
+        if ((!cond.lhsAttr.relName || strcmp(relName, cond.lhsAttr.relName) == 0) &&
+            !conditions[i].bRhsIsAttr)
+        {
+            const AttrInfo attrInfo = getAttr(cond.lhsAttr.attrName);
+            if (attrInfo.indexNum)
+            {
+                fprintf(stderr, "Debug: use index no %d\n", attrInfo.indexNum);
+                enableIndex = true;
+                attrWithIndex=string(attrInfo.attrName);
+                RC rc;
+                rc = ixm->OpenIndex(attrInfo.relName, attrInfo.indexNum, indexHandle);
+                assert(rc == 0);
+                rc = indexScan.OpenScan(indexHandle, cond.op, cond.rhsValue.data);
+                assert(rc == 0);
+#ifdef OutputLinearIndex
+                //debug
+                printf("DEBUG: iterateOptimize\n");
+                indexHandle.printLinearLeaves();
+#endif
+                break;
+            }
+        }
+    }
+    if (!enableIndex)
+    {
+        void *data = nullptr;
+        scan.OpenScan(handle, AttrType::INT, 0, 0, NO_OP, data);
+    }
 }
 
 int Selector::getNext(RM_Record &outRecord, RM_FileHandle *&outHandle)
 {
     assert(!dead);
     RM_Record record;
-    while (scan.GetNextRec(record) != RM_EOF)
+    if (!enableIndex)
     {
+        while (scan.GetNextRec(record) != RM_EOF)
+        {
 //        int i;
 //        for (int i = 0; i < conditions.size(); ++i)
 //        {
 //            if ()
 //        }
-        auto it=conditions.begin();
-        for (; it != conditions.end(); ++it)
-        {
-            if (!checkCondition(*it, record.GetData()))
-                break;
+            auto it=conditions.begin();
+            for (; it != conditions.end(); ++it)
+            {
+                if (!checkCondition(*it, record.GetData()))
+                    break;
+            }
+            if (it == conditions.end())
+            {
+                outRecord = record;
+                outHandle = &handle;
+                return 1;
+            }
         }
-        if (it == conditions.end())
+    } else
+    {
+        RID rid;
+        while (indexScan.GetNextEntry(rid) != IX_ITERATOR_TO_END)
         {
-            outRecord = record;
-            outHandle = &handle;
-            return 1;
+            handle.GetRec(rid, record);
+            auto it=conditions.begin();
+            for (; it != conditions.end(); ++it)
+            {
+                if (!checkCondition(*it, record.GetData()))
+                    break;
+            }
+            // need to close??
+            if (it == conditions.end())
+            {
+                outRecord = record;
+                outHandle = &handle;
+                return 1;
+            }
         }
     }
     dead = true;
@@ -186,7 +240,14 @@ bool Selector::checkCondition(Condition cond, void *data)
 
 Selector::~Selector()
 {
-    scan.CloseScan();
+    if (!enableIndex)
+    {
+        scan.CloseScan();
+    } else
+    {
+        indexScan.CloseScan();
+        ixm->CloseIndex(indexHandle);
+    }
     //rmm->CloseFile(handle);
 }
 

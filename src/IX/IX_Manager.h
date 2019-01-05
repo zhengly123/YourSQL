@@ -33,12 +33,12 @@ public:
                      int        indexNo);
     /**
      * 打开一个索引文件，返回对应的idl(valid).
-     * @param fileName
+     * @param relName
      * @param indexNo
      * @param indexHandle
      * @return
      */
-    RC OpenIndex    (const char *fileName,          // Open index
+    RC OpenIndex    (const char *relName,          // Open index
                      int        indexNo,
                      IX_IndexHandle &indexHandle);
     RC CloseIndex   (IX_IndexHandle &indexHandle);  // Close index

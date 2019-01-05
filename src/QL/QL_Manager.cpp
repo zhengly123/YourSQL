@@ -32,6 +32,9 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
               int           nOrders,         // # attrs in Order By clause
               const RelAttr ordAttrs[])  // conditions in Where clause
 {
+#ifdef OutputExcutedOperation
+    fprintf(stderr, "DEBUG: Select\n");
+#endif
     RC rc = 0;
     const bool SelectAllAttrs = (nSelAttrs == 0);
     std::vector<std::string> relVec;
@@ -256,6 +259,35 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
     handle.InsertRec(buffer, rid);
 
     // TODO: insert it into index!
+    for (int i = 0; i < attributes.size(); ++i)
+    {
+        const AttrInfo attr = attributes[i];
+        if (attr.indexNum)
+        {
+            IX_IndexHandle indexHandle;
+            RC rc;
+            rc = ixm->OpenIndex(relName, attr.indexNum, indexHandle);
+            assert(rc==0);
+            // Debug
+#ifdef OutputLinearIndex
+            indexHandle.printBPT();
+#endif
+            rc = indexHandle.InsertEntry(values[i].data, rid);
+#ifdef OutputLinearIndex
+            indexHandle.printBPT();
+#endif
+            assert(rc==0);
+
+#ifdef OutputLinearIndex
+            //debug
+            printf("DEBUG: iterateOptimize\n");
+
+            indexHandle.printLinearLeaves();
+#endif
+            ixm->CloseIndex(indexHandle);
+        }
+    }
+
     // rmm->CloseFile(handle);
 
     return 0;
@@ -266,6 +298,9 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
               int        nConditions,         // # conditions in Where clause
               const Condition conditions[])  // conditions in Where clause
 {
+#ifdef OutputExcutedOperation
+    fprintf(stderr, "DEBUG: Delete\n");
+#endif
     RelationMeta relmeta;
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     vector<AttrInfo> attributes;
@@ -274,7 +309,7 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
 //    {
 //        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
 //    }
-    Selector selector(ixm,rmm, relName, relmeta, attributes,
+    Selector selector(ixm, rmm, relName, relmeta, attributes,
             nConditions, conditions, smm->filehandleGet(relName));
     RM_Record record;
     RM_FileHandle *handle = nullptr;
@@ -285,6 +320,27 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
         record.GetRid(rid);
         handle->DeleteRec(rid);
         cnt++;
+        // TODO: delete it from index!
+        for (int i = 0; i < attributes.size(); ++i)
+        {
+            const AttrInfo attr = attributes[i];
+            if (attr.indexNum)
+            {
+                RC rc;
+                IX_IndexHandle *indexHandle;
+                rc = getIndexHandle(&indexHandle, relName, attr, selector);
+                assert(rc==0);
+                rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
+                assert(rc==0);
+                disposeHandle(indexHandle, attr, selector);
+                assert(rc==0);
+#ifdef OutputLinearIndex
+                //debug
+                printf("DEBUG: Delete\n");
+                indexHandle->printLinearLeaves();
+#endif
+            }
+        }
     }
     printf("INFO: delete cnt=%d\n", cnt);
     return 0;
@@ -296,6 +352,9 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
               int   nConditions,              // # conditions in Where clause
               const Condition conditions[])  // conditions in Where clause
 {
+#ifdef OutputExcutedOperation
+    fprintf(stderr, "DEBUG: Update\n");
+#endif
     RelationMeta relmeta;
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     vector<AttrInfo> attributes;
@@ -317,6 +376,23 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
         {
             const Condition &set=sets[i];
             AttrInfo attr=selector.getAttr(set.lhsAttr.attrName);
+
+            // Update index
+            if (attr.indexNum)
+            {
+                RC rc;
+                IX_IndexHandle *indexHandle;
+                rc = getIndexHandle(&indexHandle, relName, attr, selector);
+                assert(rc==0);
+
+                rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
+                assert(rc==0);
+                rc = indexHandle->InsertEntry(set.rhsValue.data, rid);
+                assert(rc==0);
+                disposeHandle(indexHandle, attr, selector);
+                assert(rc==0);
+            }
+
             if (set.rhsValue.type == AttrType::NULLTYPE)
             {
                 *(data + attr.nullOffset) = 1;
@@ -537,3 +613,33 @@ RC QL_Manager::getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr re
     return ret;
 }
 
+RC QL_Manager::getIndexHandle(IX_IndexHandle **indexHandle, const char *relName,
+                              const AttrInfo attr, Selector &selector)
+{
+
+    RC rc;
+    // 如果已经开启过，则用原来的
+    if (selector.getAttrNameWithIndex() == std::string(attr.attrName))
+    {
+        *indexHandle = &selector.getIndexHandle();
+    } else // otherwise create a new index handler
+    {
+        *indexHandle = new IX_IndexHandle();
+        rc = ixm->OpenIndex(relName, attr.indexNum, **indexHandle);
+        assert(rc == 0);
+    }
+    return 0;
+}
+
+RC QL_Manager::disposeHandle(IX_IndexHandle *indexHandle, const AttrInfo attr,
+                             Selector &selector)
+{
+    if (std::string(attr.attrName)!=selector.getAttrNameWithIndex())
+    {
+        RC rc;
+        rc = ixm->CloseIndex(*indexHandle);
+        delete indexHandle;
+        return rc;
+    }
+    return 0;
+}

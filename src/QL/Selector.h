@@ -27,6 +27,18 @@ public:
     int errorReason;
     int errorIndex;
 
+    /**
+     *
+     * @param ixm
+     * @param rmm
+     * @param relName
+     * @param relmeta
+     * @param attributes
+     * @param nConditions
+     * @param conditions
+     * @param interTable Whether select between mutliple table. It influence
+     * the check of conditions.
+     */
     Selector(IX_Manager *ixm,
              RM_Manager *rmm,
              const char *relName,
@@ -38,7 +50,7 @@ public:
              bool interTable = false
              );
     ~Selector();
-    void iterateOptimize();
+    void iterateOptimize(const char *relName, int nCondition, const Condition *conditions);
     /**
      * Check whether condition is legal.
      * @return return false if there are illegal sets, and set error indicator.
@@ -60,6 +72,26 @@ public:
      */
     AttrInfo getAttr(char *attr);
 //    void remove();
+
+    IX_IndexHandle &getIndexHandle()
+    {
+        return indexHandle;
+    }
+
+    /**
+     * Check which index is used or none.
+     * @return If no index is used, return empty string.
+     */
+    string getAttrNameWithIndex()
+    {
+        return attrWithIndex;
+    }
+
+    bool enableIndex;
+    IX_IndexScan indexScan;
+    IX_IndexHandle indexHandle;
+
+    string attrWithIndex;
 
 private:
     auto checkAttrExist(char *attrName);

@@ -52,7 +52,7 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
         return rc;
     }
     assert(rc==0);
-
+    // Check whether the value meet the condition
     while (!indexHandle->cmp(targetValue, key, compOp))
     {
         rc = indexHandle->nextValidEntry(scanRID, dataRID, key);

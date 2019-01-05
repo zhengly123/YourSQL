@@ -189,6 +189,7 @@ void SelectResult::print(int nSelAttrs, const RelAttr *selAttrs)
         }
         printer->Println();
     }
+    printer->Println();
 }
 
 RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAttr grp[], int nord, const RelAttr ord[])
@@ -212,20 +213,21 @@ RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAtt
     if(noAggregateFunc < natt && ngrp != noAggregateFunc) return QL_GROUPBYERR;
 
     // In order to permit no group collective operation, comment out the following
-//    if(ngrp == 0)
-//    {
-//        // No group : Normal Exit
-//        conlist.clear();
-//
-//        for(auto dataVec : dataList) conlist.push_back(dataVec);
-//    }
-//    else
+    //TODO: commenting out these codes violate correctness
+    if(ngrp == 0)
+    {
+        // No group : Normal Exit
+        conlist.clear();
+
+        for(auto dataVec : dataList) conlist.push_back(dataVec);
+    }
+    else
     {
         // Handle AVG
 
         int total = natt;
-        char* dataone = new char[4];
-        *(int*)dataone = 1;
+        char *dataone = new char[4];
+        *(int *) dataone = 1;
         char datazero = 0;
 
         vector<int> avgLink;
@@ -239,106 +241,112 @@ RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAtt
         for (int i = 0; i < natt; ++i)
             indexes.push_back(getRelAttrIndex(att[i]));
 
-        for(int i = 0; i < natt; ++ i)
-            if(att[i].op == AGGREGATE_AVG)
+        for (int i = 0; i < natt; ++i)
+            if (att[i].op == AGGREGATE_AVG)
             {
-                if(dataAttrInfos[indexes[i]].attrType != INT &&
-                   dataAttrInfos[indexes[i]].attrType != FLOAT) return QL_WRONGAVGTYPE;
+                if (dataAttrInfos[indexes[i]].attrType != INT &&
+                    dataAttrInfos[indexes[i]].attrType != FLOAT)
+                    return QL_WRONGAVGTYPE;
                 avgLink.push_back(total++);
-            }
-            else avgLink.push_back(0);
+            } else avgLink.push_back(0);
 
         conlist.clear();
         grplist.clear();
 
-        for(auto dataVec : dataList)
+        for (auto dataVec : dataList)
         {
             // add avg column
-            for(int i = natt; i < total; ++ i)
+            for (int i = natt; i < total; ++i)
                 dataVec.push_back(one);
 
             // check group by attrs
             vector<vector<char>> Grpvec = dataVec;
 
             // clear the non-aggregate func column
-            for(int i = 0; i < natt; ++ i) if(att[i].op != 0) Grpvec[indexes[i]].clear();
+            for (int i = 0; i < natt; ++i) if (att[i].op != 0) Grpvec[indexes[i]].clear();
 
             // find the data vector
             vector<vector<vector<char>>>::iterator it;
             it = std::find(grplist.begin(), grplist.end(), Grpvec);
 
-            if(it == grplist.end())
+            if (it == grplist.end())
             {
                 grplist.push_back(Grpvec);
                 conlist.push_back(dataVec);
-            }
-            else
+            } else
             {
                 int d = it - grplist.begin();
-                for(int i = 0; i < natt; ++ i)
+                for (int i = 0; i < natt; ++i)
                 {
                     int id = indexes[i];
-                    switch(att[i].op)
+                    switch (att[i].op)
                     {
-                        case AGGREGATE_SUM : Tadd(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType); break;
-                        case AGGREGATE_MAX : Tmax(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType); break;
-                        case AGGREGATE_MIN : Tmin(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType); break;
-                        case AGGREGATE_AVG : Tadd(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType);
-                                             Tadd(conlist[d][avgLink[i]].data(), dataVec[avgLink[i]].data(), INT); break;
-                        default: break;
+                        case AGGREGATE_SUM :
+                            Tadd(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType);
+                            break;
+                        case AGGREGATE_MAX :
+                            Tmax(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType);
+                            break;
+                        case AGGREGATE_MIN :
+                            Tmin(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType);
+                            break;
+                        case AGGREGATE_AVG :
+                            Tadd(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType);
+                            Tadd(conlist[d][avgLink[i]].data(), dataVec[avgLink[i]].data(), INT);
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
         }
 
         // Handle AVG
-        if(total > natt)
+        if (total > natt)
         {
-            char * resbuf = new char[4];
+            char *resbuf = new char[4];
             vector<char> newres;
 
-            for(int p = 0; p < conlist.size(); ++ p)
+            for (int p = 0; p < conlist.size(); ++p)
             {
-                for(int i = 0; i < natt; ++ i)
-                    if(att[i].op == AGGREGATE_AVG)
+                for (int i = 0; i < natt; ++i)
+                    if (att[i].op == AGGREGATE_AVG)
                     {
                         int j = indexes[i];
                         int k = avgLink[i];
-                        if(dataAttrInfos[j].attrType == INT)
+                        if (dataAttrInfos[j].attrType == INT)
                         {
-                            int a = *(int*)conlist[p][j].data();
-                            int b = *(int*)conlist[p][k].data();
-                            *(float*) resbuf = float(a) / float(b);
+                            int a = *(int *) conlist[p][j].data();
+                            int b = *(int *) conlist[p][k].data();
+                            *(float *) resbuf = float(a) / float(b);
 
                             newres.clear();
-                            for(int i = 0; i <= 3; ++ i) newres.push_back(resbuf[i]);
+                            for (int i = 0; i <= 3; ++i) newres.push_back(resbuf[i]);
                             newres.push_back(datazero);
 
                             conlist[p][j] = newres;
-                        }
-                        else if(dataAttrInfos[j].attrType == FLOAT)
+                        } else if (dataAttrInfos[j].attrType == FLOAT)
                         {
-                            float a = *(float*)conlist[p].data();
-                            float b = *(float*)conlist[p].data();
-                            *(float*) resbuf = a / b;
+                            float a = *(float *) conlist[p].data();
+                            float b = *(float *) conlist[p].data();
+                            *(float *) resbuf = a / b;
 
                             newres.clear();
-                            for(int i = 0; i <= 3; ++ i) newres.push_back(resbuf[i]);
+                            for (int i = 0; i <= 3; ++i) newres.push_back(resbuf[i]);
                             newres.push_back(datazero);
 
                             conlist[p][j] = newres;
-                        }
-                        else return QL_WRONGAVGTYPE;
+                        } else return QL_WRONGAVGTYPE;
                     }
 
                 // Remove Cnt Column
-                for(int i = natt; i < total; ++ i)
+                for (int i = natt; i < total; ++i)
                     conlist[p].pop_back();
             }
 
-            for(int i = 0; i < natt; ++ i)
-                if(att[i].op == AGGREGATE_AVG)
-                    if(dataAttrInfos[indexes[i]].attrType == INT)
+            for (int i = 0; i < natt; ++i)
+                if (att[i].op == AGGREGATE_AVG)
+                    if (dataAttrInfos[indexes[i]].attrType == INT)
                         dataAttrInfos[indexes[i]].attrType = FLOAT;
 
         }
