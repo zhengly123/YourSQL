@@ -82,6 +82,7 @@ void Selector::iterateOptimize(const char *relName, int nCondition, const Condit
                 printf("DEBUG: iterateOptimize\n");
                 indexHandle.printLinearLeaves();
 #endif
+                break;
             }
         }
     }

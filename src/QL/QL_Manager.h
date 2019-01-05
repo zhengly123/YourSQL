@@ -66,6 +66,27 @@ private:
     RC checkAttrLegal(const vector<AttrInfo> &attributes, const char *attrName);
     RC checkAttrLegal(const vector<AttrInfo> &attributes, const RelAttr relAttr);
     RC getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr relAttr);
+
+    /**
+     * Create or retrieve IndexHandle from selector.
+     * @param indexHandle
+     * @param relName
+     * @param attr
+     * @param selector
+     * @return
+     */
+    RC getIndexHandle(IX_IndexHandle **indexHandle, const char *relName,
+                      const AttrInfo attr, Selector &selector);
+
+    /**
+     * If indexHandle is created by getIndexHandle, close and release it.
+     * @param indexHandle
+     * @param attr
+     * @param selector
+     * @return
+     */
+    RC disposeHandle(IX_IndexHandle *indexHandle, const AttrInfo attr,
+                     Selector &selector);
 };
 
 #endif //YOURSQL_QL_MANAGER_H

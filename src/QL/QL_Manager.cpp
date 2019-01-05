@@ -297,13 +297,17 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
             if (attr.indexNum)
             {
                 RC rc;
-                IX_IndexHandle &indexHandle = selector.getIndexHandle();
-                rc = indexHandle.DeleteEntry((char *) record.GetData() + attr.offset, rid);
+                IX_IndexHandle *indexHandle;
+                rc = getIndexHandle(&indexHandle, relName, attr, selector);
+                assert(rc==0);
+                rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
+                assert(rc==0);
+                disposeHandle(indexHandle, attr, selector);
                 assert(rc==0);
 #ifdef OutputLinearIndex
                 //debug
                 printf("DEBUG: Delete\n");
-                indexHandle.printLinearLeaves();
+                indexHandle->printLinearLeaves();
 #endif
             }
         }
@@ -342,30 +346,21 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
         {
             const Condition &set=sets[i];
             AttrInfo attr=selector.getAttr(set.lhsAttr.attrName);
-            // TODO: change it from index!
+
+            // Update index
             if (attr.indexNum)
             {
                 RC rc;
                 IX_IndexHandle *indexHandle;
-                // 如果已经开启过，则用原来的
-                if (selector.getAttrNameWithIndex() == std::string(attr.attrName))
-                {
-                    indexHandle = &selector.getIndexHandle();
-                } else // otherwise create a new index handler
-                {
-                    indexHandle=new IX_IndexHandle();
-                    rc = ixm->OpenIndex(relName, attr.indexNum, *indexHandle);
-                    assert(rc==0);
-                }
+                rc = getIndexHandle(&indexHandle, relName, attr, selector);
+                assert(rc==0);
+
                 rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
                 assert(rc==0);
                 rc = indexHandle->InsertEntry(set.rhsValue.data, rid);
                 assert(rc==0);
-                if (selector.getAttrNameWithIndex() != std::string(attr.attrName))
-                {
-                    rc = ixm->CloseIndex(*indexHandle);
-                    assert(rc==0);
-                }
+                disposeHandle(indexHandle, attr, selector);
+                assert(rc==0);
             }
 
             if (set.rhsValue.type == AttrType::NULLTYPE)
@@ -587,3 +582,33 @@ RC QL_Manager::getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr re
     return ret;
 }
 
+RC QL_Manager::getIndexHandle(IX_IndexHandle **indexHandle, const char *relName,
+                              const AttrInfo attr, Selector &selector)
+{
+
+    RC rc;
+    // 如果已经开启过，则用原来的
+    if (selector.getAttrNameWithIndex() == std::string(attr.attrName))
+    {
+        *indexHandle = &selector.getIndexHandle();
+    } else // otherwise create a new index handler
+    {
+        *indexHandle = new IX_IndexHandle();
+        rc = ixm->OpenIndex(relName, attr.indexNum, **indexHandle);
+        assert(rc == 0);
+    }
+    return 0;
+}
+
+RC QL_Manager::disposeHandle(IX_IndexHandle *indexHandle, const AttrInfo attr,
+                             Selector &selector)
+{
+    if (std::string(attr.attrName)!=selector.getAttrNameWithIndex())
+    {
+        RC rc;
+        rc = ixm->CloseIndex(*indexHandle);
+        delete indexHandle;
+        return rc;
+    }
+    return 0;
+}
