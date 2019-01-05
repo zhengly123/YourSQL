@@ -65,7 +65,7 @@ SET(SOURCE
         src/Printer/StdoutPrinter.h src/QL/Selector.cpp src/QL/Selector.h src/utilities.cpp src/QL/SelectResult.cpp src/QL/SelectResult.h src/Regex/Regex.cpp src/Regex/Regex.h)
 
 
-SET(GTEST 1)
+#SET(GTEST 1)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}
@@ -83,8 +83,8 @@ else()
             src/RM_Test/test_scan.cpp
             src/testmain.cpp
             )
-    #add_compile_definitions(OutputExcutedOperation=OPEN)
-    #add_compile_definitions(OutputLinearIndex=OPEN)
+    add_compile_definitions(OutputExcutedOperation=OPEN)
+    add_compile_definitions(OutputLinearIndex=OPEN)
     #add_compile_definitions(OutputFileOperation=OPEN)
 endif()
 

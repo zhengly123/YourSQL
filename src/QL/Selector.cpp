@@ -71,6 +71,7 @@ void Selector::iterateOptimize(const char *relName, int nCondition, const Condit
             {
                 fprintf(stderr, "Debug: use index no %d\n", attrInfo.indexNum);
                 enableIndex = true;
+                attrWithIndex=string(attrInfo.attrName);
                 RC rc;
                 rc = ixm->OpenIndex(attrInfo.relName, attrInfo.indexNum, indexHandle);
                 assert(rc == 0);

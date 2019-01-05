@@ -298,7 +298,6 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
             {
                 RC rc;
                 IX_IndexHandle &indexHandle = selector.getIndexHandle();
-                assert(rc==0);
                 rc = indexHandle.DeleteEntry((char *) record.GetData() + attr.offset, rid);
                 assert(rc==0);
 #ifdef OutputLinearIndex
@@ -319,6 +318,9 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
               int   nConditions,              // # conditions in Where clause
               const Condition conditions[])  // conditions in Where clause
 {
+#ifdef OutputExcutedOperation
+    fprintf(stderr, "DEBUG: Update\n");
+#endif
     RelationMeta relmeta;
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     vector<AttrInfo> attributes;
@@ -343,15 +345,27 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
             // TODO: change it from index!
             if (attr.indexNum)
             {
-                IX_IndexHandle indexHandle;
                 RC rc;
-                rc = ixm->OpenIndex(relName, attr.indexNum, indexHandle);
+                IX_IndexHandle *indexHandle;
+                // 如果已经开启过，则用原来的
+                if (selector.getAttrNameWithIndex() == std::string(attr.attrName))
+                {
+                    indexHandle = &selector.getIndexHandle();
+                } else // otherwise create a new index handler
+                {
+                    indexHandle=new IX_IndexHandle();
+                    rc = ixm->OpenIndex(relName, attr.indexNum, *indexHandle);
+                    assert(rc==0);
+                }
+                rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
                 assert(rc==0);
-                rc = indexHandle.DeleteEntry((char *) record.GetData() + attr.offset, rid);
+                rc = indexHandle->InsertEntry(set.rhsValue.data, rid);
                 assert(rc==0);
-                rc = indexHandle.InsertEntry(set.rhsValue.data, rid);
-                assert(rc==0);
-                ixm->CloseIndex(indexHandle);
+                if (selector.getAttrNameWithIndex() != std::string(attr.attrName))
+                {
+                    rc = ixm->CloseIndex(*indexHandle);
+                    assert(rc==0);
+                }
             }
 
             if (set.rhsValue.type == AttrType::NULLTYPE)

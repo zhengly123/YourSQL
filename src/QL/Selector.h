@@ -75,9 +75,17 @@ public:
     {
         return indexHandle;
     }
+
+    string getAttrNameWithIndex()
+    {
+        return attrWithIndex;
+    }
+
     bool enableIndex;
     IX_IndexScan indexScan;
     IX_IndexHandle indexHandle;
+
+    string attrWithIndex;
 
 private:
     auto checkAttrExist(char *attrName);
