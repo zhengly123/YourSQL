@@ -108,6 +108,8 @@ public:
     vector<AttrInfo> TestReturnAttrs();
 
     RM_FileHandle filehandleGet(std::string relName);
+    IX_IndexHandle* indexhandleGet(std::string relName, int index);
+
 private:
     IX_Manager *ixm;
     RM_Manager *rmm;
@@ -129,7 +131,13 @@ private:
         return relName + std::string(".rel");
     }
 
+    string getFileNameWithIndex(std::string fileName, int indexNum)
+    {
+        return fileName + "." + to_string(indexNum) + ".i";
+    }
+
     std::map<std::string, RM_FileHandle> smFileHandle;
+    std::map<std::string, IX_IndexHandle*> ixIndexHandle;
 };
 
 #endif //YOURSQL_SM_MANAGER_H

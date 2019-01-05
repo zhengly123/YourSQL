@@ -18,6 +18,7 @@ public:
 //    SM_Manager *smm;
     IX_Manager *ixm;
     RM_Manager *rmm;
+    SM_Manager *smm;
     RelationMeta relmeta;
     vector<AttrInfo> attrs;
     vector<Condition> conditions;
@@ -41,6 +42,7 @@ public:
      */
     Selector(IX_Manager *ixm,
              RM_Manager *rmm,
+             SM_Manager *smm,
              const char *relName,
              RelationMeta relmeta,
              vector<AttrInfo> attributes,
@@ -73,11 +75,6 @@ public:
     AttrInfo getAttr(char *attr);
 //    void remove();
 
-    IX_IndexHandle &getIndexHandle()
-    {
-        return indexHandle;
-    }
-
     /**
      * Check which index is used or none.
      * @return If no index is used, return empty string.
@@ -89,7 +86,7 @@ public:
 
     bool enableIndex;
     IX_IndexScan indexScan;
-    IX_IndexHandle indexHandle;
+    IX_IndexHandle *indexHandle;
 
     string attrWithIndex;
 

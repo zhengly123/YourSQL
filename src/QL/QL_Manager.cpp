@@ -152,7 +152,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
             }
         }
 
-        Selector selector(ixm, rmm, relName, relmeta, attributes,
+        Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
                           nConditions, conditions, smm->filehandleGet(relName), true);
         RM_Record record;
 
@@ -229,7 +229,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
             attributes[primaryindex].offset, CompOp::EQ_OP, values[primaryindex].data);
         if(scanner.GetNextRec(record) != RM_EOF)
         {
-            rmm->CloseFile(handle);
+            // rmm->CloseFile(handle);
             return QL_PRIMARY_DUPLICATE;
         }
         scanner.CloseScan();
@@ -264,17 +264,19 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         const AttrInfo attr = attributes[i];
         if (attr.indexNum)
         {
-            IX_IndexHandle indexHandle;
+            IX_IndexHandle *indexHandle;
             RC rc;
-            rc = ixm->OpenIndex(relName, attr.indexNum, indexHandle);
-            assert(rc==0);
+            //rc = ixm->OpenIndex(relName, attr.indexNum, indexHandle);
+            indexHandle = smm->indexhandleGet(std::string(relName), attr.indexNum);
+
+            //assert(rc==0);
             // Debug
 #ifdef OutputLinearIndex
-            indexHandle.printBPT();
+            indexHandle->printBPT();
 #endif
-            rc = indexHandle.InsertEntry(values[i].data, rid);
+            rc = indexHandle->InsertEntry(values[i].data, rid);
 #ifdef OutputLinearIndex
-            indexHandle.printBPT();
+            indexHandle->printBPT();
 #endif
             assert(rc==0);
 
@@ -282,9 +284,9 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
             //debug
             printf("DEBUG: iterateOptimize\n");
 
-            indexHandle.printLinearLeaves();
+            indexHandle->printLinearLeaves();
 #endif
-            ixm->CloseIndex(indexHandle);
+            //ixm->CloseIndex(indexHandle);
         }
     }
 
@@ -309,7 +311,7 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
 //    {
 //        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
 //    }
-    Selector selector(ixm, rmm, relName, relmeta, attributes,
+    Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
             nConditions, conditions, smm->filehandleGet(relName));
     RM_Record record;
     RM_FileHandle *handle = nullptr;
@@ -328,12 +330,14 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
             {
                 RC rc;
                 IX_IndexHandle *indexHandle;
-                rc = getIndexHandle(&indexHandle, relName, attr, selector);
-                assert(rc==0);
+                //rc = getIndexHandle(&indexHandle, relName, attr, selector);
+                //assert(rc==0);
+                indexHandle = smm->indexhandleGet(std::string(relName), attr.indexNum);
+
                 rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
                 assert(rc==0);
-                disposeHandle(indexHandle, attr, selector);
-                assert(rc==0);
+                //disposeHandle(indexHandle, attr, selector);
+                //assert(rc==0);
 #ifdef OutputLinearIndex
                 //debug
                 printf("DEBUG: Delete\n");
@@ -359,7 +363,7 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     vector<AttrInfo> attributes;
     attributes = smm->attrGet(relName);
-    Selector selector(ixm,rmm, relName, relmeta, attributes,
+    Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
                       nConditions, conditions, smm->filehandleGet(relName));
     // check legality of SETs
     selector.checkSetLegal(nSet, sets);
@@ -382,15 +386,16 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
             {
                 RC rc;
                 IX_IndexHandle *indexHandle;
-                rc = getIndexHandle(&indexHandle, relName, attr, selector);
-                assert(rc==0);
+                //rc = getIndexHandle(&indexHandle, relName, attr, selector);
+                //assert(rc==0);
+                indexHandle = smm->indexhandleGet(std::string(relName), attr.indexNum);
 
                 rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
                 assert(rc==0);
                 rc = indexHandle->InsertEntry(set.rhsValue.data, rid);
                 assert(rc==0);
-                disposeHandle(indexHandle, attr, selector);
-                assert(rc==0);
+                //disposeHandle(indexHandle, attr, selector);
+                //assert(rc==0);
             }
 
             if (set.rhsValue.type == AttrType::NULLTYPE)
@@ -611,35 +616,4 @@ RC QL_Manager::getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr re
                                                           strcmp(t.attrName, relAttr.attrName) == 0;
                                                }));
     return ret;
-}
-
-RC QL_Manager::getIndexHandle(IX_IndexHandle **indexHandle, const char *relName,
-                              const AttrInfo attr, Selector &selector)
-{
-
-    RC rc;
-    // 如果已经开启过，则用原来的
-    if (selector.getAttrNameWithIndex() == std::string(attr.attrName))
-    {
-        *indexHandle = &selector.getIndexHandle();
-    } else // otherwise create a new index handler
-    {
-        *indexHandle = new IX_IndexHandle();
-        rc = ixm->OpenIndex(relName, attr.indexNum, **indexHandle);
-        assert(rc == 0);
-    }
-    return 0;
-}
-
-RC QL_Manager::disposeHandle(IX_IndexHandle *indexHandle, const AttrInfo attr,
-                             Selector &selector)
-{
-    if (std::string(attr.attrName)!=selector.getAttrNameWithIndex())
-    {
-        RC rc;
-        rc = ixm->CloseIndex(*indexHandle);
-        delete indexHandle;
-        return rc;
-    }
-    return 0;
 }

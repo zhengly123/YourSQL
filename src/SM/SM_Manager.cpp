@@ -71,6 +71,13 @@ RC SM_Manager :: CloseDb     ()
 
         for(auto it : smFileHandle) rmm->CloseFile(it.second);
         smFileHandle.clear();
+
+        for(auto it : ixIndexHandle)
+        {
+            ixm->CloseIndex(*it.second);
+            delete it.second;
+        }
+        ixIndexHandle.clear();
     } else{
         printer->getSS() << "No database is opened.\n";
     }
@@ -176,6 +183,7 @@ RC SM_Manager :: DropTable   (const char *relName)
         rc=relcatHandler.DeleteRec(rid);
         assert(rc==0);
         rc=rmm->DestroyFile(relToFileName(relName).data());
+        smFileHandle.erase(std::string(relName)); // erase from the sm handle
         assert(rc==0);
         break;
     }
@@ -249,9 +257,14 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
     RM_FileHandle tableHandle;
     RM_FileScan fileScan;
     RM_Record entryRecord;
-    IX_IndexHandle ixIndexHandle;
-    ixm->OpenIndex(relName, indexNum, ixIndexHandle);
-    rmm->OpenFile(relToFileName(relName).data(),tableHandle);
+    IX_IndexHandle *ixIndexHandle;
+
+    ixIndexHandle = indexhandleGet(std::string(relName), indexNum);
+    tableHandle = filehandleGet(std::string(relName));
+
+    //ixm->OpenIndex(relName, indexNum, ixIndexHandle);
+    //rmm->OpenFile(relToFileName(relName).data(),tableHandle);
+
     fileScan.OpenScan(tableHandle, attrInfo->attrType, attrInfo->attrLength,
                       attrInfo->offset, NO_OP, nullptr);
     // iterate entry and insert into indexHandler
@@ -261,17 +274,17 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
         RID rid;
         entryRecord.GetData(tempData);
         entryRecord.GetRid(rid);
-        ixIndexHandle.InsertEntry(tempData + attrInfo->offset, rid);
+        ixIndexHandle->InsertEntry(tempData + attrInfo->offset, rid);
     }
 #ifdef OutputLinearIndex
     //debug
-    ixIndexHandle.printLinearLeaves();
+    ixIndexHandle->printLinearLeaves();
 #endif
 
-    ixIndexHandle.ForcePages();
-    ixm->CloseIndex(ixIndexHandle);
+    ixIndexHandle->ForcePages();
+    //ixm->CloseIndex(ixIndexHandle);
     fileScan.CloseScan();
-    rmm->CloseFile(tableHandle);
+    //rmm->CloseFile(tableHandle);
     return 0;
 }
 
@@ -308,6 +321,8 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
 //                                  attrInfo->attrType, attrInfo->attrLength);
             indexNum = attrInfo->indexNum;
             rc = ixm->DestroyIndex(relName, indexNum);
+            ixIndexHandle.erase(getFileNameWithIndex(std::string(relName), indexNum));
+
             if (rc)
             {
                 cerr << "Destory index error: " << rc << endl;
@@ -650,6 +665,24 @@ RM_FileHandle SM_Manager::filehandleGet(std::string relName)
         RM_FileHandle newhandle;
         rmm->OpenFile(relToFileName(relName).data(), newhandle);
         smFileHandle.insert(std::make_pair(relName, newhandle));
+        return newhandle;
+    }
+
+    return it->second;
+}
+
+IX_IndexHandle* SM_Manager::indexhandleGet(std::string relName, int index)
+{
+    std::string indexName = getFileNameWithIndex(relName, index);
+
+    auto it = ixIndexHandle.find(indexName);
+
+    if(it == ixIndexHandle.end())
+    {
+        IX_IndexHandle *newhandle;
+        newhandle = new IX_IndexHandle();
+        ixm->OpenIndex(relName.c_str(), index, *newhandle);
+        ixIndexHandle.insert(std::make_pair(indexName, newhandle));
         return newhandle;
     }
 

@@ -42,12 +42,13 @@ public:
                      int        indexNo,
                      IX_IndexHandle &indexHandle);
     RC CloseIndex   (IX_IndexHandle &indexHandle);  // Close index
+
+    string getFileNameWithIndex(const char* fileName, int indexNum);
 private:
     FileManager &fm;
     BufPageManager  &bpm;
     map<pair<string, int>, int> openedFile;
 
-    string getFileNameWithIndex(const char* fileName, int indexNum);
 };
 
 #endif //YOURSQL_IX_MANAGER_H

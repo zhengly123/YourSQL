@@ -115,7 +115,7 @@ RC IX_Manager::DestroyIndex(const char *relName, int indexNo)
 //    fm.closeFile(fileID);
     if (openedFile.count(make_pair(string(relName), indexNo)))
     {
-        return IX_INDEX_OPENED;
+//        return IX_INDEX_OPENED; ???
     }
     //pf system 中并没有提供这样的接口，需要新增加这个API来删除文件
     // following codes delete the file directly

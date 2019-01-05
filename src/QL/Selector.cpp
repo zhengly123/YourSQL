@@ -7,7 +7,7 @@
 #include "Selector.h"
 #include "QL_PUBLIC.h"
 
-Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
+Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, SM_Manager *smm, const char *relName,
                    RelationMeta relmeta, vector<AttrInfo> attributes,
                    int nConditions, const Condition *conditions, RM_FileHandle SMhandle, bool interTable)
         : dead(false), errorReason(0), errorIndex(0), enableIndex(false)
@@ -15,6 +15,7 @@ Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
 
     this->ixm = ixm;
     this->rmm = rmm;
+    this->smm = smm;
     this->relmeta = relmeta;
     this->attrs = attributes;
     for (int i = 0; i < nConditions; ++i)
@@ -74,14 +75,15 @@ void Selector::iterateOptimize(const char *relName, int nCondition, const Condit
                 enableIndex = true;
                 attrWithIndex=string(attrInfo.attrName);
                 RC rc;
-                rc = ixm->OpenIndex(attrInfo.relName, attrInfo.indexNum, indexHandle);
-                assert(rc == 0);
-                rc = indexScan.OpenScan(indexHandle, cond.op, cond.rhsValue.data);
+                //rc = ixm->OpenIndex(attrInfo.relName, attrInfo.indexNum, indexHandle);
+                //assert(rc == 0);
+                indexHandle = smm->indexhandleGet(std::string(attrInfo.relName), attrInfo.indexNum);
+                rc = indexScan.OpenScan(*indexHandle, cond.op, cond.rhsValue.data);
                 assert(rc == 0);
 #ifdef OutputLinearIndex
                 //debug
                 printf("DEBUG: iterateOptimize\n");
-                indexHandle.printLinearLeaves();
+                indexHandle->printLinearLeaves();
 #endif
                 break;
             }
@@ -246,7 +248,7 @@ Selector::~Selector()
     } else
     {
         indexScan.CloseScan();
-        ixm->CloseIndex(indexHandle);
+        //ixm->CloseIndex(indexHandle);
     }
     //rmm->CloseFile(handle);
 }

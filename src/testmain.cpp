@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, printer); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
 
-    //freopen("dataset_small/restaurant.sql", "r", stdin);
+    freopen("QL_INDEX_DELETE.in", "r", stdin);
 
     int rc;
     for(;;)

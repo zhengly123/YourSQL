@@ -684,29 +684,29 @@ TEST_F(QL_StringCmp, LIKE_FUNC_1)
 //    check(fin, os);
 //}
 
-//TEST_F(QL_StringCmp, QL_INDEX_DELETE)
-//{
-//    freopen("../src/gtestcase/QL_INDEX_DELETE.in","r",stdin);
-//    auto os = exec();
-//    ifstream fin("../src/gtestcase/QL_INDEX_DELETE.ans");
-//    check(fin, os);
-//}
+TEST_F(QL_StringCmp, QL_INDEX_DELETE)
+{
+    freopen("../src/gtestcase/QL_INDEX_DELETE.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_INDEX_DELETE.ans");
+    check(fin, os);
+}
 
-//TEST_F(QL_StringCmp, QL_INDEX_INSERT)
-//{
-//    freopen("../src/gtestcase/QL_INDEX_INSERT.in","r",stdin);
-//    auto os = exec();
-//    ifstream fin("../src/gtestcase/QL_INDEX_INSERT.ans");
-//    check(fin, os);
-//}
+TEST_F(QL_StringCmp, QL_INDEX_INSERT)
+{
+    freopen("../src/gtestcase/QL_INDEX_INSERT.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_INDEX_INSERT.ans");
+    check(fin, os);
+}
 
-//TEST_F(QL_StringCmp, QL_INDEX_UPDATE)
-//{
-//    freopen("../src/gtestcase/QL_INDEX_UPDATE.in","r",stdin);
-//    auto os = exec();
-//    ifstream fin("../src/gtestcase/QL_INDEX_UPDATE.ans");
-//    check(fin, os);
-//}
+TEST_F(QL_StringCmp, QL_INDEX_UPDATE)
+{
+    freopen("../src/gtestcase/QL_INDEX_UPDATE.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_INDEX_UPDATE.ans");
+    check(fin, os);
+}
 
 TEST_F(QL_StringCmp, ForeignKeyTest_1)
 {
