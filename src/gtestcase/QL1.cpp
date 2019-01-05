@@ -623,3 +623,45 @@ TEST_F(QL_StringCmp, LIKE_FUNC_1)
     check(fin, os);
 }
 
+// SUM without Group cannot be operated
+//TEST_F(QL_StringCmp, MASSIVE_SUM)
+//{
+//    freopen("../src/gtestcase/QL_INSERT_6000.in","r",stdin);
+//    auto os = exec();
+////    ifstream fin("../src/gtestcase/QL_INSERT_6000.ans");
+//    ifstream fin("../src/gtestcase/QL_INSERT_6000.ans");
+//    check(fin, os);
+//}
+
+//TEST_F(QL_StringCmp, temp)
+//{
+//    freopen("../src/gtestcase/in.txt","r",stdin);
+//    auto os = exec();
+//    ifstream fin("../src/gtestcase/ans.txt");
+//    check(fin, os);
+//}
+
+//
+//TEST_F(QL_StringCmp, MASSIVE_SUM_15000)
+//{
+//    freopen("../src/gtestcase/QL_INSERT_15000.in","r",stdin);
+//    auto os = exec();
+//    ifstream fin("../src/gtestcase/QL_INSERT_15000.ans");
+//    check(fin, os);
+//}
+
+//TEST_F(QL_StringCmp, MASSIVE_INDEX_DELETE)
+//{
+//    freopen("../src/gtestcase/QL_INDEX_DELETE.in","r",stdin);
+//    auto os = exec();
+//    ifstream fin("../src/gtestcase/QL_INDEX_DELETE.ans");
+//    check(fin, os);
+//}
+//
+//TEST_F(QL_StringCmp, MASSIVE_INDEX_INSERT)
+//{
+//    freopen("../src/gtestcase/QL_INDEX_INSERT.in","r",stdin);
+//    auto os = exec();
+//    ifstream fin("../src/gtestcase/QL_INDEX_INSERT.ans");
+//    check(fin, os);
+//}
