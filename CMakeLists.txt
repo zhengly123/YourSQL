@@ -83,6 +83,9 @@ else()
             src/RM_Test/test_scan.cpp
             src/testmain.cpp
             )
+    #add_compile_definitions(OutputExcutedOperation=OPEN)
+    #add_compile_definitions(OutputLinearIndex=OPEN)
+    #add_compile_definitions(OutputFileOperation=OPEN)
 endif()
 
 add_executable(YourSQL

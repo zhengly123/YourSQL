@@ -235,7 +235,7 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
     fileScan.OpenScan(tableHandle, attrInfo->attrType, attrInfo->attrLength,
                       attrInfo->offset, NO_OP, nullptr);
     // iterate entry and insert into indexHandler
-    while (attrScan.GetNextRec(entryRecord) != RM_EOF)
+    while (fileScan.GetNextRec(entryRecord) != RM_EOF)
     {
         char *tempData;
         RID rid;
@@ -243,9 +243,15 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
         entryRecord.GetRid(rid);
         ixIndexHandle.InsertEntry(tempData + attrInfo->offset, rid);
     }
+#ifdef OutputLinearIndex
+    //debug
+    ixIndexHandle.printLinearLeaves();
+#endif
+
     ixIndexHandle.ForcePages();
     ixm->CloseIndex(ixIndexHandle);
     fileScan.CloseScan();
+    rmm->CloseFile(tableHandle);
     return 0;
 }
 

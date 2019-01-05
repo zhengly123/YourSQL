@@ -12,6 +12,8 @@
 int main(int argc, char *argv[])
 {
 
+//    ix_test();
+//    return 0;
     Printer *printer = new StdoutPrinter;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, printer); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
 
-    //freopen("avgtest.txt", "r", stdin);
+    freopen("../src/gtestcase/in.txt", "r", stdin);
 
     int rc;
     for(;;)
@@ -28,7 +30,11 @@ int main(int argc, char *argv[])
         rc = treeparser(smManager, qlManager, 0);
         if(rc == PARSEREXIT) break;
 
-        if(rc != 0) printf("ERROR.\n");
+        if(rc != 0)
+        {
+            printf("ERROR. rc=%d\n", rc);
+            fprintf(stderr, "ERROR. rc=%d\n", rc);
+        }
         //else printf("NORMAL.\n");
         //EXPECT_EQ(rc, 0);
     }

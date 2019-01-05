@@ -20,6 +20,8 @@ IX_Manager::~IX_Manager()
 
 RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType, int attrLength)
 {
+    // 0 should not be a index num
+    assert(indexNo>0);
     if (indexNo<0)
     {
         return IX_INVALID_INDEXNO;
@@ -58,22 +60,22 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
     return 0;
 }
 
-RC IX_Manager::OpenIndex(const char *fileName, int indexNo, IX_IndexHandle &indexHandle)
+RC IX_Manager::OpenIndex(const char *relName, int indexNo, IX_IndexHandle &indexHandle)
 {
     int fileID;
-    string rankFileName = getFileNameWithIndex(fileName, indexNo);
+    string rankFileName = getFileNameWithIndex(relName, indexNo);
     //TODO: file not exist test
     fm.openFile(rankFileName.data(), fileID);
 
     // if index has been already opened
-    if (openedFile.count(make_pair(string(fileName), indexNo)))
+    if (openedFile.count(make_pair(string(relName), indexNo)))
     {
         return IX_INDEX_OPENED;
     }
-    openedFile[make_pair(string(fileName), indexNo)]= fileID;
+    openedFile[make_pair(string(relName), indexNo)]= fileID;
 
     // Set the necessary message to fileHandle
-    indexHandle.open(fm, bpm, *this, fileID, fileName, indexNo);
+    indexHandle.open(fm, bpm, *this, fileID, relName, indexNo);
 
     return 0;
 }
@@ -83,8 +85,13 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
     int fileID;
     indexHandle.getFileID(fileID);
     openedFile.erase(make_pair(indexHandle.getFileName(), indexHandle.getIndexNo()));
+    indexHandle.close();
     bpm.close(fileID);
     fm.closeFile(fileID);
+//    int index;
+//    bpm.getPage(2, 0, index);
+    int hashresult = 0;
+    hashresult = bpm.test(2, 0);
     return 0;
 }
 
