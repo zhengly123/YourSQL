@@ -91,6 +91,17 @@ public:
 			return b;
 		}
 	}
+	/**
+	 * Test bug of hash which result in file,page-index map incorrect
+	 * @param fileID
+	 * @param pageID
+	 * @return
+	 */
+	int test(int fileID,int pageID)
+	{
+		int h =  hash->findIndex(fileID, pageID);
+		return h;
+	}
 	/*
 	 * @函数名access
 	 * @参数index:缓存页面数组中的下标，用来表示一个缓存页面
