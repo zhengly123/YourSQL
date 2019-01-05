@@ -39,6 +39,7 @@ const std::string smerror[] =
                 "SM_CLOSE",
                 "SM_FOREIGN_NOTFOUND",
                 "SM_FOREIGN_NOTPRIMARY",
+                "SM_FOREIGN_TYPEMISMATCH",
                 "SM_SYSCALL_ERROR",
         };
 
@@ -65,6 +66,8 @@ const std::string pserror[] =
                 "PASERR_MULTIPLE_PRIMARY",
                 "PASERR_PRIMARY_NOTFOUND",
                 "PASERR_ATTR_TOOLONG",
+                "PASERR_FOREIGN_NOTFOUND",
+                "PASERR_FOREIGN_MULTIPLE",
         };
 
 static std::string errorGet(int rc)

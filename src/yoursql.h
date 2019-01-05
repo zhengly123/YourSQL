@@ -25,8 +25,6 @@ const int AGGREGATE_MAX = AGGREGATE_MIN + 1;
 const int ORD_INC = 1;
 const int ORD_DEC = ORD_INC + 1;
 
-
-
 enum CondType {COND_NORMAL, COND_ISNULL, COND_NOTNULL};
 enum AttrType {INT, FLOAT, STRING, DATETYPE, VARCHR, NULLTYPE, ERRTYPE};
 enum CompOp {EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP, NO_OP, LK_OP, UKL_OP};

@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, printer); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
 
-    //freopen("avgtest.txt", "r", stdin);
+    //freopen("dataset_small/restaurant.sql", "r", stdin);
 
     int rc;
     for(;;)
@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
         //EXPECT_EQ(rc, 0);
 
         if(rc > 0) printf("%s\n", errorGet(rc).c_str());
+        if(rc == 0) printf("NORMAL.\n");
     }
 
     //cout << printer->getSS().str();

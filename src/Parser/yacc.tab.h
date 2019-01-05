@@ -96,9 +96,10 @@
      QMAX = 312,
      QAVG = 313,
      QSUM = 314,
-     ORDERBY = 315,
-     GROUPBY = 316,
-     ASC = 317
+     QCHAR = 315,
+     ORDERBY = 316,
+     GROUPBY = 317,
+     ASC = 318
    };
 #endif
 /* Tokens.  */
@@ -159,9 +160,10 @@
 #define QMAX 312
 #define QAVG 313
 #define QSUM 314
-#define ORDERBY 315
-#define GROUPBY 316
-#define ASC 317
+#define QCHAR 315
+#define ORDERBY 316
+#define GROUPBY 317
+#define ASC 318
 
 
 

@@ -201,7 +201,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         else if(curAttr.attrType != values[i].type) return QL_TYPEUNMATCHED;
 
         //TODO: MAXNAME是最大的表名字、属性名字？
-        if(values[i].type == STRING && strlen((char*)values[i].data) > MAXNAME) return QL_STRTOOLONG;
+        if(values[i].type == STRING && strlen((char*)values[i].data) >= curAttr.attrLength) return QL_STRTOOLONG;
     }
 
     handle = smm->filehandleGet(std::string(relName));
@@ -235,8 +235,13 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
     for(int i = 0; i < nValues; ++ i)
     {
         if(values[i].type != NULLTYPE)
-            memcpy(buffer + attributes[i].offset, values[i].data, attributes[i].attrLength),
+        {
+            if(values[i].type == STRING)
+                strcpy(buffer + attributes[i].offset, (char*) values[i].data);
+            else
+                memcpy(buffer + attributes[i].offset, values[i].data, attributes[i].attrLength);
             *(buffer + ifnull + i) = 0; // null flag set
+        }
         else
             *(buffer + ifnull + i) = 1; // null flag set
     }

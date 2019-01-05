@@ -1,6 +1,7 @@
 create database db1;
 use db1;
 create table tb1 (col1 int, col2 int, primary key(col1, col2));
+create table tb1 (col1 int, col2 int, primary key(col1), primary key(col2));
 close;
 drop database db1;
 exit; 

@@ -676,6 +676,15 @@ TEST_F(QL_StringCmp, ForeignKeyTest_2)
     check(fin, os);
 }
 
+TEST_F(QL_StringCmp, RelAuto)
+{
+    printf("\nTesting : Auto Relation Completion. \n");
+    freopen("../src/gtestcase/QL_relauto.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_relauto.ans");
+    check(fin, os);
+}
+
 class QL_PRIMARY : public :: testing :: Test
 {
 protected:
@@ -719,7 +728,7 @@ TEST_F(QL_PRIMARY, PK_MULTIPLE)
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
     Accept(smManager, qlManager, 0, 2);
-    Accept(smManager, qlManager, PASERR_MULTIPLE_PRIMARY, 1);
+    Accept(smManager, qlManager, PASERR_MULTIPLE_PRIMARY, 2);
     Accept(smManager, qlManager, 0, 200);
 
 }
@@ -756,9 +765,7 @@ TEST_F(QL_PRIMARY, PK_ATTRTOOLONG)
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
     Accept(smManager, qlManager, 0, 2);
-    Accept(smManager, qlManager, PASERR_ATTR_TOOLONG, 2);
-    Accept(smManager, qlManager, PASERR_PRIMARY_NOTFOUND, 1);
-    Accept(smManager, qlManager, PASERR_ATTR_TOOLONG, 1);
+    Accept(smManager, qlManager, PASERR_ATTR_TOOLONG, 4);
     Accept(smManager, qlManager, 0, 200);
 }
 
@@ -775,8 +782,8 @@ TEST_F(QL_PRIMARY, FK_SAMEATTR)
     SM_Manager smManager(ixManager, rmManager, &printer);
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
-    Accept(smManager, qlManager, 0, 3);
-    Accept(smManager, qlManager, SM_SAME_NAME_ATTR, 1);
+    Accept(smManager, qlManager, 0, 4);
+    Accept(smManager, qlManager, PASERR_FOREIGN_MULTIPLE, 1);
     Accept(smManager, qlManager, 0, 200);
 }
 
@@ -784,7 +791,7 @@ TEST_F(QL_PRIMARY, FK_SAMEATTR)
 TEST_F(QL_PRIMARY, FK_NOTFOUND)
 {
     printf("\nTesting : Foreign Key Not Found error. \n");
-    freopen("../src/gtestcase/Primarytest/FK_notfound1.txt", "r" , stdin);
+    freopen("../src/gtestcase/Primarytest/FK_notfound.txt", "r" , stdin);
 
     StdoutPrinter printer;
     FileManager* fm = new FileManager();
@@ -795,7 +802,26 @@ TEST_F(QL_PRIMARY, FK_NOTFOUND)
     QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
 
     Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, PASERR_FOREIGN_NOTFOUND, 1);
     Accept(smManager, qlManager, SM_FOREIGN_NOTFOUND, 2);
+    Accept(smManager, qlManager, 0, 200);
+}
+
+TEST_F(QL_PRIMARY, FK_NOTPRIMARY)
+{
+    printf("\nTesting : Foreign Key not related to Primary Key. \n");
+    freopen("../src/gtestcase/Primarytest/FK_notprimary.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, SM_FOREIGN_NOTPRIMARY, 1);
     Accept(smManager, qlManager, 0, 200);
 }
 

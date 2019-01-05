@@ -40,6 +40,7 @@ void orderparser(icol cl, RelAttr * rel);
 void orderlistparser(std::list<icol> ordlist, struct RelAttr * rel);
 void selectorparser(isel sl, struct RelAttr * rel);
 
+int appendRel(char* p, const char* q);
 
 void tableparser(std::list<std::string> table);
 AttrType typeparser(itype ty);

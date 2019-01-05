@@ -10,7 +10,7 @@
 struct itype
 {
     int id;
-    int value_int;
+    int length;
 };
 
 struct ivalue

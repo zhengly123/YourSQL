@@ -86,11 +86,12 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
 
     if (relExist(std::string(relName)))
     {
-        printer->getSS()<<"Same name relation exists\n";
+        // printer->getSS()<<"Same name relation exists\n";
         return SM_TABLE_EXIST;
     }
 
-    // Resolve Foreign Key First : Get their attrType & attrLength
+    // Resolve Foreign Key First : Assert their attrType & attrLength
+
     for(int i=0;i<attrCount;++i)
         if(attributes[i].isForeign)
         {
@@ -100,8 +101,8 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
             std::string attrName(attributes[i].foreignName);
             if(attrGet(std::make_pair(relName, attrName), &atr)) return SM_FOREIGN_NOTFOUND;
             if(!(atr.flag & 2)) return SM_FOREIGN_NOTPRIMARY;
-            attributes[i].attrType = atr.attrType;
-            attributes[i].attrLength = atr.attrLength;
+            if(attributes[i].attrType != atr.attrType) return SM_FOREIGN_TYPEMISMATCH;
+            if(attributes[i].attrLength != atr.attrLength) return SM_FOREIGN_TYPEMISMATCH;
         }
 
 

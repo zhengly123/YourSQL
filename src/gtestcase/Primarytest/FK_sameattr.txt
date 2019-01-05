@@ -1,7 +1,8 @@
 create database db1;
 use db1;
 create table tb1 (col1 int, col2 int, primary key(col2));
-create table tb2 (col1 int, col2 int, foreign key(col2) references tb1(col2));
+create table tb2 (cola int, colb int, primary key(cola));
+create table tb3 (col1 int, col2 int, foreign key(col2) references tb1(col2), foreign key(col2) references tb2(cola));
 close;
 drop database db1;
 exit;

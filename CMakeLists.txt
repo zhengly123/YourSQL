@@ -75,7 +75,7 @@ SET(SOURCE
         src/Parser/parsererror.h)
 
 
-SET(GTEST 0)
+SET(GTEST 1)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}
