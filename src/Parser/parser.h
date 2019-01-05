@@ -5,11 +5,12 @@
 #include <iostream>
 #include <stdio.h>
 #include <list>
+#include "../errorhandle.h"
 
 struct itype
 {
     int id;
-    int value_int;
+    int length;
 };
 
 struct ivalue
@@ -174,5 +175,7 @@ const int AGG_AVG = AGG_SUM + 1;
 
 const int ORDER_BY_INC = AGG_AVG + 1;
 const int ORDER_BY_DEC = ORDER_BY_INC + 1;
+
+
 
 #endif

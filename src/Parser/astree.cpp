@@ -5,6 +5,7 @@
 #include <cstring>
 #include "astree.h"
 #include "yacc.tab.cpp"
+#include "parsererror.h"
 
 void tester(int ident, std::string str)
 {
@@ -38,23 +39,6 @@ int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush)
 
         topl = &toplevel;
 
-        // field list check
-        // fieldlistparser(topl->field_list);
-
-        // value list check
-        // valuelistsparser(topl->value_lists);
-
-        // set clause list check
-        // setclauselistparser(topl->setcl_list);
-
-        // selector check
-        // selectorparser(topl->sel);
-
-        // where clause check
-        // wherelistparser(topl->where_list)
-
-        // std::cerr << "Before Parse ... " << endl;
-
         for(std::list<istmt>::iterator it = topl->stmt_list.begin(); it != topl->stmt_list.end(); ++ it)
         {
             int rc = stmtparser(smm, qlm, *it);
@@ -77,14 +61,13 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
     int lend;
     Condition * condi, * conds, *condw, *condwr;
     RelAttr *selist, *ordlist, *grplist;
-    int rc;
+    int flag, rc;
+    std::string relName;
 
     switch (st.id) {
 
         case SHOW_DB :
-            //std::cerr << "[Stmt] show databases" << std::endl;
-            // TODO: smm.showDatabases();
-//            smm.PrintTables();
+
             break;
 
         case CREATE_DB :
@@ -120,8 +103,13 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
             atrv = new AttrInfo[len];
             memset(atrv, 0, sizeof(AttrInfo) * len);
-            fieldlistparser(st.field_list, atrv, cnt);
-            smm.CreateTable(st.tbName.c_str(), cnt, atrv);
+
+            if(rc = fieldlistparser(st.field_list, atrv, cnt))
+                {delete[] atrv; return rc;}
+
+            if(rc = smm.CreateTable(st.tbName.c_str(), cnt, atrv))
+                {delete[] atrv; return rc;}
+
             delete[] atrv;
 
             break;
@@ -143,11 +131,14 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 len = (*it).size();
                 vali = new Value[len];
                 memset(vali, 0, sizeof(Value) * len);
-                if(rc = valuelistparser(*it, vali)) return rc;
+                rc = valuelistparser(*it, vali);
+                //if(rc) return rc;
                 rc = qlm.Insert(st.tbName.c_str(), len, vali);
                 delete[] vali;
-                if(rc) return rc;
+                //if(rc) return rc;
             }
+
+            if(rc) return rc;
 
             break;
 
@@ -157,8 +148,23 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             condi = new Condition[lend];
             memset(condi, 0, sizeof(Condition) * lend);
             wherelistparser(st.where_list, condi);
-            qlm.Delete(st.tbName.c_str(), lend, condi);
+
+            relName = st.tbName;
+            flag = 1;
+            rc = 0;
+
+            for(int i = 0; i < lend; ++ i)
+            {
+                if(rc = appendRel(condi[i].lhsAttr.relName, relName.c_str())) break;
+                if(condi[i].bRhsIsAttr) if(rc = appendRel(condi[i].rhsAttr.relName, relName.c_str())) break;
+            }
+            if(rc) flag = 0;
+
+            if(flag) rc = qlm.Delete(st.tbName.c_str(), lend, condi);
+
             delete[] condi;
+
+            if(rc) return rc;
 
             break;
 
@@ -174,10 +180,30 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             memset(condw, 0, sizeof(Condition) * lenw);
             wherelistparser(st.where_list, condw);
 
-            qlm.Update(st.tbName.c_str(), lens, conds, lenw, condw);
+            relName = st.tbName;
+            flag = 1;
+            rc = 0;
+
+            for(int i = 0; i < lens; ++ i)
+            {
+                if(rc = appendRel(conds[i].lhsAttr.relName, relName.c_str())) break;
+                if(conds[i].bRhsIsAttr) if(rc = appendRel(conds[i].rhsAttr.relName, relName.c_str())) break;
+            }
+            if(rc) flag = 0;
+
+            for(int i = 0; i < lenw; ++ i)
+            {
+                if(rc = appendRel(condw[i].lhsAttr.relName, relName.c_str())) break;
+                if(condw[i].bRhsIsAttr) if(rc = appendRel(condw[i].rhsAttr.relName, relName.c_str())) break;
+            }
+            if(rc) flag = 0;
+
+            if(flag) rc = qlm.Update(st.tbName.c_str(), lens, conds, lenw, condw);
 
             delete[] conds;
             delete[] condw;
+
+            if(rc) return rc;
 
             break;
 
@@ -201,20 +227,33 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             ordlist = new RelAttr[leno];
             orderlistparser(st.order_list, ordlist);
 
-            /*
-            for(int p = 0; p < lenwr; ++ p)
-                if(condwr[p].op == CompOp::LK_OP)
-                    printf("Detect : %s LIKE %s\n", condwr[p].lhsAttr.attrName, (char*)condwr[p].rhsValue.data);
-                else if(condwr[p].op == CompOp::UKL_OP)
-                    printf("Detect : %s NOT LIKE %s\n", condwr[p].lhsAttr.attrName, (char*)condwr[p].rhsValue.data);
-            */
+            flag = 1;
+            rc = 0;
 
-            if(rc = qlm.Select(lensc, selist, st.table_list, lenwr, condwr, leng, grplist, leno, ordlist))
-                return rc;
+            if(st.table_list.size() == 1) // only have one table to select
+            {
+                relName = st.table_list.front();
+                for(int i = 0; i < lensc; ++ i) if(rc = appendRel(selist[i].relName, relName.c_str())) break;
+                if(rc) flag = 0;
+                for(int i = 0; i < lenwr; ++ i)
+                {
+                    if(rc = appendRel(condwr[i].lhsAttr.relName, relName.c_str())) break;
+                    if(condwr[i].bRhsIsAttr) if(rc = appendRel(condwr[i].rhsAttr.relName, relName.c_str())) break;
+                }
+                if(rc) flag = 0;
+                for(int i = 0; i < leng; ++ i) if(rc = appendRel(grplist[i].relName, relName.c_str())) break;
+                if(rc) flag = 0;
+                for(int i = 0; i < leno; ++ i) if(rc = appendRel(ordlist[i].relName, relName.c_str())) break;
+                if(rc) flag = 0;
+            }
+
+            if(flag) rc = qlm.Select(lensc, selist, st.table_list, lenwr, condwr, leng, grplist, leno, ordlist);
 
             delete[] selist;
             delete[] ordlist;
             delete[] condwr;
+
+            if(rc) return rc;
 
             break;
 
@@ -257,20 +296,20 @@ AttrType typeparser(itype ty)
     switch (ty.id)
     {
         case INT_TYPE : return INT;
-        //case INT_CONST_TYPE : return "int (" + std::to_string(ty.value_int) + ")";
         case VARCHAR_TYPE : return STRING;
-        //case VARCHAR_CONST_TYPE : return "varchar (" + std::to_string(ty.value_int) + ")";
         case DATE_TYPE : return DATETYPE;
         case FLOAT_TYPE : return FLOAT;
         default: return ERRTYPE;
     }
 }
 
-void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
+int fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
 {
     cnt = 0;
 
     std::list<std::string> primarylist;
+
+    int rc = 0;
 
     for(std::list<ifield>::iterator fd = fdlist.begin(); fd != fdlist.end(); fd ++)
     {
@@ -280,17 +319,22 @@ void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
             primarylist.insert(primarylist.begin(), fd->colList.begin(), fd->colList.end());
             continue;
         }
-        else
+        else if(fd->id != FOREIGN_FIELD)
         {
-            fieldparser(*fd, atrv + cnt);
+            if(rc = fieldparser(*fd, atrv + cnt)) return rc;
             ++ cnt;
         }
     }
+
+    if(primarylist.size() > 1)
+        return PASERR_MULTIPLE_PRIMARY;
 
     for(std::list<std::string>::iterator coli = primarylist.begin(); coli != primarylist.end(); coli ++)
     {
         std::string coln = *coli;
         int found = 0;
+
+        if(coln.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
 
         for(int i = 0; i < cnt; ++ i)
             if(strcmp(coln.c_str(), atrv[i].attrName) == 0)
@@ -298,53 +342,74 @@ void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt)
 
         if(!found)
         {
-            // TODO: Error Handle!
+            return PASERR_PRIMARY_NOTFOUND;
         }
     }
 
+    for(std::list<ifield>::iterator fd = fdlist.begin(); fd != fdlist.end(); fd ++)
+        if(fd->id == FOREIGN_FIELD)
+        {
+            int found = -1;
+
+            std::string colname = fd->colName;
+            std::string tbname = fd->tbName;
+            std::string refcolname = fd->refcolName;
+
+            if(colname.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+            if(tbname.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+            if(refcolname.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+
+            for(int i = 0; i < cnt; ++ i)
+                if(strcmp(colname.c_str(), atrv[i].attrName) == 0) found = i;
+
+            if(found < 0) return PASERR_FOREIGN_NOTFOUND;
+
+            if(atrv[found].isForeign) return PASERR_FOREIGN_MULTIPLE;
+
+            atrv[found].isForeign = 1;
+            strcpy(atrv[found].foreignTable, tbname.c_str());
+            strcpy(atrv[found].foreignName, refcolname.c_str());
+        }
+
+    return 0;
 }
 
-int typelength(AttrType ty)
-{
-    switch (ty)
-    {
-        case INT: return 4;
-        case FLOAT: return 4;
-        case STRING: return MAXNAME+1;
-        default: return 4;
-    }
-}
-
-void fieldparser(ifield fd, struct AttrInfo * atrv)
+int fieldparser(ifield fd, struct AttrInfo * atrv)
 {
     switch (fd.id)
     {
         case COL_FIELD :
 
+            if(fd.colName.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
+
             strcpy(atrv->attrName, fd.colName.c_str());
+
             atrv->flag = 0;
+            atrv->isForeign = 0;
             atrv->attrType = typeparser(fd.type);
-            atrv->attrLength = typelength(atrv->attrType);
+            atrv->attrLength = fd.type.length;
+
             break;
 
-            case NOTNULL_COL_FIELD :
+        case NOTNULL_COL_FIELD :
+
+            if(fd.colName.length() > MAXNAME) return PASERR_ATTR_TOOLONG;
 
             strcpy(atrv->attrName, fd.colName.c_str());
+
             atrv->flag = 1;
+            atrv->isForeign = 0;
+
             atrv->attrType = typeparser(fd.type);
-            atrv->attrLength = typelength(atrv->attrType);
+            atrv->attrLength = fd.type.length;
             break;
 
-        case PRIMARY_FIELD :
-            tableparser(fd.colList);
-            break;
-
-        case FOREIGN_FIELD :
-            break;
         default:
             assert(false);
             break;
     }
+
+    return 0;
 }
 
 int valuelistparser(std::list<ivalue> valuelist, Value * val)
@@ -372,9 +437,8 @@ int valueparser(ivalue value, Value * val)
 
         case VALUE_STRING_ID :
             val->type = STRING;
-            if(value.value_string.length() > MAXNAME) return QL_STRTOOLONG;
-            val->data = new char[MAXNAME+1];
-            memset(val->data, 0, MAXNAME+1);
+            val->data = new char[value.value_string.length()+1];
+            memset(val->data, 0, value.value_string.length()+1);
             strcpy((char*) val->data, value.value_string.c_str());
             break;
 
@@ -386,7 +450,7 @@ int valueparser(ivalue value, Value * val)
         case VALUE_DATE_ID :
             val->type = DATETYPE;
             s = value.value_string;
-            dt = atoi(s.substr(0,3).c_str()) * 10000 + atoi(s.substr(5,6).c_str()) * 100 + atoi(s.substr(8,9).c_str());
+            dt = atoi(s.substr(1,4).c_str()) * 10000 + atoi(s.substr(6,7).c_str()) * 100 + atoi(s.substr(9,10).c_str());
             val->data = new int (dt);
             break;
 
@@ -617,4 +681,16 @@ void tableparser(std::list<std::string> table)
 void clearParser()
 {
     currentDB = "";
+}
+
+int appendRel(char* p, const char* q)
+{
+    if(p == NULL)
+    {
+        p = new char[strlen(q)+1];
+        strcpy(p, q);
+        return 0;
+    }
+    else if(strcmp(p, q)) return QL_RELNOTEXIST;
+    return 0;
 }

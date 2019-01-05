@@ -132,6 +132,11 @@ void Printer::PrintValue(char *data, bool isNull, AttrType attrType)
         iss << *(float *) data<<" ";
     else if(attrType == STRING)
         iss << data <<" ";
+    else if(attrType == DATETYPE)
+    {
+        int dt = *(int*) data;
+        iss << dt/10000 << "-" << dt%10000/100 << "-" << dt%100 << " ";
+    }
     else
         iss << "       ***      ";
 }

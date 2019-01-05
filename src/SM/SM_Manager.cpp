@@ -55,6 +55,7 @@ RC SM_Manager :: OpenDb      (const char *dbName)
 
     isOpen=true;
     currentDbName=std::string(dbName);
+    smFileHandle.clear();
     return 0;
 }
 
@@ -67,6 +68,9 @@ RC SM_Manager :: CloseDb     ()
         rmm->CloseFile(attrcatHandler);
         isOpen = false;
         assert(chdir(initialCwd)==0);
+
+        for(auto it : smFileHandle) rmm->CloseFile(it.second);
+        smFileHandle.clear();
     } else{
         printer->getSS() << "No database is opened.\n";
     }
@@ -82,9 +86,25 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
 
     if (relExist(std::string(relName)))
     {
-        printer->getSS()<<"Same name relation exists\n";
+        // printer->getSS()<<"Same name relation exists\n";
         return SM_TABLE_EXIST;
     }
+
+    // Resolve Foreign Key First : Assert their attrType & attrLength
+
+    for(int i=0;i<attrCount;++i)
+        if(attributes[i].isForeign)
+        {
+            RelAttr relattr;
+            AttrInfo atr;
+            std::string relName(attributes[i].foreignTable);
+            std::string attrName(attributes[i].foreignName);
+            if(attrGet(std::make_pair(relName, attrName), &atr)) return SM_FOREIGN_NOTFOUND;
+            if(!(atr.flag & 2)) return SM_FOREIGN_NOTPRIMARY;
+            if(attributes[i].attrType != atr.attrType) return SM_FOREIGN_TYPEMISMATCH;
+            if(attributes[i].attrLength != atr.attrLength) return SM_FOREIGN_TYPEMISMATCH;
+        }
+
 
     int relSize=0;
     std::set<std::string> nameSet;
@@ -96,7 +116,7 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
         nameSet.insert(string(attributes[i].attrName));
         attributes[i].offset = relSize;
         attributes[i].indexNum = 0;
-        memset(&attributes[i].relName, 0, MAXNAME+1);//make sure the vacant part is zero
+        memset(&attributes[i].relName, 0, MAXNAME+1); // make sure the vacant part is zero
         strcpy(attributes[i].relName, relName);
         relSize += attributes[i].attrLength;
     }
@@ -612,4 +632,20 @@ vector<AttrInfo> SM_Manager::attrGet(std::string relName)
 
     attrScan.CloseScan();
     return attributes;
+}
+
+RM_FileHandle SM_Manager::filehandleGet(std::string relName)
+{
+    auto it = smFileHandle.find(relName);
+
+    if(it == smFileHandle.end())
+    {
+        // the file do not exist in handler yet.
+        RM_FileHandle newhandle;
+        rmm->OpenFile(relToFileName(relName).data(), newhandle);
+        smFileHandle.insert(std::make_pair(relName, newhandle));
+        return newhandle;
+    }
+
+    return it->second;
 }

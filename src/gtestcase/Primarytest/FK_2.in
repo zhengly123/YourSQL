@@ -1,0 +1,18 @@
+create database db1;
+use db1;
+
+create table tb1 (col1 int, col2 varchar, primary key(col2));
+insert into tb1 values (1,'Anne'), (4,'Peter'), (9,'WiiPlayer'), (16,'Falco');
+create table tb3 (col1 int, col2 int, col3 varchar, foreign key(col3) references tb1(col2));
+insert into tb3 values (9,81,'Peter'), (6,36,'Anne'), (7,49,'Falco');
+select * from tb3;
+
+create table tb4 (col1 int, col2 float, primary key(col2));
+insert into tb4 values (1,1.1), (4,2.2), (9,3.3), (16,4.4);
+create table tb5 (col1 int, col2 int, col3 float, foreign key(col3) references tb4(col2));
+insert into tb5 values (10,100,1.1), (8,64,2.2), (11,121,3.3);
+select * from tb5;
+
+close;
+drop database db1;
+exit;

@@ -14,6 +14,7 @@ QL_Manager::QL_Manager(SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, Printe
     this->rmm = &rmm;
     this->ixm = &ixm;
     this->smm = &smm;
+    checkPrimaryKey = 1;
 }
 
 QL_Manager :: ~QL_Manager ()                         // Destructor
@@ -149,7 +150,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
         }
 
         Selector selector(ixm, rmm, relName, relmeta, attributes,
-                          nConditions, conditions, true);
+                          nConditions, conditions, smm->filehandleGet(relName), true);
         RM_Record record;
 
         RID rid;
@@ -177,7 +178,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
  **/
 RC QL_Manager :: Insert (const char  *relName,           // relation to insert into
               int         nValues,            // # values to insert
-              const Value values[])          // values to insert
+              Value values[])          // values to insert
 {
     struct RelationMeta relmeta;
 
@@ -197,13 +198,39 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
         {
             if(curAttr.flag & 1) return QL_ATTRNOTNULL;
         }
+        else if(curAttr.attrType == FLOAT && values[i].type == INT)
+        {
+            float d = *(int*) values[i].data;
+            values[i].type = FLOAT;
+            *(float*)values[i].data = d;
+        }
         else if(curAttr.attrType != values[i].type) return QL_TYPEUNMATCHED;
 
         //TODO: MAXNAME是最大的表名字、属性名字？
-        if(values[i].type == STRING && strlen((char*)values[i].data) > MAXNAME) return QL_STRTOOLONG;
+        if(values[i].type == STRING && strlen((char*)values[i].data) >= curAttr.attrLength) return QL_STRTOOLONG;
     }
 
+    handle = smm->filehandleGet(std::string(relName));
+    //rmm->OpenFile(relToFileName(relName).data(), handle);
+
     // TODO: Check primary key!
+    int primaryindex = -1;
+    for(int i = 0; i < nValues; ++ i)
+        if(attributes[i].flag & 2) primaryindex = i;
+
+    if(primaryindex >= 0 && checkPrimaryKey)
+    {
+        RM_FileScan scanner;
+        RM_Record record;
+        scanner.OpenScan(handle, attributes[primaryindex].attrType, attributes[primaryindex].attrLength,
+            attributes[primaryindex].offset, CompOp::EQ_OP, values[primaryindex].data);
+        if(scanner.GetNextRec(record) != RM_EOF)
+        {
+            rmm->CloseFile(handle);
+            return QL_PRIMARY_DUPLICATE;
+        }
+        scanner.CloseScan();
+    }
 
     int tuplelength = relmeta.tupleLength;
     int ifnull = relmeta.tupleLength - relmeta.attrCount;
@@ -214,20 +241,22 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
     for(int i = 0; i < nValues; ++ i)
     {
         if(values[i].type != NULLTYPE)
-            memcpy(buffer + attributes[i].offset, values[i].data, attributes[i].attrLength),
+        {
+            if(values[i].type == STRING)
+                strcpy(buffer + attributes[i].offset, (char*) values[i].data);
+            else
+                memcpy(buffer + attributes[i].offset, values[i].data, attributes[i].attrLength);
             *(buffer + ifnull + i) = 0; // null flag set
+        }
         else
             *(buffer + ifnull + i) = 1; // null flag set
     }
-
-    rmm->OpenFile(relToFileName(relName).data(), handle);
 
     RID rid;
     handle.InsertRec(buffer, rid);
 
     // TODO: insert it into index!
-
-    rmm->CloseFile(handle);
+    // rmm->CloseFile(handle);
 
     return 0;
 }
@@ -246,7 +275,7 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
 //        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
 //    }
     Selector selector(ixm,rmm, relName, relmeta, attributes,
-            nConditions, conditions);
+            nConditions, conditions, smm->filehandleGet(relName));
     RM_Record record;
     RM_FileHandle *handle = nullptr;
     RID rid;
@@ -272,7 +301,7 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     vector<AttrInfo> attributes;
     attributes = smm->attrGet(relName);
     Selector selector(ixm,rmm, relName, relmeta, attributes,
-                      nConditions, conditions);
+                      nConditions, conditions, smm->filehandleGet(relName));
     // check legality of SETs
     selector.checkSetLegal(nSet, sets);
     RM_Record record;
@@ -313,7 +342,8 @@ RC QL_Manager :: printRelation   (const char *relName)
     vector<AttrInfo> attributes;
 
     attributes = smm->attrGet(relName);
-    rmm->OpenFile(relToFileName(relName).data(), handle);
+    handle = smm->filehandleGet(relName);
+    //rmm->OpenFile(relToFileName(relName).data(), handle);
 
     rmscan.OpenScan(handle, INT, 0, 0, NO_OP, NULL);
 
@@ -356,7 +386,7 @@ RC QL_Manager :: printRelation   (const char *relName)
     }
 
     rmscan.CloseScan();
-    rmm->CloseFile(handle);
+    //rmm->CloseFile(handle);
     return 0;
 }
 

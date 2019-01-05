@@ -21,8 +21,8 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st);
 int treeparser(SM_Manager &smm, QL_Manager &qlm, int flush=1);
 
 int typelength(AttrType ty);
-void fieldparser(ifield fd, struct AttrInfo * atrv);
-void fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt);
+int fieldparser(ifield fd, struct AttrInfo * atrv);
+int fieldlistparser(std::list<ifield> fdlist, struct AttrInfo * atrv, int &cnt);
 
 int valuelistparser(std::list<ivalue> valuelist, Value * val);
 int valueparser(ivalue value, Value * val);
@@ -40,6 +40,7 @@ void orderparser(icol cl, RelAttr * rel);
 void orderlistparser(std::list<icol> ordlist, struct RelAttr * rel);
 void selectorparser(isel sl, struct RelAttr * rel);
 
+int appendRel(char* p, const char* q);
 
 void tableparser(std::list<std::string> table);
 AttrType typeparser(itype ty);

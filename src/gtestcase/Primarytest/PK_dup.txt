@@ -1,0 +1,20 @@
+create database db1;
+use db1;
+
+create table tbint (col1 int, col2 int, primary key(col2));
+insert into tbint values (1,1), (4,2), (9,3), (16,4);
+insert into tbint values (5,1);
+
+create table tbstring (col1 int, col2 varchar, primary key(col2));
+insert into tbstring values (1,'Alfyn'), (4,'Boyce'), (9,'Cinder'), (16,'Doggy');
+insert into tbstring values (5,'Boycee');
+insert into tbstring values (8,'Alfyn');
+
+create table tbfloat (col1 int, col2 float, primary key(col2));
+insert into tbfloat values (1,1.01), (4,2.02), (9,3.03), (16,4.04);
+insert into tbfloat values (5,1.011);
+insert into tbfloat values (8,2.020);
+
+close;
+drop database db1;
+exit;

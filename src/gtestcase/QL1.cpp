@@ -12,6 +12,8 @@
 #include <fstream>
 #include "../Parser/astree.h"
 #include "../QL/QL_PUBLIC.h"
+#include "../errorhandle.h"
+#include "../Parser/parsererror.h"
 using namespace std;
 
 class QL_INS : public :: testing :: Test
@@ -547,6 +549,38 @@ void SetUp () override
     }
 };
 
+TEST_F(QL_StringCmp, DEL_1)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_DELETE1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_DELETE1.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, DEL_2)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_DELETE2.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_DELETE2.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, DEL_3)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_DELETE3.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_DELETE3.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, UPD)
+{
+    freopen("../src/gtestcase/Delupdtest/QL_UPDATE1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Delupdtest/QL_UPDATE1.ans");
+    check(fin, os);
+}
+
 TEST_F(QL_StringCmp, SELECT_SingleTable)
 {
     freopen("../src/gtestcase/QL_SELECT1.in","r",stdin);
@@ -623,3 +657,192 @@ TEST_F(QL_StringCmp, LIKE_FUNC_1)
     check(fin, os);
 }
 
+
+TEST_F(QL_StringCmp, ForeignKeyTest_1)
+{
+    printf("\nTesting : Foreign key testcase 1. \n");
+    freopen("../src/gtestcase/Primarytest/FK_1.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Primarytest/FK_1.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, ForeignKeyTest_2)
+{
+    printf("\nTesting : Foreign key testcase 2. \n");
+    freopen("../src/gtestcase/Primarytest/FK_2.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/Primarytest/FK_2.ans");
+    check(fin, os);
+}
+
+TEST_F(QL_StringCmp, RelAuto)
+{
+    printf("\nTesting : Auto Relation Completion. \n");
+    freopen("../src/gtestcase/QL_relauto.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_relauto.ans");
+    check(fin, os);
+}
+
+class QL_PRIMARY : public :: testing :: Test
+{
+protected:
+    char initialCwd[2049];
+
+    void SetUp () override
+    {
+
+        ASSERT_EQ(initialCwd, getcwd(initialCwd, 2048));
+        clearParser();
+    }
+
+    void Accept(SM_Manager &smm, QL_Manager &qlm, int expectValue, int num)
+    {
+        for(int i = 0; i < num; ++ i)
+        {
+            int rc = treeparser(smm, qlm, 0);
+            if (rc == PARSEREXIT) return;
+            EXPECT_EQ(rc, expectValue);
+        }
+    }
+
+    void TearDown () override
+    {
+        ASSERT_EQ(0, chdir(initialCwd));
+        clearParser();
+    }
+};
+
+TEST_F(QL_PRIMARY, PK_MULTIPLE)
+{
+    printf("\nTesting : Primary Key Multiple Error. \n");
+    freopen("../src/gtestcase/Primarytest/PK_multiple.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 2);
+    Accept(smManager, qlManager, PASERR_MULTIPLE_PRIMARY, 2);
+    Accept(smManager, qlManager, 0, 200);
+
+}
+
+TEST_F(QL_PRIMARY, PK_NOTFOUND)
+{
+    printf("\nTesting : Primary Key Not Found Error. \n");
+    freopen("../src/gtestcase/Primarytest/PK_notfound.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 2);
+    Accept(smManager, qlManager, PASERR_PRIMARY_NOTFOUND, 1);
+    Accept(smManager, qlManager, 0, 200);
+}
+
+TEST_F(QL_PRIMARY, PK_ATTRTOOLONG)
+{
+    printf("\nTesting : Primary Key Too Long. \n");
+    freopen("../src/gtestcase/Primarytest/PK_attrtoolong.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 2);
+    Accept(smManager, qlManager, PASERR_ATTR_TOOLONG, 4);
+    Accept(smManager, qlManager, 0, 200);
+}
+
+TEST_F(QL_PRIMARY, FK_SAMEATTR)
+{
+    printf("\nTesting : Foreign Key Duplicated. \n");
+    freopen("../src/gtestcase/Primarytest/FK_sameattr.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 4);
+    Accept(smManager, qlManager, PASERR_FOREIGN_MULTIPLE, 1);
+    Accept(smManager, qlManager, 0, 200);
+}
+
+
+TEST_F(QL_PRIMARY, FK_NOTFOUND)
+{
+    printf("\nTesting : Foreign Key Not Found error. \n");
+    freopen("../src/gtestcase/Primarytest/FK_notfound.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, PASERR_FOREIGN_NOTFOUND, 1);
+    Accept(smManager, qlManager, SM_FOREIGN_NOTFOUND, 2);
+    Accept(smManager, qlManager, 0, 200);
+}
+
+TEST_F(QL_PRIMARY, FK_NOTPRIMARY)
+{
+    printf("\nTesting : Foreign Key not related to Primary Key. \n");
+    freopen("../src/gtestcase/Primarytest/FK_notprimary.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, SM_FOREIGN_NOTPRIMARY, 1);
+    Accept(smManager, qlManager, 0, 200);
+}
+
+TEST_F(QL_PRIMARY, PK_DUP)
+{
+    printf("\nTesting : Primary Key Duplicate error. \n");
+    freopen("../src/gtestcase/Primarytest/PK_dup.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 4);
+    Accept(smManager, qlManager, QL_PRIMARY_DUPLICATE, 1);
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, QL_PRIMARY_DUPLICATE, 1);
+    Accept(smManager, qlManager, 0, 3);
+    Accept(smManager, qlManager, QL_PRIMARY_DUPLICATE, 1);
+    Accept(smManager, qlManager, 0, 200);
+}

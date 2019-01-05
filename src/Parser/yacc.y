@@ -31,7 +31,7 @@ ASType toplevel;
 %token EQ NEQ LEQ GEQ LT GT
 %token LB RB FH DH DOT STAR
 %token QEXIT QCLOSE
-%token QMIN QMAX QAVG QSUM
+%token QMIN QMAX QAVG QSUM QCHAR
 %token ORDERBY GROUPBY ASC
 
 /* %type Program
@@ -219,28 +219,37 @@ Field   : IDENTIFIER Type
 Type    : MINT
         {
             $$.id = INT_TYPE;
+            $$.length = 4;
         }
         | VARCHAR
         {
             $$.id = VARCHAR_TYPE;
+            $$.length = MAXNAME + 1;
         }
-        | MINT VALUE_INT
+        | MINT LB VALUE_INT RB
         {
-            $$.id = INT_CONST_TYPE;
-            $$.value_int = $2;
+            $$.id = INT_TYPE;
+            $$.length = 4;
         }
-        | VARCHAR VALUE_INT
+        | VARCHAR LB VALUE_INT RB
         {
-            $$.id = VARCHAR_CONST_TYPE;
-            $$.value_int = $2;
+            $$.id = VARCHAR_TYPE;
+            $$.length = $3 + 3;
+        }
+        | QCHAR LB VALUE_INT RB
+        {
+            $$.id = VARCHAR_TYPE;
+            $$.length = $3 + 3;
         }
         | DATE
         {
             $$.id = DATE_TYPE;
+            $$.length = 4;
         }
         | MFLOAT
         {
             $$.id = FLOAT_TYPE;
+            $$.length = 4;
         }
 ;
 

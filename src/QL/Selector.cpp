@@ -9,7 +9,7 @@
 
 Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
                    RelationMeta relmeta, vector<AttrInfo> attributes,
-                   int nConditions, const Condition *conditions, bool interTable)
+                   int nConditions, const Condition *conditions, RM_FileHandle SMhandle, bool interTable)
         : dead(false), errorReason(0), errorIndex(0)
 {
 
@@ -47,7 +47,8 @@ Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, const char *relName,
             this->conditions.push_back(conditions[i]);
         }
     }
-    rmm->OpenFile(relToFileName(relName).data(), handle);
+    //rmm->OpenFile(relToFileName(relName).data(), handle);
+    handle = SMhandle;
     if (!checkConditionLegal())
     {
         dead=true;
@@ -186,7 +187,7 @@ bool Selector::checkCondition(Condition cond, void *data)
 Selector::~Selector()
 {
     scan.CloseScan();
-    rmm->CloseFile(handle);
+    //rmm->CloseFile(handle);
 }
 
 bool Selector::checkSetLegal(const int nSet, const Condition sets[])

@@ -8,10 +8,10 @@
 #include <vector>
 #include <list>
 #include "../IX/IX_PRIVATE.h"
-#include "QL_PUBLIC.h"
 #include "../SM/SM_PUBLIC.h"
 #include "Selector.h"
 #include "../Printer/StdoutPrinter.h"
+#include "QL_PRIVATE.h"
 
 class QL_Manager {
     SM_Manager *smm;
@@ -35,7 +35,7 @@ public:
 
     RC Insert (const char  *relName,           // relation to insert into
               int         nValues,            // # values to insert
-              const Value values[]);          // values to insert
+              Value values[]);          // values to insert
 
     RC Delete (const char *relName,            // relation to delete from
               int        nConditions,         // # conditions in Where clause
@@ -55,8 +55,11 @@ public:
      */
     RC printRelation  (const char *relName);
 
+    void setCheckPrimary(int flag) {checkPrimaryKey = flag;}
 private:
     Printer *printer;
+    int checkPrimaryKey;
+
     std::string relToFileName(const char *relName)
     {
         return std::string(relName)+std::string(".rel");

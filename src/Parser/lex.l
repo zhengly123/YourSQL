@@ -12,6 +12,8 @@ extern "C"
     int yylex(void); // from Lex  
 }  
 
+static std::string string_buf;
+
 %}  
 
 %option case-insensitive
@@ -22,16 +24,21 @@ integer     ({digit}+)
 minteger    (-{integer})
 float       ({integer}\.{integer})
 mfloat      (-{float})
-date        ([0-9]{4}-[0-9]{2}-[0-9]{2})
+date        ('[0-9]{4}-[0-9]{2}-[0-9]{2}')
 identifier  ({nondigit}({nondigit}|{digit})*)
-string		('({nondigit}|{digit}|[\%_\[\]^])*')
+/* string		('({nondigit}|{digit}|[\%_\[\]^ \-\.])*') */
+/* string      ('[^\n]+') */
+strtext     ([^\\\n\']+)
 linend      ([\n\r])
 blank_chars ([ \f\r\t\v\n]+)
 
+%x str
 
 /* 2 . Regular */
 
-%%  
+%%
+
+
 
 "DATABASE"		{return DATABASE;}
 "DATABASES"		{return DATABASES;}
@@ -49,6 +56,7 @@ blank_chars ([ \f\r\t\v\n]+)
 "TABLES"		{return TABLES;}
 "SHOW"			{return SHOW;}
 "CREATE"		{return CREATE;}
+"CHAR"          {return QCHAR;}
 "PRIMARY"		{return PRIMARY;}
 "KEY"			{return KEY;}
 "NOT"			{return NOT;}
@@ -81,7 +89,6 @@ blank_chars ([ \f\r\t\v\n]+)
 {minteger}      {yylval.value_int = atoi(yytext);return VALUE_INT;}
 {integer}		{yylval.value_int = atoi(yytext);return VALUE_INT;}
 {date}          {yylval.value_string = yytext; return VALUE_DATE;}
-{string}		{yylval.value_string = yytext; return VALUE_STRING;}
 {blank_chars}   {}
 
 "="				{return EQ;}
@@ -96,7 +103,14 @@ blank_chars ([ \f\r\t\v\n]+)
 ","				{return DH;}
 "."				{return DOT;}
 "*"				{return STAR;}
+
+"'"             {string_buf = "'"; BEGIN(str);}
+<str>"'"        {string_buf = string_buf + "'"; yylval.value_string = string_buf; BEGIN(INITIAL); return VALUE_STRING;}
+<str>"\\'"       {string_buf = string_buf + '\'';}
+<str>{strtext} {string_buf = string_buf + yytext;}
+
 .       		{}
+
 
 %% 
 
