@@ -47,8 +47,9 @@ public:
      */
     RC close();
 
-    void printBPT();
-    void printLinearLeaves();
+    void printBPT() const;
+
+    void printLinearLeaves() const;
 
     RC nextValidEntry(RID &iterator, RID &dataRID, void *key) const;
 
@@ -60,6 +61,8 @@ public:
      * @return RID of the leftest leaf. Only pageNum is valid, slotNum=0.
      */
     RC getLeftestLeaf(RID &rid) const;
+
+    RC searchKey(char *key, RID &rid) const;
 
     RC getMinimalIndex(RID &rid) const;
 
@@ -123,10 +126,19 @@ private:
 
     RID getLeftestLeafDFS(RID rid) const;
 
+    /**
+     * Find the node whose key equals to provided key or the first one larger
+     * then it.
+     * @param key
+     * @param rid
+     * @return RID of the target tuple in table.
+     */
+    RID searchKeyDFS(char *key, RID rid) const;
+
 
     RC copyKey(BPlusTreeNode *dst, int x1, BPlusTreeNode *src, int x2);
 
-    void printDFS(const RID rid, int intend);
+    void printDFS(const RID rid, int intend) const;
 
     void setMinimum(void *p, AttrType attrType)
     {

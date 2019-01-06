@@ -20,8 +20,13 @@ RC IX_IndexScan::OpenScan(const IX_IndexHandle &indexHandle, CompOp compOp,
 {
     int rc;
     this->indexHandle = &indexHandle;
-//    rc=indexHandle.getMinimalIndex(scanRID);
-    rc=indexHandle.getLeftestLeaf(scanRID);
+    // If compOp can be speeded up by choose from middle
+    indexHandle.printBPT();
+    if (compOp == CompOp::EQ_OP || compOp == CompOp::GE_OP
+        || compOp == CompOp::GT_OP)
+        rc = indexHandle.searchKey((char *) value, scanRID);
+    else
+        rc = indexHandle.getLeftestLeaf(scanRID);
     assert(rc==0);
     int a, b;
     scanRID.GetPageNum(a);
@@ -55,6 +60,13 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
     // Check whether the value meet the condition
     while (!indexHandle->cmp(key, targetValue, compOp))
     {
+        // if scanRID leave the left part of axis, pruning it
+        if ((compOp == CompOp::EQ_OP || compOp == CompOp::LT_OP ||
+             compOp == CompOp::LE_OP) && indexHandle->cmp(key, targetValue, CompOp::GT_OP))
+        {
+            return IX_ITERATOR_TO_END;
+        }
+
         rc = indexHandle->nextValidEntry(scanRID, dataRID, key);
         assert(rc >= 0);
         if (rc == IX_ITERATOR_TO_END)
