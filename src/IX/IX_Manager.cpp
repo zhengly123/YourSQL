@@ -44,6 +44,7 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
     ixHeader.indexPairSize = attrLength + sizeof(RID);
     ixHeader.attrType=attrType;
     ixHeader.attrLength=attrLength;
+    ixHeader.cntNode = 0;
     memcpy(b, &ixHeader, sizeof(ixHeader));
 
     bpm.markDirty(index);

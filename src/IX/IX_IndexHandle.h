@@ -69,6 +69,7 @@ public:
 //    BufPageManager);
     string getFileName(){ return fileName;}
     int getIndexNo(){return indexNo;}
+    int getCntNode(){ return ixHeader.cntNode; }
 
 private:
     bool isOpen;

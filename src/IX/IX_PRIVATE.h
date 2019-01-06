@@ -31,6 +31,7 @@ struct IX_Header
     int indexPairSize;  //size of every index pair (attr,RIC)
     AttrType attrType;
     int attrLength;
+    int cntNode;
 };
 //struct IX_
 #include "IX_Manager.h"

@@ -61,6 +61,7 @@ Selector::Selector(IX_Manager *ixm, RM_Manager *rmm, SM_Manager *smm, const char
 void Selector::iterateOptimize(const char *relName, int nCondition, const Condition *conditions)
 {
     assert(!enableIndex);
+    std::vector<std::pair<int, int>> indexList;
     for (int i = 0; i < nCondition; ++i)
     {
         const Condition &cond = conditions[i];
@@ -71,25 +72,42 @@ void Selector::iterateOptimize(const char *relName, int nCondition, const Condit
             const AttrInfo attrInfo = getAttr(cond.lhsAttr.attrName);
             if (attrInfo.indexNum)
             {
-                fprintf(stderr, "Debug: use index no %d\n", attrInfo.indexNum);
-                enableIndex = true;
-                attrWithIndex=string(attrInfo.attrName);
-                RC rc;
-                //rc = ixm->OpenIndex(attrInfo.relName, attrInfo.indexNum, indexHandle);
-                //assert(rc == 0);
-                indexHandle = smm->indexhandleGet(std::string(attrInfo.relName), attrInfo.indexNum);
-                rc = indexScan.OpenScan(*indexHandle, cond.op, cond.rhsValue.data);
-                assert(rc == 0);
-#ifdef OutputLinearIndex
-                //debug
-                printf("DEBUG: iterateOptimize\n");
-                indexHandle->printLinearLeaves();
-#endif
-                break;
+                // store selectivity of each attributes
+                IX_IndexHandle *tempIndexHandle = smm->indexhandleGet(
+                        std::string(attrInfo.relName), attrInfo.indexNum);
+                indexList.emplace_back(make_pair(tempIndexHandle->getCntNode(), i));
             }
         }
     }
-    if (!enableIndex)
+//    if (false)
+    // If there are available indexes
+    if (!indexList.empty())
+    {
+        sort(indexList.begin(), indexList.end());
+        // choose index of which condition
+        int i = indexList.back().second;
+        assert(i>=0);
+        assert(i<nCondition);
+        const Condition &cond = conditions[i];
+        assert(!cond.bRhsIsAttr);
+        const AttrInfo attrInfo = getAttr(cond.lhsAttr.attrName);
+        assert(attrInfo.indexNum);
+        fprintf(stderr, "Debug: use index no %d\n", attrInfo.indexNum);
+        enableIndex = true;
+        attrWithIndex=string(attrInfo.attrName);
+        RC rc;
+        //rc = ixm->OpenIndex(attrInfo.relName, attrInfo.indexNum, indexHandle);
+        //assert(rc == 0);
+        indexHandle = smm->indexhandleGet(std::string(attrInfo.relName), attrInfo.indexNum);
+        rc = indexScan.OpenScan(*indexHandle, cond.op, cond.rhsValue.data);
+        assert(rc == 0);
+#ifdef OutputLinearIndex
+        //debug
+                printf("DEBUG: iterateOptimize\n");
+                indexHandle->printLinearLeaves();
+#endif
+    }
+    else
     {
         void *data = nullptr;
         scan.OpenScan(handle, AttrType::INT, 0, 0, NO_OP, data);
