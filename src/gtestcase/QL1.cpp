@@ -737,6 +737,15 @@ TEST_F(QL_StringCmp, RelAuto)
     check(fin, os);
 }
 
+TEST_F(QL_StringCmp, INDEX_UPDATE_2)
+{
+    printf("\nTesting : Auto Relation Completion. \n");
+    freopen("../src/gtestcase/QL_INDEX_UPDATE2.in","r",stdin);
+    auto os = exec();
+    ifstream fin("../src/gtestcase/QL_INDEX_UPDATE2.ans");
+    check(fin, os);
+}
+
 class QL_PRIMARY : public :: testing :: Test
 {
 protected:
