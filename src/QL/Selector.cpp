@@ -67,7 +67,7 @@ void Selector::iterateOptimize(const char *relName, int nCondition, const Condit
         const Condition &cond = conditions[i];
         // In multiple tables selection, check relName is necessary.
         if ((!cond.lhsAttr.relName || strcmp(relName, cond.lhsAttr.relName) == 0) &&
-            !conditions[i].bRhsIsAttr)
+            !cond.bRhsIsAttr && cond.flag == CondType::COND_NORMAL)
         {
             const AttrInfo attrInfo = getAttr(cond.lhsAttr.attrName);
             if (attrInfo.indexNum)
