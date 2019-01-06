@@ -75,7 +75,7 @@ SET(SOURCE
         src/Parser/parsererror.h src/Printer/CsvPrinter.cpp src/Printer/CsvPrinter.h)
 
 
-SET(GTEST 0)
+SET(GTEST 1)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}
@@ -91,8 +91,8 @@ IF(GTEST)
 else()
     SET(SOURCE ${SOURCE}
             src/RM_Test/test_scan.cpp
-            src/testmain.cpp
-            )
+            src/testmain.cpp)
+#            src/server_main.cpp)
     add_compile_definitions(OutputExcutedOperation=OPEN)
     add_compile_definitions(OutputLinearIndex=OPEN)
     add_compile_definitions(OutputFileOperation=OPEN)
@@ -102,6 +102,8 @@ add_executable(YourSQL
 #        src/Parser/yacc.tab.cpp
 #        src/Parser/yacc.tab.h
         ${SOURCE})
+
+add_executable(client src/client_main.cpp)
 
 #set(LIBRARIES test)
 set(LIBRARIES ${LIBRARIES}

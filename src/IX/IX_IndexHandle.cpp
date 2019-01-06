@@ -51,22 +51,22 @@ RC IX_IndexHandle::InsertEntry(void *key, const RID &value)
     }
 //    else
 //    {
-        int bufferIndex, childK;
-        BPlusTreeNode *rootNode;
+    int bufferIndex;
+    BPlusTreeNode *rootNode;
 
-        rc=treeInsert(rootPage,0,key,value);
-        rootNode = (BPlusTreeNode*)bpm->getPage(fileID, rootPage, bufferIndex);
-        bpm->markDirty(bufferIndex);
-        if (rootNode->overfull())
-        {
-            BPlusTreeNode newRootNode(ixHeader.attrType, ixHeader.attrLength, false);// new node
-            int newRootPageNum;
-            newRootNode.insert(rootNode->getKey(0),RID(rootPage, 0));
-            splitChild(&newRootNode, rootNode, RID(0,0));
-            createNode(newRootPageNum, newRootNode);
-            rootPage = newRootPageNum;
-        }
-        return rc;
+    rc=treeInsert(rootPage,0,key,value);
+    rootNode = (BPlusTreeNode*)bpm->getPage(fileID, rootPage, bufferIndex);
+    bpm->markDirty(bufferIndex);
+    if (rootNode->overfull())
+    {
+        BPlusTreeNode newRootNode(ixHeader.attrType, ixHeader.attrLength, false);// new node
+        int newRootPageNum;
+        newRootNode.insert(rootNode->getKey(0),RID(rootPage, 0));
+        splitChild(&newRootNode, rootNode, RID(0,0));
+        createNode(newRootPageNum, newRootNode);
+        rootPage = newRootPageNum;
+    }
+    return rc;
 }
 
 RC IX_IndexHandle::createNode(PageNum &pageNum, BPlusTreeNode &node)
@@ -106,6 +106,7 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
             if (cmp(node->getKey(childK), key, EQ_OP) == false)
             {
                 //create a leaf and insert the KV pair
+                ixHeader.cntNode++;
                 int newPageNum;
                 BPlusTreeNode newLeafNode(ixHeader.attrType, ixHeader.attrLength, true);
 

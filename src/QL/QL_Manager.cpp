@@ -262,7 +262,8 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
     for (int i = 0; i < attributes.size(); ++i)
     {
         const AttrInfo attr = attributes[i];
-        if (attr.indexNum)
+        // if new value is not NULL
+        if (attr.indexNum && values[i].type != AttrType::NULLTYPE)
         {
             IX_IndexHandle *indexHandle;
             RC rc;
@@ -278,7 +279,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
 #ifdef OutputLinearIndex
             indexHandle->printBPT();
 #endif
-            assert(rc==0);
+            assert(rc == 0);
 
 #ifdef OutputLinearIndex
             //debug
@@ -320,13 +321,13 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
     while (selector.getNext(record, handle))
     {
         record.GetRid(rid);
-        handle->DeleteRec(rid);
         cnt++;
         // TODO: delete it from index!
         for (int i = 0; i < attributes.size(); ++i)
         {
             const AttrInfo attr = attributes[i];
-            if (attr.indexNum)
+            // if index exists and old value is not NULL
+            if (attr.indexNum && (*((char *) record.GetData() + attr.nullOffset) == 0))
             {
                 RC rc;
                 IX_IndexHandle *indexHandle;
@@ -335,7 +336,7 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
                 indexHandle = smm->indexhandleGet(std::string(relName), attr.indexNum);
 
                 rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
-                assert(rc==0);
+                assert(rc == 0);
                 //disposeHandle(indexHandle, attr, selector);
                 //assert(rc==0);
 #ifdef OutputLinearIndex
@@ -345,6 +346,7 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
 #endif
             }
         }
+        handle->DeleteRec(rid);
     }
     printf("INFO: delete cnt=%d\n", cnt);
     return 0;
@@ -389,11 +391,19 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
                 //rc = getIndexHandle(&indexHandle, relName, attr, selector);
                 //assert(rc==0);
                 indexHandle = smm->indexhandleGet(std::string(relName), attr.indexNum);
+                // if old value is not null, delete it from index
+                if ((((char *) record.GetData() + attr.nullOffset) == 0))
+                {
+                    rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
+                    assert(rc==0);
+                }
 
-                rc = indexHandle->DeleteEntry((char *) record.GetData() + attr.offset, rid);
-                assert(rc==0);
-                rc = indexHandle->InsertEntry(set.rhsValue.data, rid);
-                assert(rc==0);
+                // if new value is not null, insert it
+                if (set.rhsValue.type != AttrType::NULLTYPE)
+                {
+                    rc = indexHandle->InsertEntry(set.rhsValue.data, rid);
+                    assert(rc==0);
+                }
                 //disposeHandle(indexHandle, attr, selector);
                 //assert(rc==0);
             }
