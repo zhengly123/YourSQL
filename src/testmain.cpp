@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         //EXPECT_EQ(rc, 0);
 
         if(rc > 0) printf("%s\n", errorGet(rc).c_str());
-        //if(rc == 0) printf("NORMAL.\n");
+        if(rc == 0) printf("NORMAL.\n");
     }
 
     //cout << printer->getSS().str();
