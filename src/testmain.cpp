@@ -19,7 +19,9 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
-//    freopen("../src/gtestcase/QL_INDEX_UPDATE.in", "r", stdin);
+//    freopen("../src/gtestcase/ts20.sql", "r", stdin);
+//    freopen("../cmake-build-debug/restaurant.sql", "r", stdin);
+//    freopen("../cmake-build-debug/create.sql", "r", stdin);
 
     int rc;
     for(;;)
