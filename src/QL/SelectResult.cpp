@@ -327,9 +327,9 @@ RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAtt
                             conlist[p][j] = newres;
                         } else if (dataAttrInfos[j].attrType == FLOAT)
                         {
-                            float a = *(float *) conlist[p].data();
-                            float b = *(float *) conlist[p].data();
-                            *(float *) resbuf = a / b;
+                            float a = *(float *) conlist[p][j].data();
+                            int b = *(int *) conlist[p][k].data();
+                            *(float *) resbuf = a / (float)b;
 
                             newres.clear();
                             for (int i = 0; i <= 3; ++i) newres.push_back(resbuf[i]);

@@ -505,6 +505,7 @@ RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node, void *key, const RID &v
 
 void IX_IndexHandle::printBPT()
 {
+#ifdef IXDEBUG
     RC rc;
     int &root=ixHeader.rootPage;
     if (root<=0)// if there is no root node
@@ -516,10 +517,12 @@ void IX_IndexHandle::printBPT()
         printDFS(RID(root, 0), 1);
     }
     fflush(stdout);
+#endif
 }
 
 void IX_IndexHandle::printDFS(const RID rid, int intend)
 {
+#ifdef IXDEBUG
     for (int i = 0; i < intend; ++i)
         printf("  ");
 
@@ -541,6 +544,7 @@ void IX_IndexHandle::printDFS(const RID rid, int intend)
             printDFS(node->chRIDs[i],intend+1);
         }
     }
+#endif
 }
 
 IX_IndexHandle::IX_IndexHandle(): isOpen(false)
@@ -556,6 +560,7 @@ IX_IndexHandle::~IX_IndexHandle()
 
 void IX_IndexHandle::printLinearLeaves()
 {
+#ifdef IXDEBUG
     RID rid;
     getLeftestLeaf(rid);
     int rc, bufferIndex;
@@ -571,6 +576,7 @@ void IX_IndexHandle::printLinearLeaves()
         rid=node->nextInList;
     }
     puts("");
+#endif
 }
 
 RC IX_IndexHandle::getLeftestLeaf(RID &rid) const
