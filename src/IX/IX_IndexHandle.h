@@ -141,7 +141,15 @@ private:
                 *((float *) p) = -3.4028e+038f;
                 break;
             case AttrType::STRING :
+            case AttrType::VARCHR:
                 *((char *) p) = 0;
+                break;
+            case AttrType::DATETYPE:
+                *((int *) p) = 0x80000000;
+                break;
+            case AttrType::NULLTYPE:
+            case AttrType::ERRTYPE:
+                assert(0);
                 break;
         }
     }
