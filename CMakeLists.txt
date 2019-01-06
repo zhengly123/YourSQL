@@ -95,6 +95,7 @@ else()
 #            src/server_main.cpp)
 #    add_compile_definitions(OutputExcutedOperation=OPEN)
 #    add_compile_definitions(OutputLinearIndex=OPEN)
+#    add_compile_definitions(IXDEBUG=OPEN)
 #    add_compile_definitions(OutputFileOperation=OPEN)
 endif()
 

@@ -137,7 +137,8 @@ private:
                 *((int *)p)=INT32_MIN;
                 break;
             case AttrType::FLOAT :
-                *((float *) p) = FLT_MIN;
+//                *((float *) p) = FLT_MIN;
+                *((float *) p) = -3.4028e+038f;
                 break;
             case AttrType::STRING :
                 *((char *) p) = 0;

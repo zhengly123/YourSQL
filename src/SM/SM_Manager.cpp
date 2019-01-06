@@ -275,6 +275,12 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
         entryRecord.GetData(tempData);
         entryRecord.GetRid(rid);
         ixIndexHandle->InsertEntry(tempData + attrInfo->offset, rid);
+#ifdef OutputLinearIndex
+        //debug
+        fprintf(stderr, "After insert\n");
+        ixIndexHandle->printBPT();
+        ixIndexHandle->printLinearLeaves();
+#endif
     }
 #ifdef OutputLinearIndex
     //debug
