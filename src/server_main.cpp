@@ -56,7 +56,11 @@ string process(char *cmd)
     {
         rc = treeparser(smManager, qlManager, 0);
         if(rc == PARSEREXIT) break;
-        if (rc > 0) printf("%s\n", errorGet(rc).c_str());
+        if (rc > 0)
+        {
+            printer->getSS() << errorGet(rc) << '\n';
+        }
+
         if(rc == 0) printf("NORMAL.\n");
     }
     string ret = printer->getSS().str();
@@ -196,6 +200,7 @@ int epollLoop()
                 // 客户端有数据发送过来
             else if (events[i].events == EPOLLIN)
             {
+                client_sockfd = events[i].data.fd;
                 len = recv(client_sockfd, buf, MaxLine, 0);
                 if (len < 0)
                 {
