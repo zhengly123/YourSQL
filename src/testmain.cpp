@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
-//    freopen("../src/gtestcase/in.txt", "r", stdin);
+//    freopen("../src/gtestcase/QL_INDEX_UPDATE.in", "r", stdin);
 
     int rc;
     for(;;)

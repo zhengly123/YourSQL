@@ -90,7 +90,8 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
 //    path[dep] = c;
     if (node->isLeaf)
     {
-        assert((rc=insertIntoLeaves(node,key,value))==0);
+        rc = insertIntoLeaves(node, key, value);
+        assert(rc == 0);
     } else {// continue search
         childK = node->firstGreaterIndex(key) - 1;
         assert(childK>=0);// there is no deletion
@@ -121,7 +122,8 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
                 createNode(newPageNum, newLeafNode);
                 prepNode->nextInList = RID(newPageNum, 0);
 
-                assert((rc = node->insert(key, RID(newPageNum, 0)))==0);
+                rc = node->insert(key, RID(newPageNum, 0));
+                assert(rc == 0);
 
                 ++childK;
                 childNode = &newLeafNode;
@@ -130,7 +132,8 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
             // children index of last level nodes above leaves is different from others
             childPage = node->chRIDs[childK].GetPageNum();
         }
-        assert((rc = treeInsert(childPage, dep + 1, key, value))==0);
+        rc = treeInsert(childPage, dep + 1, key, value);
+        assert(rc == 0);
 
         // check the size of child and split
         if (childNode->n>M)
@@ -161,7 +164,8 @@ RC IX_IndexHandle::splitChild(BPlusTreeNode *parentNode, BPlusTreeNode *childNod
     childNode->n = mid;
 
     // insert to parent node
-    assert((rc=parentNode->insert(newNode.getKey(0), RID(newPageNum, 0)))==0);
+    rc = parentNode->insert(newNode.getKey(0), RID(newPageNum, 0));
+    assert(rc == 0);
 }
 
 //RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node,void *key, const RID &value)
