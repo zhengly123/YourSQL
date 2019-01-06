@@ -45,13 +45,12 @@ TEST_F(QL_INS, INS_RELERROR)
     printf("\nTesting : Insert Relation Error. \n");
     freopen("../src/QL_test/ins_relerr.txt", "r" , stdin);
 
-    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter);
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);
 
     int rc;
 
@@ -77,13 +76,12 @@ TEST_F(QL_INS, INS_SIZEERR)
     printf("\nTesting : Insert Invalid Size Error. \n");
     freopen("../src/QL_test/ins_sizeerr.txt", "r" , stdin);
 
-    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter);
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);
 
     int rc;
 
@@ -110,13 +108,12 @@ TEST_F(QL_INS, INS_STRTOOLONG)
     printf("\nTesting : Insert String too long Error. \n");
     freopen("../src/QL_test/ins_strtoolong.txt", "r" , stdin);
 
-    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter);
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);
 
     int rc;
 
@@ -142,13 +139,12 @@ TEST_F(QL_INS, INS_TYPEMISMATCH)
     printf("\nTesting : Insert Type Mismatch Error. \n");
     freopen("../src/QL_test/ins_typemismatch.txt", "r" , stdin);
 
-    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter);
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);
 
     int rc;
 
@@ -175,13 +171,12 @@ TEST_F(QL_INS, INS_NOTNULLERR)
     printf("\nTesting : Insert Non-null Type Error. \n");
     freopen("../src/QL_test/ins_notnullerror.txt", "r" , stdin);
 
-    StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter);
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);
 
     int rc;
 
@@ -228,13 +223,15 @@ TEST_F(QL_DEL, DEL)
 {
     freopen("../src/gtestcase/QL_DELETE3.in","r",stdin);
 
-    Printer *printer=new StdoutPrinter;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, printer); // add printer
-    QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
+
+    Printer *printer;
+    printer = qlManager.getPrinter();
 
     int rc;
 
@@ -344,13 +341,15 @@ TEST_F(QL_DEL, UPD)
 {
     freopen("../src/gtestcase/QL_UPDATE1.in","r",stdin);
 
-    Printer *printer=new StdoutPrinter;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, printer); // add printer
-    QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
+
+    Printer *printer;
+    printer = qlManager.getPrinter();
 
     int rc;
 
@@ -510,13 +509,13 @@ void SetUp () override
 
     std::string exec()
     {
-        Printer *printer=new StdoutPrinter;
+
         FileManager* fm = new FileManager();
         BufPageManager* bpm = new BufPageManager(fm);
         RM_Manager rmManager(fm, bpm);
         IX_Manager ixManager(*fm, *bpm);
-        SM_Manager smManager(ixManager, rmManager, printer); // add printer
-        QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
+        SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
+        QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
         int rc;
         for(;;)
@@ -525,7 +524,10 @@ void SetUp () override
             if(rc == PARSEREXIT) break;
             EXPECT_EQ(rc, 0);
         }
-        return printer->getSS().str();
+
+        std::string ret = qlManager.getPrinter()->getSS().str();
+        qlManager.getPrinter()->flush();
+        return ret;
     }
 
     void check(ifstream& fin, const std::string os)

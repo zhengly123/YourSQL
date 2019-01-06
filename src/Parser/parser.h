@@ -7,6 +7,12 @@
 #include <list>
 #include "../errorhandle.h"
 
+struct ioutput
+{
+	int if_csv;
+	std::string fileName;
+};
+
 struct itype
 {
     int id;
@@ -77,6 +83,7 @@ struct istmt
 	std::list<std::string> table_list;
 	isel sel;
 	std::string colName;
+	ioutput fileout;
 };
 
 struct ASType
@@ -85,6 +92,8 @@ struct ASType
     int value_int;  
    	std::string value_string;
    	float value_float;
+
+   	ioutput fileout;
 
     itype type;
 

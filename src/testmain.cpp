@@ -12,15 +12,14 @@
 int main(int argc, char *argv[])
 {
 
-    Printer *printer = new StdoutPrinter;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, printer); // add printer
-    QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
-    freopen("QL_INDEX_DELETE.in", "r", stdin);
+    //freopen("tt.txt", "r", stdin);
 
     int rc;
     for(;;)
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
         //EXPECT_EQ(rc, 0);
 
         if(rc > 0) printf("%s\n", errorGet(rc).c_str());
-        if(rc == 0) printf("NORMAL.\n");
+        //if(rc == 0) printf("NORMAL.\n");
     }
 
     //cout << printer->getSS().str();

@@ -82,6 +82,7 @@ blank_chars ([ \f\r\t\v\n]+)
 "ORDER BY"      {return ORDERBY;}
 "GROUP BY"      {return GROUPBY;}
 "LIKE"          {return GLIKE;}
+"OUTPUT"        {return QOUTPUT;}
 
 {identifier}    {yylval.ident = yytext; return IDENTIFIER;}
 {mfloat}        {yylval.value_float = atof(yytext); return VALUE_FLOAT;}

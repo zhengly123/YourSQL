@@ -244,8 +244,8 @@ RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAtt
         for (int i = 0; i < natt; ++i)
             if (att[i].op == AGGREGATE_AVG)
             {
-                if (dataAttrInfos[indexes[i]].attrType != INT &&
-                    dataAttrInfos[indexes[i]].attrType != FLOAT)
+                if (dataAttrInfos[indexes[i]].attrType != AttrType :: INT &&
+                    dataAttrInfos[indexes[i]].attrType != AttrType :: FLOAT)
                     return QL_WRONGAVGTYPE;
                 avgLink.push_back(total++);
             } else avgLink.push_back(0);
@@ -292,7 +292,7 @@ RC SelectResult::applyConstraint(int natt, RelAttr att[], int ngrp, const RelAtt
                             break;
                         case AGGREGATE_AVG :
                             Tadd(conlist[d][id].data(), dataVec[id].data(), dataAttrInfos[id].attrType);
-                            Tadd(conlist[d][avgLink[i]].data(), dataVec[avgLink[i]].data(), INT);
+                            Tadd(conlist[d][avgLink[i]].data(), dataVec[avgLink[i]].data(), AttrType :: INT);
                             break;
                         default:
                             break;

@@ -122,24 +122,6 @@ void Printer::PrintTablesInfo(const RelationMeta *data, int tupleCnt)
     }
 }
 
-void Printer::PrintValue(char *data, bool isNull, AttrType attrType)
-{
-    if(isNull == 1)
-        iss << "      NULL      ";
-    else if(attrType == INT)
-        iss << *(int *) data<<" ";
-    else if(attrType == AttrType::FLOAT)
-        iss << *(float *) data<<" ";
-    else if(attrType == STRING)
-        iss << data <<" ";
-    else if(attrType == DATETYPE)
-    {
-        int dt = *(int*) data;
-        iss << dt/10000 << "-" << dt%10000/100 << "-" << dt%100 << " ";
-    }
-    else
-        iss << "       ***      ";
-}
 
 void Printer::Println()
 {

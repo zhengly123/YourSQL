@@ -298,13 +298,13 @@ TEST_F(SM_Parser, CreateDB)
 TEST_F(SM_Parser, CreateTalbes)
 {
     freopen("../src/gtestcase/SM_Parser1.in","r",stdin);
-    StdoutPrinter printer;
+    //StdoutPrinter printer;
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter);
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);
 
     //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);
@@ -314,13 +314,13 @@ TEST_F(SM_Parser, CreateTalbes)
 TEST_F(SM_Parser, CreateTalbes_large)
 {
     freopen("../src/gtestcase/SM_Parser2.in","r",stdin);
-    StdoutPrinter printer;
+
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     RM_Manager rmManager(fm, bpm);
     IX_Manager ixManager(*fm, *bpm);
-    SM_Manager smManager(ixManager, rmManager, &printer);
-    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+    SM_Manager smManager(ixManager, rmManager, stdoutPrinter);
+    QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);
 
     //std::cerr << "Before Test." << std::endl;
     treeparser(smManager, qlManager);

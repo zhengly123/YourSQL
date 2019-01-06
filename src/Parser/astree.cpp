@@ -6,6 +6,7 @@
 #include "astree.h"
 #include "yacc.tab.cpp"
 #include "parsererror.h"
+#include "../Printer/CsvPrinter.h"
 
 void tester(int ident, std::string str)
 {
@@ -247,6 +248,11 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 if(rc) flag = 0;
             }
 
+            if(st.fileout.if_csv)
+                qlm.setPrinter(csvPrinter);
+            else
+                qlm.setPrinter(stdoutPrinter);
+
             if(flag) rc = qlm.Select(lensc, selist, st.table_list, lenwr, condwr, leng, grplist, leno, ordlist);
 
             delete[] selist;
@@ -254,6 +260,20 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             delete[] condwr;
 
             if(rc) return rc;
+
+            if(st.fileout.if_csv)
+            {
+                std::string outputName = st.fileout.fileName;
+                outputName = outputName.substr(1,outputName.length()-2);
+                qlm.getPrinter()->flush(outputName);
+            }
+            else
+            {
+#ifndef GTEST
+                qlm.getPrinter()->flush();
+#endif
+            }
+
 
             break;
 

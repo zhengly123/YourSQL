@@ -92,14 +92,15 @@
      STAR = 308,
      QEXIT = 309,
      QCLOSE = 310,
-     QMIN = 311,
-     QMAX = 312,
-     QAVG = 313,
-     QSUM = 314,
-     QCHAR = 315,
-     ORDERBY = 316,
-     GROUPBY = 317,
-     ASC = 318
+     QOUTPUT = 311,
+     QMIN = 312,
+     QMAX = 313,
+     QAVG = 314,
+     QSUM = 315,
+     QCHAR = 316,
+     ORDERBY = 317,
+     GROUPBY = 318,
+     ASC = 319
    };
 #endif
 /* Tokens.  */
@@ -156,14 +157,15 @@
 #define STAR 308
 #define QEXIT 309
 #define QCLOSE 310
-#define QMIN 311
-#define QMAX 312
-#define QAVG 313
-#define QSUM 314
-#define QCHAR 315
-#define ORDERBY 316
-#define GROUPBY 317
-#define ASC 318
+#define QOUTPUT 311
+#define QMIN 312
+#define QMAX 313
+#define QAVG 314
+#define QSUM 315
+#define QCHAR 316
+#define ORDERBY 317
+#define GROUPBY 318
+#define ASC 319
 
 
 

@@ -7,13 +7,16 @@
 
 #include "parser.h"
 #include "../yoursql.h"
-
+#include "../Printer/CsvPrinter.h"
 #include "../SM/SM_PUBLIC.h"
 #include "../QL/QL_PUBLIC.h"
 #include <iostream>
 
 static std::string currentDB;
 static int exitFlag;
+
+static Printer * stdoutPrinter = new StdoutPrinter;
+static Printer * csvPrinter = new CsvPrinter;
 
 void tester(int ident, std::string);
 

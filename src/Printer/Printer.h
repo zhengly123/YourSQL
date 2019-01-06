@@ -7,7 +7,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include "../SM/SM_Manager.h"
+#include "../SM/SM_PUBLIC.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ public:
 
     void Print(const char *const data[], int tupleCnt);
     void PrintTablesInfo(const RelationMeta *data, int tupleCnt);
-    void PrintValue(char *data, bool isNull, AttrType attrType);
+    virtual void PrintValue(char *data, bool isNull, AttrType attrType) = 0;
     void Println();
     void PrintFooter();
 //    void PrintTable(vector<AttrInfo> attrs,);
@@ -38,6 +38,7 @@ public:
     }
 
     virtual void flush() = 0;
+    virtual void flush(std::string name) = 0;
     virtual void syncFlush();
 
 protected:

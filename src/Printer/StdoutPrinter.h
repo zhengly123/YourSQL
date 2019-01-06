@@ -13,6 +13,8 @@ public:
     ~StdoutPrinter();
     void flush() override;
     void syncFlush() override;
+    void flush(std::string name) override;
+    void PrintValue(char *data, bool isNull, AttrType attrType) override;
 };
 
 

@@ -617,3 +617,14 @@ RC QL_Manager::getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr re
                                                }));
     return ret;
 }
+
+
+Printer* QL_Manager :: getPrinter()
+{
+    return this->printer;
+}
+
+void QL_Manager :: setPrinter(Printer* pt)
+{
+    this->printer = pt;
+}

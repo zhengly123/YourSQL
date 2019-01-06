@@ -56,6 +56,8 @@ public:
     RC printRelation  (const char *relName);
 
     void setCheckPrimary(int flag) {checkPrimaryKey = flag;}
+    Printer* getPrinter();
+    void setPrinter(Printer*);
 private:
     Printer *printer;
     int checkPrimaryKey;

@@ -72,10 +72,10 @@ SET(SOURCE
         src/Regex/Regex.cpp
         src/Regex/Regex.h
         src/errorhandle.h
-        src/Parser/parsererror.h)
+        src/Parser/parsererror.h src/Printer/CsvPrinter.cpp src/Printer/CsvPrinter.h)
 
 
-SET(GTEST 1)
+SET(GTEST 0)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}

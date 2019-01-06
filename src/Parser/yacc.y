@@ -30,7 +30,7 @@ ASType toplevel;
 %token ERROR GLIKE
 %token EQ NEQ LEQ GEQ LT GT
 %token LB RB FH DH DOT STAR
-%token QEXIT QCLOSE
+%token QEXIT QCLOSE QOUTPUT
 %token QMIN QMAX QAVG QSUM QCHAR
 %token ORDERBY GROUPBY ASC
 
@@ -60,6 +60,7 @@ ASType toplevel;
 %type<col_list> OColList
 %type<col_list> OrderByClause
 %type<col_list> GroupByClause
+%type<fileout> OutputClause
 %type<table_list> TableList
 %type<column_list> ColumnList
 
@@ -142,7 +143,7 @@ Stmt    : SHOW DATABASES
             $$.setcl_list = $4;
             $$.where_list = $5;
         }
-        | SELECT Selector FROM TableList WhereClauseX GroupByClause OrderByClause
+        | SELECT Selector FROM TableList WhereClauseX GroupByClause OrderByClause OutputClause
         {
             $$.id = SELECT_ST;
             $$.sel = $2;
@@ -150,6 +151,7 @@ Stmt    : SHOW DATABASES
             $$.where_list = $5;
             $$.group_list = $6;
             $$.order_list = $7;
+            $$.fileout = $8;
         }
         | CREATE INDEX IDENTIFIER LB IDENTIFIER RB
         {
@@ -552,6 +554,16 @@ GroupByClause : /* empty */
         | GROUPBY ColList
         {
             $$ = $2;
+        }
+
+OutputClause : /* empty */
+        {
+            $$.if_csv = 0;
+        }
+        | QOUTPUT VALUE_STRING
+        {
+            $$.if_csv = 1;
+            $$.fileName = $2;
         }
 
 %%  
