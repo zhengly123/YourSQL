@@ -24,11 +24,32 @@ int main(int argc, char *argv[])
     struct sockaddr_in remote_addr; // 服务器端网络地址结构体
     char buf[BUFFER_SIZE];  // 数据传送的缓冲区
     memset(&remote_addr,0,sizeof(remote_addr)); // 数据初始化--清零
+    string ipAddr;
+    int port;
+    printf("====================================\n");
+    printf("              YourSQL               \n");
+    printf("====================================\n");
+    printf("Default connection(localhost:9999)(Y/N):");
+    cin.getline(buf, 100);
+    if (buf[0]=='N')
+    {
+        printf("Server IP address(default localhost):");
+        cin >> ipAddr;
+        if (ipAddr=="")
+            ipAddr = string("127.0.0.1");
+        printf("Server IP port:");
+        cin>>port;
+    } else{
+        ipAddr="127.0.0.1";
+        port = 9999;
+    }
     remote_addr.sin_family=AF_INET; // 设置为IP通信
-    remote_addr.sin_addr.s_addr=inet_addr("127.0.0.1");// 服务器IP地址
-    remote_addr.sin_port=htons(ListenPort); // 服务器端口号
+//    remote_addr.sin_addr.s_addr=inet_addr("127.0.0.1");// 服务器IP地址
+//    remote_addr.sin_port=htons(ListenPort); // 服务器端口号
+    remote_addr.sin_addr.s_addr = inet_addr(ipAddr.data());// 服务器IP地址
+    remote_addr.sin_port=htons(port); // 服务器端口号
     // 创建客户端套接字--IPv4协议，面向连接通信，TCP协议
-    if((client_sockfd=socket(PF_INET,SOCK_STREAM,0))<0)
+    if ((client_sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("client socket creation failed");
         exit(EXIT_FAILURE);

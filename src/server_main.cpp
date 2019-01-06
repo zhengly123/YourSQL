@@ -60,7 +60,8 @@ string process(char *cmd)
         if(rc == 0) printf("NORMAL.\n");
     }
     string ret = printer->getSS().str();
-    printer->getSS().flush();
+    printer->flush();
+//    printer->getSS().flush();
     ret += '\n';
     return ret;
 }
@@ -169,28 +170,28 @@ int epollLoop()
             exit(EXIT_FAILURE);
         }
         int i;
-        for(i=0;i<nfds;i++)
+        for (i = 0; i < nfds; i++)
         {
             // 客户端有新的连接请求
-            if(events[i].data.fd==server_sockfd)
+            if (events[i].data.fd == server_sockfd)
             {
                 // 等待客户端连接请求到达
                 if ((client_sockfd = accept(server_sockfd,
                                             (struct sockaddr *) &remote_addr,
-                                            (socklen_t*)&sin_size)) < 0)
+                                            (socklen_t *) &sin_size)) < 0)
                 {
                     perror("accept client_sockfd failed");
                     exit(EXIT_FAILURE);
                 }
                 // 向epoll注册client_sockfd监听事件
-                ev.events=EPOLLIN;
-                ev.data.fd=client_sockfd;
+                ev.events = EPOLLIN;
+                ev.data.fd = client_sockfd;
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_sockfd, &ev) == -1)
                 {
                     perror("epoll_ctl:client_sockfd register failed");
                     exit(EXIT_FAILURE);
                 }
-                printf("accept client %s/n",inet_ntoa(remote_addr.sin_addr));
+                fprintf(stderr, "accept client %s\n", inet_ntoa(remote_addr.sin_addr));
             }
                 // 客户端有数据发送过来
             else if (events[i].events == EPOLLIN)
@@ -201,14 +202,14 @@ int epollLoop()
                     perror("receive from client failed");
                     exit(EXIT_FAILURE);
                 }
-                if (len==0)
+                if (len == 0)
                 {
                     fprintf(stderr, "Null string from client(Pipe broke)\n");
                 }
                 fprintf(stderr, "receive from client:%s\n", buf);
                 string data = process(buf);
                 cerr << data;
-                send(client_sockfd, data.data(), min((int)data.length(),10000), 0);
+                send(client_sockfd, data.data(), min((int) data.length(), 10000), 0);
                 memset(buf, 0, sizeof(buf));
             }
         }
