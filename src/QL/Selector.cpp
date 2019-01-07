@@ -183,11 +183,11 @@ bool Selector::checkConditionLegal()
         if (cond.skip)
             continue;
         // 1
-        if (cond.lhsAttr.relName!= nullptr)
-        {
-            errorReason = QL_RELNOTNULL;
-            break;
-        }
+        //if (cond.lhsAttr.relName!= nullptr)
+        //{
+        //    errorReason = QL_RELNOTNULL;
+        //    break;
+        //}
         //
         auto it = checkAttrExist(cond.lhsAttr.attrName);
         if (it == attrs.end())
@@ -283,11 +283,11 @@ bool Selector::checkSetLegal(const int nSet, const Condition sets[])
     {
         const auto& cond=conditions[i];
         // 1
-        if (cond.lhsAttr.relName!= nullptr)
-        {
-            errorReason = QL_RELNOTNULL;
-            break;
-        }
+        //if (cond.lhsAttr.relName!= nullptr)
+        //{
+        //    errorReason = QL_RELNOTNULL;
+        //    break;
+        //}
         //
         auto it = checkAttrExist(cond.lhsAttr.attrName);
         if (it == attrs.end())
@@ -310,7 +310,7 @@ bool Selector::checkSetLegal(const int nSet, const Condition sets[])
             if (cond.rhsValue.type == AttrType::NULLTYPE)
             {
                 if (attrL.isNotNull())
-                    return QL_ATTRNOTNULL;
+                    errorReason = QL_ATTRNOTNULL;
             } else if (attrL.attrType != cond.rhsValue.type)
             {
                 errorReason = QL_TYPEUNMATCHED;
@@ -323,7 +323,7 @@ bool Selector::checkSetLegal(const int nSet, const Condition sets[])
             if(cond.op == CompOp::LK_OP || cond.op == CompOp::UKL_OP)
             {
                 if(attrL.attrType != AttrType::STRING)
-                    return QL_TYPEUNMATCHED;
+                    errorReason = QL_TYPEUNMATCHED;
             }
         }
     }

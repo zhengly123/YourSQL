@@ -174,7 +174,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 //if(rc) return rc;
             }
 
-            // if(rc) return rc;
+             if(rc) return rc;
 
 #ifdef TERMMSG
             printf("INFO : Insert cnt = %d\n", flag);
