@@ -1,0 +1,18 @@
+create database db1;
+use db1;
+
+create table tb1 (col1 int, col2 int, primary key(col2));
+drop table tb1;
+
+create table tb1 (col1 int, col2 int, primary key(col2));
+insert into tb1 values (1,2),(3,4);
+create table tb2 (col3 int, col4 int, foreign key (col4) references tb1(col2));
+insert into tb2 values (1,4),(3,2);
+
+drop table tb1;
+drop table tb2;
+drop table tb1;
+
+close;
+drop database db1;
+exit;

@@ -40,6 +40,7 @@ const std::string smerror[] =
                 "SM_FOREIGN_NOTFOUND",
                 "SM_FOREIGN_NOTPRIMARY",
                 "SM_FOREIGN_TYPEMISMATCH",
+                "SM_FOREIGN_REF_DROP_ERROR",
                 "SM_SYSCALL_ERROR",
         };
 

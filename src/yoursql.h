@@ -46,7 +46,7 @@ struct AttrInfo {
     int      indexNum;
     int      nullOffset;             // attrNum-th attr in the relation
     int      aggregateFunc;
-
+    int      refcnt;                  // cnt ref by foreign
     int      isForeign;               // 0 : Not Foreign Key ; 1 : Foreign Key
     char     foreignTable[MAXNAME+1]; // isForeign = 1 : foreignTableName
     char     foreignName[MAXNAME+1];  // isForeign = 1 : foreignColumnName

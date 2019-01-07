@@ -217,7 +217,7 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
     handle = smm->filehandleGet(std::string(relName));
     //rmm->OpenFile(relToFileName(relName).data(), handle);
 
-    // TODO: Check primary key!
+    // Check primary key!
     int primaryindex = -1;
     for(int i = 0; i < nValues; ++ i)
         if(attributes[i].flag & 2) primaryindex = i;
@@ -245,6 +245,8 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
             return QL_PRIMARY_DUPLICATE;
         }
     }
+
+    // TODO : Check Foreign key!
 
     int tuplelength = relmeta.tupleLength;
     int ifnull = relmeta.tupleLength - relmeta.attrCount;

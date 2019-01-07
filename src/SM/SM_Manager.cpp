@@ -110,6 +110,8 @@ RC SM_Manager :: CreateTable (const char *relName, int attrCount, AttrInfo *attr
             if(!(atr.flag & 2)) return SM_FOREIGN_NOTPRIMARY;
             if(attributes[i].attrType != atr.attrType) return SM_FOREIGN_TYPEMISMATCH;
             if(attributes[i].attrLength != atr.attrLength) return SM_FOREIGN_TYPEMISMATCH;
+            atr.refcnt ++;
+            if(attrRefresh(relName, attrName, &atr)) return SM_FOREIGN_NOTFOUND;
         }
 
 
@@ -170,15 +172,36 @@ RC SM_Manager :: DropTable   (const char *relName)
     RC rc;
     if (strlen(relName)>MAXNAME)
         return SM_NAME_TOO_LONG;
+
+    vector<AttrInfo> attributes =  attrGet(relName);
+    for(auto attr : attributes)
+        if(attr.refcnt) return SM_FOREIGN_REF_DROP_ERROR;
+
+    for(auto attr : attributes)
+        if(attr.isForeign)
+        {
+            AttrInfo refatr;
+            std::string relName(attr.foreignTable);
+            std::string attrName(attr.foreignName);
+            if(attrGet(std::make_pair(relName, attrName), &refatr)) return SM_FOREIGN_NOTFOUND;
+            refatr.refcnt --;
+            if(attrRefresh(relName, attrName, &refatr)) return SM_FOREIGN_NOTFOUND;
+        }
+
+
     RM_FileScan relScan;
     RM_Record relRecord;
+    RID rid;
+    char *pData;
+
     bool hit=false;
     relScan.OpenScan(relcatHandler,AttrType::STRING,MAXNAME+1,
             offsetof(RelationMeta,relName), CompOp::EQ_OP, (void *)relName);
+
     while (relScan.GetNextRec(relRecord)!=RM_EOF)
     {
         hit=true;
-        RID rid;
+
         relRecord.GetRid(rid);
         rc=relcatHandler.DeleteRec(rid);
         assert(rc==0);
@@ -187,6 +210,18 @@ RC SM_Manager :: DropTable   (const char *relName)
         assert(rc==0);
         break;
     }
+    relScan.CloseScan();
+
+    RM_FileScan attrScan;
+    attrScan.OpenScan(attrcatHandler,AttrType::STRING,MAXNAME+1,
+                      offsetof(AttrInfo,relName), CompOp::EQ_OP, (void *)relName);
+    while (attrScan.GetNextRec(relRecord) != RM_EOF)
+    {
+        relRecord.GetRid(rid);
+        if(rc = attrcatHandler.DeleteRec(rid)) return rc;
+    }
+    attrScan.CloseScan();
+
     if (!hit)
         return SM_NONEXIST_RELATION;
     return 0;
@@ -659,6 +694,35 @@ vector<AttrInfo> SM_Manager::attrGet(std::string relName)
 
     attrScan.CloseScan();
     return attributes;
+}
+
+RC SM_Manager::attrRefresh(std::string relName, std::string attrName, AttrInfo *attr)
+{
+    assert(isOpen);
+
+    RM_FileScan attrScan;
+    RM_Record attrRecord;
+    char * pData;
+
+    attrScan.OpenScan(attrcatHandler,
+                      AttrType::STRING,
+                      MAXNAME+1,
+                      offsetof(AttrInfo, relName),
+                      CompOp::EQ_OP,
+                      (void *) (relName.c_str()));
+
+    while (attrScan.GetNextRec(attrRecord) != RM_EOF)
+    {
+        attrRecord.GetData(pData);
+        if(strcmp(((AttrInfo*)pData)->attrName, attrName.c_str())) continue;
+        memcpy(pData, attr, sizeof(AttrInfo));
+        attrcatHandler.UpdateRec(attrRecord);
+        break;
+    }
+
+    attrScan.CloseScan();
+
+    return 0;
 }
 
 RM_FileHandle SM_Manager::filehandleGet(std::string relName)

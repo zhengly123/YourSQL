@@ -102,6 +102,8 @@ public:
 
     vector<AttrInfo> attrGet(vector<RelAttrType> attrNames);
 
+    RC attrRefresh(std::string relName, std::string attrName, AttrInfo *attr);
+
     void flush();
 
     vector<RelationMeta> TestReturnTables();
