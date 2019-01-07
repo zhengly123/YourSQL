@@ -110,6 +110,11 @@ public:
     RM_FileHandle filehandleGet(std::string relName);
     IX_IndexHandle* indexhandleGet(std::string relName, int index);
 
+    std::string getCurrentDbName()
+    {
+        return currentDbName;
+    }
+
 private:
     IX_Manager *ixm;
     RM_Manager *rmm;

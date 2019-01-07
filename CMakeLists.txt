@@ -92,13 +92,15 @@ IF(GTEST)
 else()
     SET(SOURCE ${SOURCE}
             src/RM_Test/test_scan.cpp
-            src/testmain.cpp)
-#            src/server_main.cpp)
+            #            src/testmain.cpp)
+            src/server_main.cpp)
 #    add_compile_definitions(OutputExcutedOperation=OPEN)
 #    add_compile_definitions(OutputLinearIndex=OPEN)
 #    add_compile_definitions(IXDEBUG=OPEN)
 #    add_compile_definitions(OutputFileOperation=OPEN)
     add_compile_definitions(TERMMSG=OPEN)
+    # prevent data be flushed
+    add_compile_definitions(SERVER=OPEN)
 endif()
 
 add_executable(YourSQL
