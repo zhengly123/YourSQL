@@ -112,7 +112,8 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             break;
 
         case SHOW_TABLE :
-            smm.PrintTables();
+            rc = smm.PrintTables();
+            if (rc) return rc;
             //std::cerr << "[Stmt] show tables" << std::endl;
             break;
 
@@ -309,7 +310,9 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
             else
             {
 #ifndef GTEST
+#ifndef SERVER
                 qlm.getPrinter()->flush();
+#endif
 #endif
             }
 

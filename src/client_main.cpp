@@ -12,10 +12,26 @@
 #include <stdlib.h>
 #include <cstdio>
 #include <iostream>
+#include <string>
+#include <vector>
 using namespace std;
 
 #define BUFFER_SIZE 4000
 const int ListenPort = 9999;
+
+string forbidMessage(char *buf)
+{
+    string input = string(buf);
+    vector<string> forbidCmd = {"use ", "drop database ", "create database "};
+    for (auto fcmd:forbidCmd)
+    {
+        if (input.compare(0, fcmd.length(), fcmd) == 0)
+        {
+            return fcmd;
+        }
+    }
+    return string("");
+}
 
 int main(int argc, char *argv[])
 {
@@ -60,12 +76,32 @@ int main(int argc, char *argv[])
         perror("connect to server failed");
         exit(EXIT_FAILURE);
     }
+    // get current db name
+    memset(buf, 0, sizeof(buf));
+    len = recv(client_sockfd, buf, BUFFER_SIZE, 0);
+    buf[len] = 0;
+    string cdb = buf;
+#ifndef ADMIN
+    if (cdb != string(""))
+    {
+        printf("Server not initiated\n");
+        return 0;
+    }
+#endif
+
     // 循环监听服务器请求
     while(1)
     {
-        printf("> ");
-//        scanf("%s",buf);
+        cout << "(" << cdb << ")" << "> ";
         cin.getline(buf,400);
+        string ret;
+#ifdef ADMIN
+        if ((ret=forbidMessage(buf))!=string(""))
+        {
+            cout << "Command " << ret << " is not support." << endl;
+            continue;
+        }
+#endif
         // exit
         if(strcmp(buf,"exit")==0)
         {

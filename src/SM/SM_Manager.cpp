@@ -46,7 +46,9 @@ RC SM_Manager :: OpenDb      (const char *dbName)
             string(initialCwd) + string("/") + string(dbName);
     rc = chdir(absolutePath.data());
 //    printf("err:%d\n", errno);
-    assert(rc==0);
+    if (rc)
+        return SM_INVALID_DB_NAME;
+//    assert(rc==0);
 
     rc=rmm->OpenFile(RELCAT,relcatHandler);
     assert(rc==0);
@@ -489,6 +491,10 @@ RC SM_Manager::DestroyDb(const char *dbName)
 
 RC SM_Manager::PrintTables()
 {
+    if (!isOpen)
+    {
+        return SM_CLOSE;
+    }
     cerr << "Show Tables: " << endl;
     RM_FileScan relScan;
     RM_Record relRecord;
@@ -503,7 +509,8 @@ RC SM_Manager::PrintTables()
         relRecord.GetData(relationMetaData);
         printer->PrintTablesInfo((RelationMeta *) relationMetaData, 1);
     }
-    printer->flush();
+    // not flush in function
+//    printer->flush();
     return 0;
 }
 

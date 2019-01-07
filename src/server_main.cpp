@@ -33,14 +33,17 @@ const int MAX_EVENTS = 10;
 //int inputfd;
 FILE *inputFile;
 
-Printer *printer = new StdoutPrinter;
+extern Printer *stdoutPrinter;
+//Printer *printer = new StdoutPrinter;
+//Printer *printer = stdoutPrinter;
 FileManager* fmm = new FileManager();
 BufPageManager* bpmm = new BufPageManager(fmm);
 RM_Manager rmManager(fmm, bpmm);
 IX_Manager ixManager(*fmm, *bpmm);
-SM_Manager smManager(ixManager, rmManager, printer); // add printer
-QL_Manager qlManager(smManager, ixManager, rmManager, printer);// add printer
+SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
+QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
+extern int parserError;
 string process(char *cmd)
 {
     int rc;
@@ -52,21 +55,30 @@ string process(char *cmd)
     fclose(inputFile);
 
     freopen("server.in", "r", stdin);
+    bool hasError = false;
     for(;;)
     {
         rc = treeparser(smManager, qlManager, 0);
         if(rc == PARSEREXIT) break;
+        if (parserError || hasError)
+        {
+            hasError = true;
+            continue;
+        }
         if (rc > 0)
         {
-            printer->getSS() << errorGet(rc) << '\n';
-        }
+            qlManager.getPrinter()->getSS() << errorGet(rc) << '\n';
+        } else
+            qlManager.getPrinter()->getSS() << "OK." << '\n';
 
         if(rc == 0) printf("NORMAL.\n");
     }
-    string ret = printer->getSS().str();
-    printer->flush();
+    if (hasError)
+        qlManager.getPrinter()->getSS() << "Syntax error." << '\n';
+    string ret = qlManager.getPrinter()->getSS().str();
+    qlManager.getPrinter()->flush();
 //    printer->getSS().flush();
-    ret += '\n';
+//    ret += '\n';
     return ret;
 }
 
@@ -196,6 +208,10 @@ int epollLoop()
                     exit(EXIT_FAILURE);
                 }
                 fprintf(stderr, "accept client %s\n", inet_ntoa(remote_addr.sin_addr));
+                int len = 0;
+                len = send(client_sockfd, smManager.getCurrentDbName().data(),
+                           min((int) smManager.getCurrentDbName().length() + 1, 10000), 0);
+                printf("Send %d bytes.\n", len);
             }
                 // 客户端有数据发送过来
             else if (events[i].events == EPOLLIN)
