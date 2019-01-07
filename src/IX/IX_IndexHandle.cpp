@@ -608,6 +608,11 @@ RC IX_IndexHandle::close()
 
 RC IX_IndexHandle::searchKey(char *key, RID &rid) const
 {
+    if (ixHeader.rootPage == 0)
+    {
+        rid.Set(-1, -1);
+        return 0;
+    }
     rid = searchKeyDFS(key, RID(ixHeader.rootPage, 0));
     return 0;
 }
