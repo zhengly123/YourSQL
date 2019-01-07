@@ -112,7 +112,7 @@ TEST_F(SM, CreateTable)
     EXPECT_EQ(1, tables.size());
     EXPECT_STREQ(relName,tables[0].relName);
     EXPECT_EQ(1,tables[0].attrCount);
-    EXPECT_EQ(1,tables[0].indexCount)<<"Destroy an index. But cnt should "
+    EXPECT_EQ(0,tables[0].indexCount)<<"Destroy an index. But cnt should "
                                        "be monotonous.";
 
     attrs=sm.TestReturnAttrs();
@@ -238,7 +238,7 @@ TEST_F(SM, PersistentCreateTable)
     EXPECT_EQ(1, tables.size());
     EXPECT_STREQ(relName,tables[0].relName);
     EXPECT_EQ(1,tables[0].attrCount);
-    EXPECT_EQ(1,tables[0].indexCount)<<"Destroy an index. But cnt should "
+    EXPECT_EQ(0,tables[0].indexCount)<<"Destroy an index. But cnt should "
                                        "be monotonous.";
 
     attrs=sm.TestReturnAttrs();

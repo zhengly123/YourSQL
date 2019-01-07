@@ -375,19 +375,7 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
 
             // No indexNum pool is maintained, so there is no reduction
             // update rel
-//            relScan.OpenScan(relcatHandler,AttrType::STRING,strlen(relName)+1,
-//                    offsetof(RelationMeta,relName), EQ_OP, relName);
-//            bool hit=false;
-//            while (relScan.GetNextRec(relRecord)!=RM_EOF)
-//            {
-//                hit=true;
-//                break;
-//            }
-//            assert(hit);
-//            char *relData;
-//            relRecord.GetData(relData);
-//            ((RelationMeta*)relData)->indexCount--;
-//            relcatHandler.UpdateRec(relRecord);
+
             // No indexNum pool is maintained, so there is no reduction
 
             hit = true;
@@ -397,6 +385,17 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
     attrScan.CloseScan();
     if (!hit)
         return SM_NONEXIST_RELATION;
+
+    relScan.OpenScan(relcatHandler,AttrType::STRING,strlen(relName)+1,
+                    offsetof(RelationMeta,relName), EQ_OP, relName);
+
+    relScan.GetNextRec(relRecord);
+
+    char *relData;
+    relRecord.GetData(relData);
+    ((RelationMeta*)relData)->indexCount--;
+    relcatHandler.UpdateRec(relRecord);
+
     return 0;
 }
 
