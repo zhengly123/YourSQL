@@ -44,6 +44,8 @@ public:
      * @return The index of first key greater than given key.
      */
     int firstGreaterIndex(void *key);
+
+    int firstGreaterOrEqualIndex(void *key);
 };
 
 

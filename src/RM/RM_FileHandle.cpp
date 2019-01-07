@@ -86,8 +86,9 @@ RC RM_FileHandle :: GetRec         (const RID &rid, RM_Record &rec) const
     int index;
     BufType b = bpm->getPage(fileID, pageID, index);
     char* brec = (char*) b + recordShift + 4 + recordSize * slotID;
-    char* bcop = (char*) malloc(recordSize);
-    memcpy(bcop, brec, recordSize); // copy the info
+//    char* bcop = (char*) malloc(recordSize);
+    std::shared_ptr<char> bcop(new char[recordSize]);
+    memcpy(bcop.get(), brec, recordSize); // copy the info
 
     if(D) cerr << "     Pos Offset = " << brec - (char*)b <<endl;
 

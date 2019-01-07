@@ -32,7 +32,8 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo, AttrType attrType,
 
     // Open the file
     int fileID, index;
-    assert(fm.openFile(rankFileName.data(), fileID));
+    bool boolRet = fm.openFile(rankFileName.data(), fileID);
+    assert(boolRet);
 
     // #0 : file header
     BufType b = bpm.allocPage(fileID, 0, index, false);

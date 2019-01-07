@@ -90,7 +90,8 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
 //    path[dep] = c;
     if (node->isLeaf)
     {
-        assert((rc=insertIntoLeaves(node,key,value))==0);
+        rc = insertIntoLeaves(node, key, value);
+        assert(rc == 0);
     } else {// continue search
         childK = node->firstGreaterIndex(key) - 1;
         assert(childK>=0);// there is no deletion
@@ -121,7 +122,8 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
                 createNode(newPageNum, newLeafNode);
                 prepNode->nextInList = RID(newPageNum, 0);
 
-                assert((rc = node->insert(key, RID(newPageNum, 0)))==0);
+                rc = node->insert(key, RID(newPageNum, 0));
+                assert(rc == 0);
 
                 ++childK;
                 childNode = &newLeafNode;
@@ -130,7 +132,8 @@ RC IX_IndexHandle::treeInsert(int c, int dep, void *key, const RID &value)
             // children index of last level nodes above leaves is different from others
             childPage = node->chRIDs[childK].GetPageNum();
         }
-        assert((rc = treeInsert(childPage, dep + 1, key, value))==0);
+        rc = treeInsert(childPage, dep + 1, key, value);
+        assert(rc == 0);
 
         // check the size of child and split
         if (childNode->n>M)
@@ -161,7 +164,8 @@ RC IX_IndexHandle::splitChild(BPlusTreeNode *parentNode, BPlusTreeNode *childNod
     childNode->n = mid;
 
     // insert to parent node
-    assert((rc=parentNode->insert(newNode.getKey(0), RID(newPageNum, 0)))==0);
+    rc = parentNode->insert(newNode.getKey(0), RID(newPageNum, 0));
+    assert(rc == 0);
 }
 
 //RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node,void *key, const RID &value)
@@ -411,6 +415,12 @@ RC IX_IndexHandle::nextValidEntry(RID &scanRID, RID &dataRID, void *key) const
     BPlusTreeNode *node;
     int bufferIndex;
 
+    // scanRID may be attained from search which can be (-1, -1)
+    if (scanRID.GetPageNum() <= 0)
+    {
+        return IX_ITERATOR_TO_END;
+    }
+
     node = (BPlusTreeNode*)bpm->getPage(fileID, scanRID.GetPageNum(),
             bufferIndex);
     do
@@ -440,34 +450,6 @@ bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp) const
 
 bool IX_IndexHandle::cmp(void *a, void *b, CompOp compOp, AttrType attrType)
 {
-//    switch (compOp)
-//    {
-//        case LT_OP:
-//            switch (attrType)
-//            {
-//                case INT:
-//                    return *(int*)(a)<*(int*)(b);
-//                case FLOAT:
-//                    return *(float*)(a)<*(float*)(b);
-//                case STRING:
-//                    return strcmp((char *) (a), (char *) (b)) < 0;
-//            }
-//            assert(false);
-//        case GT_OP:
-//            return cmp(b, a, LT_OP, attrType);
-//        case EQ_OP:
-//            return !cmp(a, b, LT_OP, attrType)&&!cmp(b, a, LT_OP, attrType);
-//        case NE_OP:
-//            return !cmp(a, b, EQ_OP, attrType);
-//        case LE_OP:
-//            return !cmp(a, b, GT_OP, attrType);
-//        case GE_OP:
-//            return !cmp(a, b, LT_OP, attrType);
-//        case NO_OP:
-//            return true;
-//    }
-//    assert(false);
-//    return false;
     return Cmp(a, b, compOp, attrType);
 }
 
@@ -503,11 +485,11 @@ RC IX_IndexHandle::insertIntoLeaves(BPlusTreeNode *node, void *key, const RID &v
     return 0;
 }
 
-void IX_IndexHandle::printBPT()
+void IX_IndexHandle::printBPT() const
 {
 #ifdef IXDEBUG
     RC rc;
-    int &root=ixHeader.rootPage;
+    int root=ixHeader.rootPage;
     if (root<=0)// if there is no root node
     {
         printf("No root.\n");
@@ -520,7 +502,7 @@ void IX_IndexHandle::printBPT()
 #endif
 }
 
-void IX_IndexHandle::printDFS(const RID rid, int intend)
+void IX_IndexHandle::printDFS(const RID rid, int intend) const
 {
 #ifdef IXDEBUG
     for (int i = 0; i < intend; ++i)
@@ -558,7 +540,7 @@ IX_IndexHandle::~IX_IndexHandle()
         close();
 }
 
-void IX_IndexHandle::printLinearLeaves()
+void IX_IndexHandle::printLinearLeaves() const
 {
 #ifdef IXDEBUG
     RID rid;
@@ -595,7 +577,7 @@ RID IX_IndexHandle::getLeftestLeafDFS(RID rid) const
 {
     int c=rid.GetPageNum();
     assert(c>0);
-    int rc, bufferIndex, childK;
+    int bufferIndex;
     BPlusTreeNode *node;
     node = (BPlusTreeNode*)bpm->getPage(fileID, c, bufferIndex);
     bpm->markDirty(bufferIndex);
@@ -622,5 +604,27 @@ RC IX_IndexHandle::close()
     this->indexNo = -1;
     this->isOpen = false;
     return 0;
+}
+
+RC IX_IndexHandle::searchKey(char *key, RID &rid) const
+{
+    rid = searchKeyDFS(key, RID(ixHeader.rootPage, 0));
+    return 0;
+}
+
+RID IX_IndexHandle::searchKeyDFS(char *key, RID rid) const
+{
+    int c = rid.GetPageNum();
+    assert(c > 0);
+    int bufferIndex, childK;
+    BPlusTreeNode *node;
+    node = (BPlusTreeNode *) bpm->getPage(fileID, c, bufferIndex);
+    if (node->isLeaf)
+        return rid;
+    childK = node->firstGreaterOrEqualIndex(key) - 1;
+    if (childK >= node->n)
+        return RID(-1, -1);
+    assert(childK >= 0);
+    return searchKeyDFS(key, node->chRIDs[childK]);
 }
 

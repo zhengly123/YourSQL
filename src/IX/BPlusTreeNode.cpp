@@ -76,11 +76,19 @@ bool BPlusTreeNode::overfull()
     return n == M+1;
 }
 
-inline int BPlusTreeNode::firstGreaterIndex(void *key)
+int BPlusTreeNode::firstGreaterIndex(void *key)
 {
     int t;
     for (t = 0; t < n && IX_IndexHandle::cmp(keys + t * attrLength, key,
              LE_OP, attrType); ++t);
+    return t;
+}
+
+int BPlusTreeNode::firstGreaterOrEqualIndex(void *key)
+{
+    int t;
+    for (t = 0; t < n && IX_IndexHandle::cmp(keys + t * attrLength, key,
+                                             CompOp::LT_OP, attrType); ++t);
     return t;
 }
 

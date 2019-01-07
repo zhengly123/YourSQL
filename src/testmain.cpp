@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
-    freopen("tt.txt", "r", stdin);
+    //freopen("tt.txt", "r", stdin);
 
     int rc;
     for(;;)

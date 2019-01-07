@@ -5,6 +5,7 @@
 #ifndef YOURSQL_RM_H
 #define YOURSQL_RM_H
 
+#include <memory>
 #include "../PF/bufmanager/BufPageManager.h"
 #include "../PF/fileio/FileManager.h"
 #include "../yoursql.h"
@@ -35,7 +36,9 @@ public:
 
 class RM_Record
 {
-    char *pData;
+//    char *pData;
+    std::shared_ptr<char> pData;
+
     RID rid;
 public:
     RM_Record  ();                     // Constructor
@@ -43,7 +46,8 @@ public:
     RC GetData    (char *&pData) const;   // Set pData to point to the record's contents
     RC GetRid     (RID &rid) const;       // Get the record id
 
-    RC SetData    (char *pData);   // Set pData to point to the record's contents
+//    RC SetData    (char *pData);   // Set pData to point to the record's contents
+    RC SetData(std::shared_ptr<char> pData);
     RC SetRid     (RID rid);       // Set the record id
 
     /**

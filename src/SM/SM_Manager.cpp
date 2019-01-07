@@ -40,8 +40,8 @@ RC SM_Manager :: OpenDb      (const char *dbName)
     {
         return SM_INVALID_DB_NAME;
     }
-
-    assert(getcwd(initialCwd, 2048));
+    auto pTemp = getcwd(initialCwd, 2048);
+    assert(pTemp);
     const basic_string<char, char_traits<char>, allocator<char>> &absolutePath =
             string(initialCwd) + string("/") + string(dbName);
     rc = chdir(absolutePath.data());
