@@ -223,16 +223,26 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
 
     if(primaryindex >= 0 && checkPrimaryKey)
     {
-        RM_FileScan scanner;
+        Condition condition;
+        condition.op = CompOp::EQ_OP;
+        condition.flag = CondType::COND_NORMAL;
+        condition.bRhsIsAttr = 0;
+        condition.rhsValue = values[primaryindex];
+        condition.lhsAttr.relName = nullptr;
+        condition.lhsAttr.attrName = attributes[primaryindex].attrName;
+        condition.lhsAttr.op = 0;
+        condition.lhsAttr.ord = 0;
+        condition.skip = false;
+//        condition.pattern = nullptr;
+        Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
+                          1, &condition,
+                          smm->filehandleGet(attributes[primaryindex].relName));
         RM_Record record;
-        scanner.OpenScan(handle, attributes[primaryindex].attrType, attributes[primaryindex].attrLength,
-            attributes[primaryindex].offset, CompOp::EQ_OP, values[primaryindex].data);
-        if(scanner.GetNextRec(record) != RM_EOF)
+        RM_FileHandle *handle = nullptr;
+        if (selector.getNext(record, handle))
         {
-            // rmm->CloseFile(handle);
             return QL_PRIMARY_DUPLICATE;
         }
-        scanner.CloseScan();
     }
 
     int tuplelength = relmeta.tupleLength;
