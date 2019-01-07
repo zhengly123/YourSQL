@@ -58,6 +58,8 @@ public:
     void setCheckPrimary(int flag) {checkPrimaryKey = flag;}
     Printer* getPrinter();
     void setPrinter(Printer*);
+
+    int selectsize;
 private:
     Printer *printer;
     int checkPrimaryKey;

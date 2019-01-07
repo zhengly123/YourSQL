@@ -73,12 +73,21 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
         case CREATE_DB :
 
-            smm.CreateDb(st.dbName.c_str());
+            rc = smm.CreateDb(st.dbName.c_str());
+            if(rc) return rc;
+#ifdef TERMMSG
+            printf("INFO : Create DB %s.\n", st.dbName.c_str());
+#endif
             break;
 
         case DROP_DB :
 
             smm.DestroyDb(st.dbName.c_str());
+            if(rc) return rc;
+#ifdef TERMMSG
+            printf("INFO : Drop DB %s.\n", st.dbName.c_str());
+#endif
+
             break;
 
         case USE_DB :
@@ -88,7 +97,17 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 if (!currentDB.empty())
                     smm.CloseDb(); // close current db
                 currentDB = st.dbName;
-                smm.OpenDb(currentDB.c_str());
+                rc = smm.OpenDb(currentDB.c_str());
+                if(rc) return rc;
+#ifdef TERMMSG
+                printf("INFO : Use DB %s.\n", st.dbName.c_str());
+#endif
+            }
+            else
+            {
+#ifdef TERMMSG
+                printf("INFO : DB %s is already in use.\n", st.dbName.c_str());
+#endif
             }
             break;
 
@@ -113,11 +132,19 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
             delete[] atrv;
 
+#ifdef TERMMSG
+            printf("INFO : Table %s created.\n", st.tbName.c_str());
+#endif
+
             break;
 
         case DROP_TABLE :
 
-            smm.DropTable(st.tbName.c_str());
+            rc = smm.DropTable(st.tbName.c_str());
+            if(rc) return rc;
+#ifdef TERMMSG
+            printf("INFO : Table %s dropped.\n", st.tbName.c_str());
+#endif
             break;
 
         case DESC_ST :
@@ -127,6 +154,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
         case INSERT_ST :
 
+            flag = 0;
             for(std::list<std::list<ivalue>>::iterator it = st.value_lists.begin(); it != st.value_lists.end(); ++ it)
             {
                 len = (*it).size();
@@ -134,12 +162,23 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 memset(vali, 0, sizeof(Value) * len);
                 rc = valuelistparser(*it, vali);
                 //if(rc) return rc;
-                rc = qlm.Insert(st.tbName.c_str(), len, vali);
+                if(rc == 0) rc = qlm.Insert(st.tbName.c_str(), len, vali);
                 delete[] vali;
+                if(rc == 0) ++ flag;
+                else
+                {
+#ifdef TERMMSG
+                    printf("ERROR: %s\n", errorGet(rc).c_str());
+#endif
+                }
                 //if(rc) return rc;
             }
 
-            if(rc) return rc;
+            // if(rc) return rc;
+
+#ifdef TERMMSG
+            printf("INFO : Insert cnt = %d\n", flag);
+#endif
 
             break;
 
@@ -274,17 +313,30 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 #endif
             }
 
+#ifdef TERMMSG
+            printf("INFO : Select cnt = %d.\n", qlm.selectsize);
+#endif
+
 
             break;
 
         case CREATE_IDX :
 
-            smm.CreateIndex(st.tbName.c_str(), st.colName.c_str());
+            rc = smm.CreateIndex(st.tbName.c_str(), st.colName.c_str());
+            if(rc) return rc;
+#ifdef TERMMSG
+            printf("INFO : Index created.\n");
+#endif
+
             break;
 
         case DROP_IDX :
 
-            smm.DropIndex(st.tbName.c_str(), st.colName.c_str());
+            rc = smm.DropIndex(st.tbName.c_str(), st.colName.c_str());
+            if(rc) return rc;
+#ifdef TERMMSG
+            printf("INFO : Index dropped.\n");
+#endif
             break;
 
         case EXIT_ST :
@@ -294,7 +346,11 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
         case CLOSE_ST :
 
-            smm.CloseDb();
+            rc = smm.CloseDb();
+            if(rc) return rc;
+#ifdef TERMMSG
+            printf("INFO : Database %s closed.\n", currentDB.c_str());
+#endif
             currentDB = "";
             break;
 
@@ -443,10 +499,22 @@ int valuelistparser(std::list<ivalue> valuelist, Value * val)
     return 0;
 }
 
+const int DayofMonth[] = {0, 31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+int validdate(int y, int m, int d)
+{
+    if(y < 0 || y > 9999) return 0;
+    if(m < 1 || m > 12) return 0;
+    if(d < 1 || d > 31) return 0;
+    if(m != 2) return d <= DayofMonth[m];
+    int rn = ((y % 4 == 0) && (y % 100 != 0)) || (y % 400 == 0);
+    return d <= 28 + rn;
+}
+
 int valueparser(ivalue value, Value * val)
 {
     std::string s;
-    int dt;
+    int dt, year, month, day;
 
     switch(value.id)
     {
@@ -470,7 +538,11 @@ int valueparser(ivalue value, Value * val)
         case VALUE_DATE_ID :
             val->type = DATETYPE;
             s = value.value_string;
-            dt = atoi(s.substr(1,4).c_str()) * 10000 + atoi(s.substr(6,7).c_str()) * 100 + atoi(s.substr(9,10).c_str());
+            year = atoi(s.substr(1,4).c_str());
+            month = atoi(s.substr(6,7).c_str());
+            day = atoi(s.substr(9,10).c_str());
+            if(!validdate(year, month, day)) return PASERR_DATE_ERROR;
+            dt = year * 10000 + month * 100 + day;
             val->data = new int (dt);
             break;
 

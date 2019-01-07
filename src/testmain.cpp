@@ -47,8 +47,10 @@ int main(int argc, char *argv[])
         //else printf("NORMAL.\n");
         //EXPECT_EQ(rc, 0);
 
-        if(rc > 0) printf("%s\n", errorGet(rc).c_str());
-        if(rc == 0) printf("NORMAL.\n");
+#ifdef TERMMSG
+        if(rc > 0) printf("ERROR: %s\n", errorGet(rc).c_str());
+#endif
+        // if(rc == 0) printf("NORMAL.\n");
     }
 
     //cout << printer->getSS().str();

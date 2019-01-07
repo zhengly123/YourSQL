@@ -97,6 +97,7 @@ else()
 #    add_compile_definitions(OutputLinearIndex=OPEN)
 #    add_compile_definitions(IXDEBUG=OPEN)
 #    add_compile_definitions(OutputFileOperation=OPEN)
+    add_compile_definitions(TERMMSG=OPEN)
 endif()
 
 add_executable(YourSQL

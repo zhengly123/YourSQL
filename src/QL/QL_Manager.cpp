@@ -170,6 +170,7 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
     if(rc) return rc;
 
     selectResult.print(nSelAttrs, selAttrs);
+    selectsize = selectResult.size();
 
     return 0;
 }
@@ -314,6 +315,8 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
 //    }
     Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
             nConditions, conditions, smm->filehandleGet(relName));
+    if(selector.errorReason) return selector.errorReason;
+
     RM_Record record;
     RM_FileHandle *handle = nullptr;
     RID rid;
@@ -348,7 +351,9 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
         }
         handle->DeleteRec(rid);
     }
-    printf("INFO: delete cnt=%d\n", cnt);
+#ifdef TERMMSG
+    printf("INFO : Delete cnt = %d\n", cnt);
+#endif
     return 0;
 }
 
@@ -367,8 +372,11 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     attributes = smm->attrGet(relName);
     Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
                       nConditions, conditions, smm->filehandleGet(relName));
+    if(selector.errorReason) return selector.errorReason;
     // check legality of SETs
     selector.checkSetLegal(nSet, sets);
+    if(selector.errorReason) return selector.errorReason;
+
     RM_Record record;
     RM_FileHandle *handle = nullptr;
     RID rid;
@@ -420,7 +428,9 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
         handle->UpdateRec(record);
         cnt++;
     }
-    printf("INFO: Update cnt=%d\n", cnt);
+#ifdef TERMMSG
+    printf("INFO : Update cnt = %d\n", cnt);
+#endif
     return 0;
 }
 

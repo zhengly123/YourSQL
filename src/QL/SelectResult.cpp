@@ -407,3 +407,8 @@ bool SelectResult::isRelAttrIndexExist(RelAttr relAttr)
                                      t.aggregateFunc == relAttr.op;
                          }) != dataAttrInfos.end();
 }
+
+int SelectResult::size()
+{
+    return conlist.size();
+}

@@ -47,9 +47,9 @@ public:
      */
     RC applyConstraint(int natt, RelAttr att[], int ngrp, const RelAttr grp[], int nord, const RelAttr ord[]);
 
-    int orderBySort(vector<DataType>, vector<DataType>);
-
     void print(int nSelAttrs, const RelAttr selAttrs[]);
+
+    int size();
 
 private:
     Printer *printer;

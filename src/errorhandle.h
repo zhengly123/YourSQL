@@ -47,7 +47,7 @@ const std::string qlerror[] =
         {
                 "QL_RELNOTEXIST",
                 "QL_INVALIDSIZE",
-                "QL_TYPEUNMATCH",
+                "QL_TYPE_MISMATCH",
                 "QL_ATTRNOTNULL",
                 "QL_STRTOOLONG",
                 "QL_DUPLICATE",
@@ -68,6 +68,7 @@ const std::string pserror[] =
                 "PASERR_ATTR_TOOLONG",
                 "PASERR_FOREIGN_NOTFOUND",
                 "PASERR_FOREIGN_MULTIPLE",
+                "PASERR_DATE_ERROR",
         };
 
 static std::string errorGet(int rc)
