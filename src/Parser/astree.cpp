@@ -775,7 +775,7 @@ void clearParser()
     currentDB = "";
 }
 
-int appendRel(char* p, const char* q)
+int appendRel(char* &p, const char* q)
 {
     if(p == NULL)
     {

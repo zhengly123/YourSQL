@@ -123,11 +123,11 @@ void SelectResult::filter(int nConditions, const Condition *conditions)
         if (!conditions[i].bRhsIsAttr)
             continue;
 
-        if (isRelAttrIndexExist(conditions->lhsAttr) &&
-            isRelAttrIndexExist(conditions->rhsAttr))
+        if (isRelAttrIndexExist(conditions[i].lhsAttr) &&
+            isRelAttrIndexExist(conditions[i].rhsAttr))
         {
-            int lIndex = getRelAttrIndex(conditions->lhsAttr);
-            int rIndex = getRelAttrIndex(conditions->rhsAttr);
+            int lIndex = getRelAttrIndex(conditions[i].lhsAttr);
+            int rIndex = getRelAttrIndex(conditions[i].rhsAttr);
             auto it = dataList.begin();
             int cnt=0;
             while (it != dataList.end())
@@ -136,7 +136,7 @@ void SelectResult::filter(int nConditions, const Condition *conditions)
                 char *rData = (*it)[rIndex].data();
                 // TODO: two null compare????
                 // the condition must be a two-attr comparision
-                if (!Cmp(lData, rData, conditions->op, dataAttrInfos[i].attrType))
+                if (!Cmp(lData, rData, conditions[i].op, dataAttrInfos[i].attrType))
                 {
                     dataList.erase(it++);
                     ++cnt;

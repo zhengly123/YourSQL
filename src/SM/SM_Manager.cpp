@@ -226,8 +226,8 @@ RC SM_Manager :: CreateIndex (const char *relName, const char *attrName)
     {
         attrRecord.GetData(pData);
 
-        // scan中保证了relName一致，以下判断attrName一致
-        if (strcmp(((AttrInfo *) pData)->attrName, attrName) == 0)
+        // scan中保证了attrName一致，以下判断relName一致
+        if (strcmp(((AttrInfo *) pData)->relName, relName) == 0)
         {
             // set record index
 //            char *tempData;
