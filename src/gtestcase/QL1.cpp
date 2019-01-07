@@ -934,3 +934,21 @@ TEST_F(QL_PRIMARY, FK_DROP)
     Accept(smManager, qlManager, SM_FOREIGN_REF_DROP_ERROR, 1);
     Accept(smManager, qlManager, 0, 200);
 }
+
+TEST_F(QL_PRIMARY, FK_FOREIGN_KEY_NOT_FOUND)
+{
+    printf("\nTesting : Foreign Key not found error. \n");
+    freopen("../src/gtestcase/Primarytest/FK_refnotfound.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 6);
+    Accept(smManager, qlManager, QL_FOREIGN_KEY_NOT_FOUND, 1);
+    Accept(smManager, qlManager, 0, 200);
+}

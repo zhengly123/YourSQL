@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
-    //freopen("QL_UPDATE1.in", "r", stdin);
+    //freopen("FK_refnotfound.txt", "r", stdin);
 
     int rc;
     for(;;)

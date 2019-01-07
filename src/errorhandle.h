@@ -60,6 +60,7 @@ const std::string qlerror[] =
                 "QL_GROUPBYERR",
                 "QL_WRONGAVGTYPE",
                 "QL_PRIMARY_DUPLICATE",
+                "QL_FOREIGN_KEY_NOT_FOUND",
         };
 
 const std::string pserror[] =

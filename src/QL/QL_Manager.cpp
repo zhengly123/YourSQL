@@ -248,6 +248,38 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
 
     // TODO : Check Foreign key!
 
+    for(int i = 0; i < nValues; ++ i)
+        if(attributes[i].isForeign)
+        {
+            std::string foreignRel = attributes[i].foreignTable;
+            std::string foreignAttr = attributes[i].foreignName;
+
+            RelationMeta foreignMeta;
+            smm->relGet(foreignRel, &foreignMeta);
+            vector<AttrInfo> foreignattrs = smm->attrGet(foreignRel);
+
+            Condition condition;
+            condition.op = CompOp::EQ_OP;
+            condition.flag = CondType::COND_NORMAL;
+            condition.bRhsIsAttr = 0;
+            condition.rhsValue = values[i];
+            condition.lhsAttr.relName = nullptr;
+            condition.lhsAttr.attrName = attributes[i].foreignName;
+            condition.lhsAttr.op = 0;
+            condition.lhsAttr.ord = 0;
+            condition.skip = false;
+
+            Selector selector(ixm, rmm, smm, foreignRel.c_str(), foreignMeta, foreignattrs, 1, &condition,
+                              smm->filehandleGet(foreignRel));
+
+            RM_Record record;
+            RM_FileHandle *handle = nullptr;
+            if (!selector.getNext(record, handle))
+            {
+                return QL_FOREIGN_KEY_NOT_FOUND;
+            }
+        }
+
     int tuplelength = relmeta.tupleLength;
     int ifnull = relmeta.tupleLength - relmeta.attrCount;
 

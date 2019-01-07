@@ -168,7 +168,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
                 else
                 {
 #ifdef TERMMSG
-                    printf("ERROR: %s\n", errorGet(rc).c_str());
+                    //printf("ERROR: %s\n", errorGet(rc).c_str());
 #endif
                 }
                 //if(rc) return rc;
