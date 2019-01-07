@@ -61,6 +61,7 @@ const std::string qlerror[] =
                 "QL_WRONGAVGTYPE",
                 "QL_PRIMARY_DUPLICATE",
                 "QL_FOREIGN_KEY_NOT_FOUND",
+                "QL_AGAINST_FOREIGN_KEY_CONSTRAINT",
         };
 
 const std::string pserror[] =

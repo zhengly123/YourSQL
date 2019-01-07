@@ -1,0 +1,19 @@
+create database db1;
+use db1;
+create table tb1 (col1 int, col2 int, primary key(col2));
+insert into tb1 values (1,1), (4,2), (9,3), (16,4);
+create table tb3 (col1 int, col2 int, col3 int, foreign key(col3) references tb1(col2));
+insert into tb3 values (9,81,1), (6,36,2), (7,49,3);
+
+delete from tb1 where col1 < 5;
+update tb1 set col2 = 20 where col2 > 2;
+update tb1 set col1 = 10 where col2 = 3;
+
+drop table tb3;
+
+delete from tb1 where col1 < 5;
+update tb1 set col2 = 25 where col2 > 2;
+
+close;
+drop database db1;
+exit;

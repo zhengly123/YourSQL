@@ -935,9 +935,9 @@ TEST_F(QL_PRIMARY, FK_DROP)
     Accept(smManager, qlManager, 0, 200);
 }
 
-TEST_F(QL_PRIMARY, FK_FOREIGN_KEY_NOT_FOUND)
+TEST_F(QL_PRIMARY, FK_REF_NOT_FOUND)
 {
-    printf("\nTesting : Foreign Key not found error. \n");
+    printf("\nTesting : Foreign Key ref not found error. \n");
     freopen("../src/gtestcase/Primarytest/FK_refnotfound.txt", "r" , stdin);
 
     StdoutPrinter printer;
@@ -950,5 +950,23 @@ TEST_F(QL_PRIMARY, FK_FOREIGN_KEY_NOT_FOUND)
 
     Accept(smManager, qlManager, 0, 6);
     Accept(smManager, qlManager, QL_FOREIGN_KEY_NOT_FOUND, 1);
+    Accept(smManager, qlManager, 0, 200);
+}
+
+TEST_F(QL_PRIMARY, FK_FOREIGN_KEY_CONSTRAINT)
+{
+    printf("\nTesting : Foreign Key constraint on DEL/UPD. \n");
+    freopen("../src/gtestcase/Primarytest/FK_constraint.txt", "r" , stdin);
+
+    StdoutPrinter printer;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    RM_Manager rmManager(fm, bpm);
+    IX_Manager ixManager(*fm, *bpm);
+    SM_Manager smManager(ixManager, rmManager, &printer);
+    QL_Manager qlManager(smManager, ixManager, rmManager, &printer);
+
+    Accept(smManager, qlManager, 0, 6);
+    Accept(smManager, qlManager, QL_AGAINST_FOREIGN_KEY_CONSTRAINT, 2);
     Accept(smManager, qlManager, 0, 200);
 }

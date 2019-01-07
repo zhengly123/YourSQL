@@ -353,10 +353,10 @@ RC QL_Manager :: Delete (const char *relName,            // relation to delete f
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     vector<AttrInfo> attributes;
     attributes = smm->attrGet(relName);
-//    for (int i = 0; i < nConditions; ++i)
-//    {
-//        if (!checkConditionLegal(relmeta, conditions[i])) return QL_CONDITION_INVALID;
-//    }
+
+    for(auto attr : attributes)
+        if(attr.refcnt) return QL_AGAINST_FOREIGN_KEY_CONSTRAINT;
+
     Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
             nConditions, conditions, smm->filehandleGet(relName));
     if(selector.errorReason) return selector.errorReason;
@@ -414,6 +414,10 @@ RC QL_Manager :: Update (const char *relName,            // relation to update
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;
     vector<AttrInfo> attributes;
     attributes = smm->attrGet(relName);
+
+//    for(auto attr : attributes)
+//        if(attr.refcnt) return QL_AGAINST_FOREIGN_KEY_CONSTRAINT;
+
     Selector selector(ixm, rmm, smm, relName, relmeta, attributes,
                       nConditions, conditions, smm->filehandleGet(relName));
     if(selector.errorReason) return selector.errorReason;

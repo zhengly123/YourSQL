@@ -326,6 +326,9 @@ bool Selector::checkSetLegal(const int nSet, const Condition sets[])
                     errorReason = QL_TYPEUNMATCHED;
             }
         }
+
+        if(attrL.refcnt)
+            errorReason = QL_AGAINST_FOREIGN_KEY_CONSTRAINT;
     }
     if (i < conditions.size())
     {
