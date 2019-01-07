@@ -386,16 +386,16 @@ RC SM_Manager :: DropIndex   (const char *relName, const char *attrName)
     if (!hit)
         return SM_NONEXIST_RELATION;
 
-    relScan.OpenScan(relcatHandler,AttrType::STRING,strlen(relName)+1,
-                    offsetof(RelationMeta,relName), EQ_OP, relName);
-
-    relScan.GetNextRec(relRecord);
-
-    char *relData;
-    relRecord.GetData(relData);
-    ((RelationMeta*)relData)->indexCount--;
-    relcatHandler.UpdateRec(relRecord);
-
+//    relScan.OpenScan(relcatHandler,AttrType::STRING,strlen(relName)+1,
+//                    offsetof(RelationMeta,relName), EQ_OP, relName);
+//
+//    relScan.GetNextRec(relRecord);
+//
+//    char *relData;
+//    relRecord.GetData(relData);
+//    ((RelationMeta*)relData)->indexCount--;
+//    relcatHandler.UpdateRec(relRecord);
+//
     return 0;
 }
 
