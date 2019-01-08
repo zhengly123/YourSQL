@@ -156,13 +156,14 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
             {
                 hit = true;
                 swap(conditions[i].lhsAttr, conditions[i].rhsAttr);
+                swap(lIndex, rIndex);
             }
             if (hit)
             {
                 int relIndex = getRelIndex(relVecOpt, allAttrInfo[lIndex].relName);
-                relCnt[relIndex].first++;
-                relIndex = getRelIndex(relVecOpt, allAttrInfo[rIndex].relName);
                 relCnt[relIndex].first--;
+                relIndex = getRelIndex(relVecOpt, allAttrInfo[rIndex].relName);
+                relCnt[relIndex].first++;
             }
         }
     }

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
-//    freopen("FK_3.in", "r", stdin);
+    freopen("tt.txt", "r", stdin);
 
     int rc;
 //    smManager.PrintDatabases();

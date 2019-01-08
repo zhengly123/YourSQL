@@ -99,6 +99,7 @@ else()
 #    add_compile_definitions(IXDEBUG=OPEN)
 #    add_compile_definitions(OutputFileOperation=OPEN)
     add_compile_definitions(TERMMSG=OPEN)
+    add_compile_definitions(ADMIN=OPEN)
 #    add_compile_definitions(INDEXDUBEG=OPEN)
     # prevent data be flushed
     # add_compile_definitions(SERVER=OPEN)
