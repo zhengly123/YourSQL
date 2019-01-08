@@ -19,9 +19,13 @@ int main(int argc, char *argv[])
     SM_Manager smManager(ixManager, rmManager, stdoutPrinter); // add printer
     QL_Manager qlManager(smManager, ixManager, rmManager, stdoutPrinter);// add printer
 
-    //freopen("FK_refnotfound.txt", "r", stdin);
+//    freopen("FK_3.in", "r", stdin);
 
     int rc;
+//    smManager.PrintDatabases();
+//    smManager.OpenDb("orderDB");
+//    smManager.describeTable("restaurant");
+//    return 0;
     for(;;)
     {
         rc = treeparser(smManager, qlManager, 0);

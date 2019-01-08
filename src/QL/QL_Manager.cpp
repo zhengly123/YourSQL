@@ -185,6 +185,9 @@ RC QL_Manager :: Insert (const char  *relName,           // relation to insert i
               int         nValues,            // # values to insert
               Value values[])          // values to insert
 {
+#ifdef OutputExcutedOperation
+    fprintf(stderr, "DEBUG: Insert\n");
+#endif
     struct RelationMeta relmeta;
 
     if(smm->relGet(relName, &relmeta)) return QL_RELNOTEXIST;

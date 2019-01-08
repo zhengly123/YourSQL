@@ -262,8 +262,8 @@ ValueLists : LB ValueList RB
         }
         | ValueLists DH LB ValueList RB
         {
-            $$ = $1;
-            $$.push_back($4);
+            $$ = std::move($1);
+            $$.push_back(std::move($4));
         }
 ;
 

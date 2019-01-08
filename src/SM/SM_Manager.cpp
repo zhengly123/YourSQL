@@ -495,7 +495,7 @@ RC SM_Manager::PrintTables()
     {
         return SM_CLOSE;
     }
-    cerr << "Show Tables: " << endl;
+//    cerr << "Show Tables: " << endl;
     RM_FileScan relScan;
     RM_Record relRecord;
     RC rc;
@@ -513,6 +513,7 @@ RC SM_Manager::PrintTables()
 //    printer->flush();
     return 0;
 }
+
 
 vector<RelationMeta> SM_Manager::TestReturnTables()
 {
@@ -763,4 +764,55 @@ IX_IndexHandle* SM_Manager::indexhandleGet(std::string relName, int index)
     }
 
     return it->second;
+}
+
+RC SM_Manager::PrintDatabases()
+{
+    if (isOpen)
+        return SM_DB_NOT_CLOSE;
+    // check if dir_name is a valid dir
+    DIR *dir = opendir(".");//打开指定目录
+    dirent *p = NULL;//定义遍历指针
+    while ((p = readdir(dir)) != NULL)//开始逐个遍历
+    {
+        //这里需要注意，linux平台下一个目录中有"."和".."隐藏文件，需要过滤掉
+        if (p->d_name[0] != '.')//d_name是一个char数组，存放当前遍历到的文件名
+        {
+            struct stat sb;
+            if (!(stat(p->d_name, &sb) == 0 && S_ISDIR(sb.st_mode)))
+                continue;
+            string notDb[] = {"lib", "bin", "googletest", "CMakeFiles"};
+            string name = string(p->d_name);
+            for (const auto notDbName:notDb)
+            {
+                if (notDbName == name)
+                    continue;
+            }
+            cout << name << endl;
+            OpenDb(name.data());
+            PrintTables();
+            CloseDb();
+        }
+    }
+    closedir(dir);//关闭指定目录
+    return 0;
+}
+
+RC SM_Manager::describeTable(const char *relName)
+{
+    if (!relExist(string(relName)))
+    {
+        printer->getSS() << "Relation Not exist\n";
+        return 0;
+    }
+    auto ret = attrGet(string(relName));
+    printf("%10s %10s %10s %10s\n", "AttrName", "TypeName", "IndexNum",
+           "NotNull");
+
+    for (auto &attr:ret)
+    {
+        printf("%10s %10s %10d %10d\n", attr.attrName, AttrTypeName[attr.attrType].data(),
+               attr.indexNum, attr.isNotNull());
+    }
+    return 0;
 }

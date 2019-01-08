@@ -37,9 +37,9 @@ int main(int argc, char *argv[])
 {
     int client_sockfd;
     int len;
-    struct sockaddr_in remote_addr; // 服务器端网络地址结构体
-    char buf[BUFFER_SIZE];  // 数据传送的缓冲区
-    memset(&remote_addr,0,sizeof(remote_addr)); // 数据初始化--清零
+    struct sockaddr_in remote_addr;
+    char buf[BUFFER_SIZE];
+    memset(&remote_addr, 0, sizeof(remote_addr));
     string ipAddr;
     int port;
     printf("====================================\n");
@@ -59,18 +59,16 @@ int main(int argc, char *argv[])
         ipAddr="127.0.0.1";
         port = 9999;
     }
-    remote_addr.sin_family=AF_INET; // 设置为IP通信
+    remote_addr.sin_family = AF_INET;
 //    remote_addr.sin_addr.s_addr=inet_addr("127.0.0.1");// 服务器IP地址
 //    remote_addr.sin_port=htons(ListenPort); // 服务器端口号
-    remote_addr.sin_addr.s_addr = inet_addr(ipAddr.data());// 服务器IP地址
-    remote_addr.sin_port=htons(port); // 服务器端口号
-    // 创建客户端套接字--IPv4协议，面向连接通信，TCP协议
+    remote_addr.sin_addr.s_addr = inet_addr(ipAddr.data());
+    remote_addr.sin_port = htons(port);
     if ((client_sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("client socket creation failed");
         exit(EXIT_FAILURE);
     }
-    // 将套接字绑定到服务器的网络地址上
     if(connect(client_sockfd,(struct sockaddr *)&remote_addr,sizeof(struct sockaddr))<0)
     {
         perror("connect to server failed");

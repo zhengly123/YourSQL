@@ -46,6 +46,10 @@ public:
     RC DropIndex   (const char *relName,                // Destroy index
                     const char *attrName);
     RC PrintTables ();
+
+    RC PrintDatabases();
+
+    RC describeTable(const char *relName);
     RC Load        (const char *relName,                // Load utility
                     const char *fileName);
     RC Help        ();                                  // Help for database
