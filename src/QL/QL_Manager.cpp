@@ -162,7 +162,8 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
 
         SelectResult newResult(printer, rel, nSelAttrs, selAttrs, nConditions, conditions);
         newResult.insert(relName, selector, attributes);
-        selectResult = selectResult * newResult;
+//        selectResult = selectResult * newResult;
+        selectResult = cross(selectResult, newResult, nConditions, conditions);
         selectResult.filter(nConditions, conditions);
     }
 

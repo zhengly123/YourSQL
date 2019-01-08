@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <map>
 #include "SelectResult.h"
 
 SelectResult::SelectResult(Printer *printer, std::string relName, int nSelAttrs, const RelAttr *selAttrs, int nConditions,
@@ -95,7 +96,7 @@ RC SelectResult::insert(const char *relName, Selector &selector, vector<AttrInfo
     return 0;
 }
 
-SelectResult operator*(SelectResult lhs, SelectResult rhs)
+SelectResult cross(SelectResult lhs, SelectResult rhs, int nConditions, const Condition *conditions)
 {
     using DataType=std::vector<char>;
     SelectResult result{lhs};
@@ -104,13 +105,81 @@ SelectResult operator*(SelectResult lhs, SelectResult rhs)
     result.dataAttrInfos.insert(result.dataAttrInfos.end(), rhs.dataAttrInfos.begin(),
                               rhs.dataAttrInfos.end());
     result.dataList.clear();
-    for (auto ld:lhs.dataList)
+//    for (Condition cond=)
+    bool fpOptimize = false;
+    for (int i = 0; i < nConditions; ++i)
     {
-        for (auto rd:rhs.dataList)
+        const Condition &cond = conditions[i];
+        if (!cond.bRhsIsAttr)
+            continue;
+        int lAttrIndex = lhs.getRelAttrIndex(cond.lhsAttr);
+        int rAttrIndex = rhs.getRelAttrIndex(cond.rhsAttr);
+        if (!(lAttrIndex >= 0 && rAttrIndex >= 0))
         {
-            vector<DataType> dataVector{ld};
-            dataVector.insert(dataVector.end(), rd.begin(), rd.end());
-            result.dataList.push_back(dataVector);
+            continue;
+        }
+
+        AttrInfo attrL = result.dataAttrInfos[result.getRelAttrIndex(cond.lhsAttr)];
+        AttrInfo attrR = result.dataAttrInfos[result.getRelAttrIndex(cond.rhsAttr)];
+//        if (attrR.isForeign && (attrL.flag & 2))
+//        {
+//            swap(attrL, attrR);
+//            int lAttrIndex = lhs.getRelAttrIndex(cond.lhsAttr);
+//            int rAttrIndex = rhs.getRelAttrIndex(cond.rhsAttr);
+//        }
+        if (attrL.isForeign && (attrR.flag & 2))
+        {
+            map<int, vector<DataType>> primaryIndex;
+            for (const auto &rd:rhs.dataList)
+            {
+                primaryIndex[*(int *) rd[rAttrIndex].data()] = rd;
+            }
+            for (auto ld:lhs.dataList)
+            {
+                vector<DataType> dataVector{ld};
+                auto it = primaryIndex.find(*((int *) ld[lAttrIndex].data()));
+                if (it == primaryIndex.end())
+                    continue;
+
+                dataVector.insert(dataVector.end(), (it->second).begin(), (it->second).end());
+                result.dataList.push_back(dataVector);
+            }
+
+            fpOptimize = true;
+            break;
+        } else if (attrR.isForeign && (attrL.flag & 2))
+        {
+            map<int, vector<DataType>> primaryIndex;
+            for (const auto &ld:lhs.dataList)
+            {
+                primaryIndex[*(int *) ld[lAttrIndex].data()] = ld;
+            }
+            for (auto rd:rhs.dataList)
+            {
+                auto it = primaryIndex.find(*((int *) rd[rAttrIndex].data()));
+                if (it == primaryIndex.end())
+                    continue;
+
+                vector<DataType> dataVector{it->second};
+                dataVector.insert(dataVector.end(), rd.begin(), rd.end());
+                result.dataList.push_back(dataVector);
+            }
+
+            fpOptimize = true;
+            printf("DBEUG: FP Opt\n");
+            break;
+        }
+    }
+    if (!fpOptimize)
+    {
+        for (auto ld:lhs.dataList)
+        {
+            for (auto rd:rhs.dataList)
+            {
+                vector<DataType> dataVector{ld};
+                dataVector.insert(dataVector.end(), rd.begin(), rd.end());
+                result.dataList.push_back(dataVector);
+            }
         }
     }
     return result;

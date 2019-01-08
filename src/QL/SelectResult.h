@@ -31,7 +31,11 @@ public:
                  int nConditions, const Condition conditions[]);
     RC insert(const char *relName, Selector &selector, vector<AttrInfo> tableAttrs);
 
-    friend SelectResult operator *(SelectResult lhs, SelectResult rhs);
+//    friend SelectResult operator*(SelectResult lhs, SelectResult rhs, int nConditions,
+//                                  const Condition *conditions);
+
+    friend SelectResult cross(SelectResult lhs, SelectResult rhs, int nConditions,
+                              const Condition *conditions);
 
     void filter(int nConditions, const Condition conditions[]);
 
