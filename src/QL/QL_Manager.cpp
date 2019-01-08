@@ -133,8 +133,46 @@ RC QL_Manager :: Select (int           nSelAttrs,        // # attrs in Select cl
         }
     }
 
-
-    for (const auto& rel:rellist)
+    vector<string> relVecOpt{relVec};
+    vector<pair<int, int>> relCnt;
+    for (int i = 0; i < relVecOpt.size(); ++i)
+    {
+        relCnt.push_back(make_pair(0, i));
+    }
+    for (int i = 0; i < nConditions; ++i)
+    {
+        if (conditions[i].bRhsIsAttr)
+        {
+            int lIndex = getAttrIndex(allAttrInfo, conditions[i].lhsAttr);
+            int rIndex = getAttrIndex(allAttrInfo, conditions[i].rhsAttr);
+            bool hit = false;
+            int left, right;
+            // keep left a foreign key
+            if (allAttrInfo[lIndex].isForeign && (allAttrInfo[rIndex].flag & 2))
+            {
+                hit = true;
+            }
+            if (allAttrInfo[rIndex].isForeign && (allAttrInfo[lIndex].flag & 2))
+            {
+                hit = true;
+                swap(conditions[i].lhsAttr, conditions[i].rhsAttr);
+            }
+            if (hit)
+            {
+                int relIndex = getRelIndex(relVecOpt, allAttrInfo[lIndex].relName);
+                relCnt[relIndex].first++;
+                relIndex = getRelIndex(relVecOpt, allAttrInfo[rIndex].relName);
+                relCnt[relIndex].first--;
+            }
+        }
+    }
+    sort(relCnt.begin(), relCnt.end());
+    // sort relVecOpt from primary key to foreign key
+    for (int i = 0; i < relVec.size(); ++i)
+    {
+        relVecOpt[i] = relVec[relCnt[i].second];
+    }
+    for (const auto &rel:relVecOpt)
     {
         const char *relName = rel.data();
         RelationMeta relmeta;
@@ -699,4 +737,16 @@ Printer* QL_Manager :: getPrinter()
 void QL_Manager :: setPrinter(Printer* pt)
 {
     this->printer = pt;
+}
+
+RC QL_Manager::getRelIndex(const std::vector<std::string> &relVec, const char *relName)
+{
+    if (relName == nullptr)
+    {
+        return QL_RELNULL;
+    }
+    auto ret = (int) std::distance(relVec.begin(),
+                                   std::find(std::begin(relVec), std::end(relVec),
+                                             std::string(relName)));
+    return ret;
 }

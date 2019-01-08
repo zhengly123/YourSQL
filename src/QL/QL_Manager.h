@@ -74,6 +74,8 @@ private:
     RC checkAttrLegal(const vector<AttrInfo> &attributes, const RelAttr relAttr);
     RC getAttrIndex(const vector<AttrInfo> &attributes, const RelAttr relAttr);
 
+    RC getRelIndex(const std::vector<std::string> &relVec, const char *relName);
+
     /**
      * Create or retrieve IndexHandle from selector.
      * @param indexHandle
