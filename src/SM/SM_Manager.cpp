@@ -510,7 +510,7 @@ RC SM_Manager::PrintTables()
         printer->PrintTablesInfo((RelationMeta *) relationMetaData, 1);
     }
     // not flush in function
-//    printer->flush();
+    printer->flush();
     return 0;
 }
 
@@ -783,11 +783,17 @@ RC SM_Manager::PrintDatabases()
                 continue;
             string notDb[] = {"lib", "bin", "googletest", "CMakeFiles"};
             string name = string(p->d_name);
+            bool useless = false;
             for (const auto notDbName:notDb)
             {
                 if (notDbName == name)
+                {
+                    useless = true;
                     continue;
+                }
             }
+            if (useless)
+                continue;
             cout << name << endl;
             OpenDb(name.data());
             PrintTables();

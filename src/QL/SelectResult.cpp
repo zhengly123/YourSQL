@@ -107,11 +107,13 @@ SelectResult cross(SelectResult lhs, SelectResult rhs, int nConditions, const Co
     result.dataList.clear();
 //    for (Condition cond=)
     bool fpOptimize = false;
+    // FP Optimization
     for (int i = 0; i < nConditions; ++i)
     {
         const Condition &cond = conditions[i];
         if (!cond.bRhsIsAttr)
             continue;
+
         int lAttrIndex = lhs.getRelAttrIndex(cond.lhsAttr);
         int rAttrIndex = rhs.getRelAttrIndex(cond.rhsAttr);
         if (!(lAttrIndex >= 0 && rAttrIndex >= 0))

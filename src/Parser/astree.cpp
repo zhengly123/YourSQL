@@ -68,7 +68,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
     switch (st.id) {
 
         case SHOW_DB :
-
+            smm.PrintDatabases();
             break;
 
         case CREATE_DB :
@@ -150,6 +150,7 @@ int stmtparser(SM_Manager &smm, QL_Manager &qlm, istmt st)
 
         case DESC_ST :
 
+            smm.describeTable(st.tbName.data());
             // TODO: smm.Desc();
             break;
 
