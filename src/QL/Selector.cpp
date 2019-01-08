@@ -92,7 +92,9 @@ void Selector::iterateOptimize(const char *relName, int nCondition, const Condit
         assert(!cond.bRhsIsAttr);
         const AttrInfo attrInfo = getAttr(cond.lhsAttr.attrName);
         assert(attrInfo.indexNum);
+#ifdef INDEXDUBEG
         fprintf(stderr, "Debug: use index no %d\n", attrInfo.indexNum);
+#endif
         enableIndex = true;
         attrWithIndex=string(attrInfo.attrName);
         RC rc;

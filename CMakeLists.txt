@@ -76,7 +76,7 @@ SET(SOURCE
         src/Parser/parsererror.h src/Printer/CsvPrinter.cpp src/Printer/CsvPrinter.h)
 
 
-SET(GTEST 1)
+SET(GTEST 0)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}
@@ -92,15 +92,16 @@ IF(GTEST)
 else()
     SET(SOURCE ${SOURCE}
             src/RM_Test/test_scan.cpp
-            #            src/testmain.cpp)
-            src/server_main.cpp)
+            src/testmain.cpp)
+            #src/server_main.cpp)
 #    add_compile_definitions(OutputExcutedOperation=OPEN)
 #    add_compile_definitions(OutputLinearIndex=OPEN)
 #    add_compile_definitions(IXDEBUG=OPEN)
 #    add_compile_definitions(OutputFileOperation=OPEN)
     add_compile_definitions(TERMMSG=OPEN)
+#    add_compile_definitions(INDEXDUBEG=OPEN)
     # prevent data be flushed
-    add_compile_definitions(SERVER=OPEN)
+    # add_compile_definitions(SERVER=OPEN)
 endif()
 
 add_executable(YourSQL
