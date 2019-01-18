@@ -76,7 +76,7 @@ SET(SOURCE
         src/Parser/parsererror.h src/Printer/CsvPrinter.cpp src/Printer/CsvPrinter.h)
 
 
-SET(GTEST 0)
+SET(GTEST 1)
 
 IF(GTEST)
     SET(SOURCE ${SOURCE}

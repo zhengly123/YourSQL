@@ -64,12 +64,16 @@ RC SM_Manager :: OpenDb      (const char *dbName)
 // Close database
 RC SM_Manager :: CloseDb     ()
 {
+    RC rc;
     if (isOpen)
     {
         rmm->CloseFile(relcatHandler);
         rmm->CloseFile(attrcatHandler);
         isOpen = false;
-        assert(chdir(initialCwd)==0);
+
+        rc = chdir(initialCwd);
+        if (rc)
+            exit(-1);
 
         for(auto it : smFileHandle) rmm->CloseFile(it.second);
         smFileHandle.clear();
